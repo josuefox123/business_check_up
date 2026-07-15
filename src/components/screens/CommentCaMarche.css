@@ -1,0 +1,298 @@
+/* CommentCaMarche — Premium SaaS Styles */
+
+/* ── HERO ── */
+.hiw-hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  padding: 80px 40px 64px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hiw-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -80px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(0, 209, 186, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hiw-hero-inner {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hiw-hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.hiw-hero-subtitle {
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.75;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── STEPS ── */
+.hiw-steps-container {
+  position: relative;
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Vertical connector line */
+.hiw-steps-line {
+  position: absolute;
+  left: 36px;
+  top: 56px;
+  bottom: 56px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-accent), var(--color-blue));
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.hiw-step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 16px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hiw-step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 6px;
+  width: 72px;
+}
+
+.hiw-step-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(10, 23, 69, 0.2);
+  border: 3px solid var(--bg-white);
+  position: relative;
+  z-index: 1;
+}
+
+.hiw-step-num {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--color-accent-dark);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hiw-step-card {
+  flex: 1;
+  background: var(--bg-white);
+  border: 1px solid var(--slate-200);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hiw-step-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.hiw-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.hiw-step-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.hiw-step-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+  background: var(--color-accent-light);
+  border: 1px solid rgba(0, 209, 186, 0.2);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.hiw-step-desc {
+  font-size: 0.9rem;
+  color: var(--slate-500);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── FEATURES GRID ── */
+.hiw-features-grid {
+  gap: 16px !important;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hiw-feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 22px;
+  background: var(--bg-white);
+  border: 1px solid var(--slate-200);
+  border-radius: 18px;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+}
+
+.hiw-feature-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.hiw-feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  border: 1px solid rgba(0, 209, 186, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.hiw-feature-card:hover .hiw-feature-icon {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.hiw-feature-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.hiw-feature-desc {
+  font-size: 0.85rem;
+  color: var(--slate-500);
+  line-height: 1.55;
+}
+
+/* ── CTA SECTION ── */
+.hiw-cta-section {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  padding: 80px 40px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.hiw-cta-section::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(0,209,186,0.1) 0%, transparent 70%);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — COMMENT ÇA MARCHE
+   ═══════════════════════════════════════════════ */
+
+/* ── Tablet (≤1024px) ── */
+@media (max-width: 1024px) {
+  .hiw-hero { padding: 72px 32px 60px; }
+  .hiw-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .hiw-cta-section { padding: 64px 32px; }
+}
+
+/* ── Mobile (≤768px) ── */
+@media (max-width: 768px) {
+  .hiw-hero { padding: 56px 20px 48px; }
+  .hiw-hero-title { font-size: 1.875rem; }
+  .hiw-hero p { font-size: 0.95rem; }
+  .hiw-step-row { gap: 16px; }
+  .hiw-steps-line { left: 28px; }
+  .hiw-step-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+    border-radius: 14px;
+  }
+  .hiw-step-left { width: 56px; }
+  .hiw-step-card { padding: 18px 20px; }
+  .hiw-step-card h3 { font-size: 1rem; }
+  .hiw-step-card p { font-size: 0.875rem; }
+  .hiw-features-grid { grid-template-columns: 1fr !important; gap: 14px; }
+  .hiw-cta-section { padding: 56px 20px; }
+  .hiw-cta-section h2 { font-size: 1.5rem; }
+}
+
+/* ── Small Mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .hiw-hero { padding: 44px 16px 36px; }
+  .hiw-hero-title { font-size: 1.6rem; }
+
+  /* Steps: horizontal layout (icon + content side by side) */
+  .hiw-step-row { flex-direction: row; align-items: flex-start; gap: 14px; }
+  .hiw-step-left {
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+    flex-shrink: 0;
+  }
+  .hiw-steps-line { display: none; }
+  .hiw-step-icon { width: 44px; height: 44px; border-radius: 12px; }
+  .hiw-step-card { padding: 14px 16px; border-radius: 14px; }
+  .hiw-step-card h3 { font-size: 0.9375rem; margin-bottom: 4px; }
+  .hiw-step-card p { font-size: 0.825rem; }
+
+  /* Feature cards */
+  .hiw-feature-card { padding: 16px 18px; }
+  .hiw-feature-title { font-size: 0.875rem; }
+  .hiw-feature-desc { font-size: 0.8rem; }
+
+  /* CTA */
+  .hiw-cta-section { padding: 44px 16px; }
+  .hiw-cta-section h2 { font-size: 1.3rem; }
+  .hiw-cta-section p { font-size: 0.875rem; }
+}
+

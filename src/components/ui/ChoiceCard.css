@@ -1,0 +1,45 @@
+.choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-slate-200);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 100%;
+  min-height: 120px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.choice-card:hover {
+  border-color: var(--color-slate-500);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.choice-card.selected {
+  border-color: var(--color-primary-blue);
+  background-color: var(--color-primary-blue-light);
+}
+
+.choice-icon {
+  margin-bottom: 0.75rem;
+  color: var(--color-slate-600);
+  display: flex;
+  justify-content: center;
+}
+
+.choice-card.selected .choice-icon {
+  color: var(--color-primary-blue);
+}
+
+.choice-title {
+  font-family: var(--font-inter);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-slate-900);
+}
