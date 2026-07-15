@@ -1127,9 +1127,6 @@ const AdminLogin = ({ onLogin }) => {
         </form>
         
         <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-          <div style={{ fontSize: '0.73rem', color: 'rgba(255, 255, 255, 0.4)', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            Démo : <strong style={{ color: 'var(--color-accent)' }}>admin</strong> / <strong style={{ color: 'var(--color-accent)' }}>admin</strong>
-          </div>
           <Link to="/" style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8rem', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
             Retourner au site principal
           </Link>
