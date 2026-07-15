@@ -9,7 +9,7 @@ import { AdministrationService } from '../../services/AdministrationService.js';
 import './admin.css';
 
 // Admin layout shell
-const AdminLayout = ({ children, notifications, onMarkRead }) => {
+const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
@@ -47,10 +47,17 @@ const AdminLayout = ({ children, notifications, onMarkRead }) => {
               <span>{item.name}</span>
             </Link>
           ))}
-          <div style={{ marginTop: 'auto', padding: '16px 8px' }}>
+          <div style={{ marginTop: 'auto', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <Link to="/" className="btn btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'center' }}>
               ← Retour au site
             </Link>
+            <button 
+              onClick={onLogout} 
+              className="btn btn-sm" 
+              style={{ width: '100%', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: '700' }}
+            >
+              Déconnexion
+            </button>
           </div>
         </nav>
       </aside>
@@ -1047,8 +1054,85 @@ const ParametresModule = () => {
   );
 };
 
+// ─── ADMIN LOGIN COMPONENT ───
+const AdminLogin = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (username === 'admin' && password === 'admin') {
+      onLogin();
+    } else {
+      setError('Identifiant ou mot de passe incorrect.');
+    }
+  };
+
+  return (
+    <div className="admin-login-wrapper">
+      <div className="admin-login-card">
+        <div className="admin-login-logo">
+          <div className="admin-login-logo-icon">F</div>
+          <span className="admin-login-logo-text">FUND<span>.admin</span></span>
+        </div>
+        <h2 className="admin-login-title">Connexion Administration</h2>
+        <p className="admin-login-sub">Veuillez entrer vos identifiants pour continuer.</p>
+        
+        {error && (
+          <div className="admin-login-error">
+            <AlertTriangle size={16} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Identifiant</label>
+            <input 
+              type="text" 
+              placeholder="Ex: admin" 
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+              className="admin-login-input"
+              required 
+            />
+          </div>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Mot de passe</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              className="admin-login-input"
+              required 
+            />
+          </div>
+          <button 
+            type="submit" 
+            className="hero-cta-primary" 
+            style={{ marginTop: '8px', minHeight: '46px', background: 'var(--color-accent)', color: 'var(--color-primary)', fontWeight: 'bold' }}
+          >
+            Se connecter
+          </button>
+        </form>
+        
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+          <Link to="/" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', textDecoration: 'underline' }}>
+            Retourner au site principal
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── ADMIN MAIN CONTROLLER ───
 export const AdminApp = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    sessionStorage.getItem('admin_authenticated') === 'true'
+  );
   const [stats, setStats] = useState({});
   const [diagnostics, setDiagnostics] = useState([]);
   const [users, setUsers] = useState([]);
@@ -1056,6 +1140,7 @@ export const AdminApp = () => {
 
   // Fetch all dynamic data in state
   const loadAllData = () => {
+    if (!isAuthenticated) return;
     AdministrationService.statistics.getOverview().then(setStats);
     AdministrationService.diagnostics.getDiagnostics().then(setDiagnostics);
     AdministrationService.users.getUsers().then(setUsers);
@@ -1064,7 +1149,17 @@ export const AdminApp = () => {
 
   useEffect(() => {
     loadAllData();
-  }, []);
+  }, [isAuthenticated]);
+
+  const handleLogin = () => {
+    sessionStorage.setItem('admin_authenticated', 'true');
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('admin_authenticated');
+    setIsAuthenticated(false);
+  };
 
   const handleMarkReadNotif = (id) => {
     AdministrationService.notifications.markAsRead(id).then(loadAllData);
@@ -1090,8 +1185,12 @@ export const AdminApp = () => {
     AdministrationService.users.registerUser(user).then(loadAllData);
   };
 
+  if (!isAuthenticated) {
+    return <AdminLogin onLogin={handleLogin} />;
+  }
+
   return (
-    <AdminLayout notifications={notifications} onMarkRead={handleMarkReadNotif}>
+    <AdminLayout notifications={notifications} onMarkRead={handleMarkReadNotif} onLogout={handleLogout}>
       <Routes>
         <Route path="/" element={
           <Dashboard 
