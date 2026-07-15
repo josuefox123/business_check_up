@@ -3,7 +3,8 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardList, Activity, Settings, Users, 
   FileText, ChevronRight, Bell, Search, Menu, X, Filter, Trash2, 
-  Eye, Edit, Plus, Check, Download, AlertTriangle, Info, Calendar, RefreshCw
+  Eye, Edit, Plus, Check, Download, AlertTriangle, Info, Calendar, RefreshCw,
+  User, Lock
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
 import './admin.css';
@@ -1071,55 +1072,65 @@ const AdminLogin = ({ onLogin }) => {
 
   return (
     <div className="admin-login-wrapper">
-      <div className="admin-login-card">
+      <div className="admin-login-card animate-fade-up">
         <div className="admin-login-logo">
           <div className="admin-login-logo-icon">F</div>
           <span className="admin-login-logo-text">FUND<span>.admin</span></span>
         </div>
-        <h2 className="admin-login-title">Connexion Administration</h2>
-        <p className="admin-login-sub">Veuillez entrer vos identifiants pour continuer.</p>
+        <h2 className="admin-login-title">Espace Administration</h2>
+        <p className="admin-login-sub">Identifiez-vous pour accéder au tableau de bord.</p>
         
         {error && (
           <div className="admin-login-error">
-            <AlertTriangle size={16} />
+            <AlertTriangle size={16} style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div className="admin-form-group" style={{ marginBottom: 0 }}>
-            <label className="admin-form-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Identifiant</label>
-            <input 
-              type="text" 
-              placeholder="Ex: admin" 
-              value={username} 
-              onChange={e => setUsername(e.target.value)} 
-              className="admin-login-input"
-              required 
-            />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="admin-login-field-group">
+            <label className="admin-login-field-label">Identifiant</label>
+            <div className="admin-login-input-container">
+              <User size={18} className="admin-login-field-icon" />
+              <input 
+                type="text" 
+                placeholder="Entrez votre identifiant" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                className="admin-login-input"
+                required 
+              />
+            </div>
           </div>
-          <div className="admin-form-group" style={{ marginBottom: 0 }}>
-            <label className="admin-form-label" style={{ color: 'rgba(255,255,255,0.7)' }}>Mot de passe</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              className="admin-login-input"
-              required 
-            />
+          
+          <div className="admin-login-field-group">
+            <label className="admin-login-field-label">Mot de passe</label>
+            <div className="admin-login-input-container">
+              <Lock size={18} className="admin-login-field-icon" />
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                className="admin-login-input"
+                required 
+              />
+            </div>
           </div>
+
           <button 
             type="submit" 
-            className="hero-cta-primary" 
-            style={{ marginTop: '8px', minHeight: '46px', background: 'var(--color-accent)', color: 'var(--color-primary)', fontWeight: 'bold' }}
+            className="admin-login-submit-btn"
           >
-            Se connecter
+            Se connecter au Panel
           </button>
         </form>
         
-        <div style={{ marginTop: '24px', textAlign: 'center' }}>
-          <Link to="/" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', textDecoration: 'underline' }}>
+        <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+          <div style={{ fontSize: '0.73rem', color: 'rgba(255, 255, 255, 0.4)', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            Démo : <strong style={{ color: 'var(--color-accent)' }}>admin</strong> / <strong style={{ color: 'var(--color-accent)' }}>admin</strong>
+          </div>
+          <Link to="/" style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8rem', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
             Retourner au site principal
           </Link>
         </div>
