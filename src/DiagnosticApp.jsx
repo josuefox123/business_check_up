@@ -24,20 +24,18 @@ import {
 } from './components/screens/DiagnosticScreens.jsx';
 // ── API Layer (source unique de vérité) ──────────────────────
 import {
-  MODULE_QUESTIONS,
   computeRoute,
   computeFullScore,
   generateFullResults,
   getModule,
   calculateGlobalScore,
 } from './api/index.js';
-// Garde le fallback legacy pour la compatibilité MODULES_QUESTIONS
-import { MODULES_QUESTIONS as LEGACY_Q, calculateScore as legacyScore } from './data/questions.js';
 
-// Fusionner les deux sources (API prioritaire)
-const ALL_QUESTIONS = { ...LEGACY_Q, ...Object.fromEntries(
-  Object.entries(MODULE_QUESTIONS).map(([id, m]) => [id, m.questions || []])
-)};
+// Import domain services for "Backend Ready" architecture
+import { QuestionService } from './services/QuestionService.js';
+import { DiagnosticService } from './services/DiagnosticService.js';
+import { UtilisateurService } from './services/UtilisateurService.js';
+
 
 // Routing via API
 const getRouteFromAnswers = (answers) => {
@@ -84,6 +82,19 @@ function DiagnosticApp() {
   const [moduleAnswers, setModuleAnswers] = useState({});
   const [score, setScore] = useState(0);
   const [chosenForVerif, setChosenForVerif] = useState(null);
+  const [questions, setQuestions] = useState([]);
+
+  // Fetch questions dynamically when currentModule changes (Backend Ready)
+  useEffect(() => {
+    if (currentModule) {
+      QuestionService.getQuestionsByModule(currentModule.id)
+        .then(res => {
+          setQuestions(res || []);
+        });
+    } else {
+      setQuestions([]);
+    }
+  }, [currentModule]);
 
   // Navigation callbacks
   const onStartAssisted = () => {
@@ -209,9 +220,6 @@ function DiagnosticApp() {
     navigate('/diagnostic/question');
   };
 
-  // Question Loop S31
-  const questions = currentModule ? (ALL_QUESTIONS[currentModule.id] || []) : [];
-
   const onAnswer = (answer, proof) => {
     const q = questions[questionIndex];
     setModuleAnswers(p => ({ ...p, [q.id]: answer, ...(proof ? { [`${q.id}_proof`]: proof } : {}) }));
@@ -255,9 +263,37 @@ function DiagnosticApp() {
 
   const onContactSubmit = (data, mode) => {
     console.log('Formulaire contact soumis:', data, mode);
+    
+    // Register prospect user in store
+    const userData = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      companyName: data.companyName || '',
+      sector: data.sector || '',
+      department: data.department || '',
+      commune: data.commune || '',
+      profile: triageAnswers.s03 || 'active',
+      contactRequested: mode === 'suivi',
+      pdfDownloaded: mode === 'pdf'
+    };
+
+    UtilisateurService.registerUser(userData).then(user => {
+      // Save diagnostic report in store
+      if (currentModule) {
+        DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, user);
+      }
+      navigate('/diagnostic/fin');
+    });
+  };
+
+  const onContactSkip = () => {
+    // Save anonymous diagnostic report in store
+    if (currentModule) {
+      DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null);
+    }
     navigate('/diagnostic/fin');
   };
-  const onContactSkip = () => navigate('/diagnostic/fin');
 
   const onRestartFin = () => onGoHome();
   const onShare = () => {
