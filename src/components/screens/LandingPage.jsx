@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Clock, ShieldCheck, Zap, BarChart2, Activity, Target,
-  Search, Users, TrendingUp, FileText,
+  Search, Users, TrendingUp, FileText, Star, Quote, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import './LandingPage.css';
-import heroOfficeTeam from '../../assets/hero_office_team.png';
-
 
 const DIAGNOSTICS = [
   { id: 'FLH-01', name: 'Diagnostic Flash', desc: 'Tour d\'horizon complet de votre entreprise en moins de 10 minutes.', duration: '7 min', Icon: Zap, color: '#ECFDF5', iconColor: '#059669' },
@@ -44,6 +42,39 @@ const WHY_ITEMS = [
   },
 ];
 
+const TESTIMONIALS = [
+  {
+    name: 'Koffi Mensah',
+    role: 'Gérant, Mensah Trading Co.',
+    location: 'Cotonou, Bénin',
+    avatar: 'KM',
+    avatarBg: 'var(--color-blue)',
+    text: 'Le diagnostic Flash de la CCI Bénin m\'a permis de faire un point clair sur la trésorerie et la gestion de mon commerce en moins de 10 minutes. C\'est simple, rapide et gratuit.',
+    module: 'Diagnostic Flash',
+    score: 72
+  },
+  {
+    name: 'Amina Balogoun',
+    role: 'Co-fondatrice, AgriBenin',
+    location: 'Porto-Novo, Bénin',
+    avatar: 'AB',
+    avatarBg: 'var(--color-accent-dark)',
+    text: 'En tant que porteuse de projet, j\'ai évalué notre idée de coopérative avec le Diagnostic Projet. Le plan d\'action généré nous a permis de structurer nos priorités pour convaincre nos partenaires.',
+    module: 'Diagnostic Projet',
+    score: 85
+  },
+  {
+    name: 'Sébastien Houessou',
+    role: 'Directeur, BTP Service',
+    location: 'Parakou, Bénin',
+    avatar: 'SH',
+    avatarBg: '#8b5cf6',
+    text: 'Face à une baisse de régime, le Diagnostic Difficulté a pointé du doigt des failles organisationnelles précises. Le rapport d\'évaluation est d\'une pertinence remarquable pour redresser la barre.',
+    module: 'Diagnostic Difficulté',
+    score: 42
+  }
+];
+
 /* ── Section title component  ── */
 const SectionTitle = ({ tag, title, subtitle }) => (
   <div className="lp-section-title">
@@ -54,6 +85,23 @@ const SectionTitle = ({ tag, title, subtitle }) => (
 );
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTestimonial(prev => (prev + 1) % TESTIMONIALS.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial(prev => (prev + 1) % TESTIMONIALS.length);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial(prev => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+  };
+
   return (
     <div className="landing-page">
 
@@ -101,13 +149,59 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           </div>
         </div>
 
-        {/* Right: professional photo */}
+        {/* Right: testimonials carousel */}
         <div className="lp-hero-split-right">
-          <img
-            src={heroOfficeTeam}
-            alt="Entrepreneurs en séance de travail"
-            className="lp-hero-split-img"
-          />
+          <div className="lp-hero-carousel-container">
+            <div className="lp-hero-carousel-card">
+              <div className="lp-carousel-quote">
+                <Quote size={28} />
+              </div>
+              
+              <div className="lp-carousel-stars">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={15} fill="var(--color-warning)" color="var(--color-warning)" />
+                ))}
+              </div>
+              
+              <p className="lp-carousel-text">
+                "{TESTIMONIALS[currentTestimonial].text}"
+              </p>
+              
+              <div className="lp-carousel-author-row">
+                <div className="lp-carousel-avatar" style={{ backgroundColor: TESTIMONIALS[currentTestimonial].avatarBg }}>
+                  {TESTIMONIALS[currentTestimonial].avatar}
+                </div>
+                <div className="lp-carousel-author-info">
+                  <div className="lp-carousel-author-name">{TESTIMONIALS[currentTestimonial].name}</div>
+                  <div className="lp-carousel-author-role">{TESTIMONIALS[currentTestimonial].role}</div>
+                  <div className="lp-carousel-author-loc">{TESTIMONIALS[currentTestimonial].location}</div>
+                </div>
+                <div className="lp-carousel-score">
+                  <div className="lp-carousel-score-num">{TESTIMONIALS[currentTestimonial].score}/100</div>
+                  <div className="lp-carousel-score-label">Score obtenu</div>
+                </div>
+              </div>
+              
+              <div className="lp-carousel-nav">
+                <button className="lp-carousel-nav-btn" onClick={prevTestimonial} aria-label="Témoignage précédent">
+                  <ChevronLeft size={16} />
+                </button>
+                <div className="lp-carousel-nav-dots">
+                  {TESTIMONIALS.map((_, idx) => (
+                    <button
+                      key={idx}
+                      className={`lp-carousel-nav-dot ${idx === currentTestimonial ? 'active' : ''}`}
+                      onClick={() => setCurrentTestimonial(idx)}
+                      aria-label={`Aller au témoignage ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+                <button className="lp-carousel-nav-btn" onClick={nextTestimonial} aria-label="Témoignage suivant">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
