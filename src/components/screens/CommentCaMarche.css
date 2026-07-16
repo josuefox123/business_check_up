@@ -3,7 +3,7 @@
 /* ── HERO ── */
 .hiw-hero {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  padding: 80px 40px 64px;
+  padding: 140px 40px 64px; /* Increased top padding to clear fixed navbar */
   position: relative;
   overflow: hidden;
 }
@@ -239,14 +239,14 @@
 
 /* ── Tablet (≤1024px) ── */
 @media (max-width: 1024px) {
-  .hiw-hero { padding: 72px 32px 60px; }
+  .hiw-hero { padding: 120px 32px 60px; }
   .hiw-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .hiw-cta-section { padding: 64px 32px; }
 }
 
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
-  .hiw-hero { padding: 56px 20px 48px; }
+  .hiw-hero { padding: 110px 20px 48px; }
   .hiw-hero-title { font-size: 1.875rem; }
   .hiw-hero p { font-size: 0.95rem; }
   .hiw-step-row { gap: 16px; }
@@ -268,7 +268,7 @@
 
 /* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
-  .hiw-hero { padding: 44px 16px 36px; }
+  .hiw-hero { padding: 100px 16px 36px; }
   .hiw-hero-title { font-size: 1.6rem; }
 
   /* Steps: horizontal layout (icon + content side by side) */
