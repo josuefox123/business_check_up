@@ -1,19 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Clock, ShieldCheck, Zap, BarChart2, Activity, Target,
-  Search, Users, CheckCircle, TrendingUp, FileText, ChevronLeft, ChevronRight,
+  Search, Users, TrendingUp, FileText,
 } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import './LandingPage.css';
 
-import cotiAmazone from '../../assets/about_illustration.png';
-import cotiBeach from '../../assets/hero_illustration.png';
-import cotiRetro from '../../assets/about_illustration.png';
-import cotiPortReal from '../../assets/coti_port_real.jpg';
-import cotiAvenueReal from '../../assets/coti_avenue_real.jpg';
-
-const HERO_IMAGES = [cotiAmazone, cotiBeach, cotiRetro, cotiPortReal, cotiAvenueReal];
 
 const DIAGNOSTICS = [
   { id: 'FLH-01', name: 'Diagnostic Flash', desc: 'Tour d\'horizon complet de votre entreprise en moins de 10 minutes.', duration: '7 min', Icon: Zap, color: '#ECFDF5', iconColor: '#059669' },
@@ -50,7 +43,7 @@ const WHY_ITEMS = [
   },
 ];
 
-/* ── Section title component inspired by the Abomey site ── */
+/* ── Section title component  ── */
 const SectionTitle = ({ tag, title, subtitle }) => (
   <div className="lp-section-title">
     {tag && <span className="lp-section-tag">{tag}</span>}
@@ -60,78 +53,31 @@ const SectionTitle = ({ tag, title, subtitle }) => (
 );
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
-  const [currentImgIndex, setCurrentImgIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImgIndex(prev => (prev + 1) % HERO_IMAGES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <div className="landing-page">
 
       {/* ── HERO ── */}
-      <section className="hero-section" style={{ position: 'relative' }}>
-        {/* Carousel Background */}
-        <div className="hero-bg-slider" style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          {HERO_IMAGES.map((img, index) => (
-            <div
-              key={index}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: `url(${img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                opacity: index === currentImgIndex ? 1 : 0,
-                transition: 'opacity 1.2s ease-in-out',
-                zIndex: index === currentImgIndex ? 1 : 0
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Dark overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(180deg, rgba(10, 23, 69, 0.55) 0%, rgba(10, 23, 69, 0.78) 100%)',
-          zIndex: 1,
-          pointerEvents: 'none'
-        }} />
-
-        {/* Carousel dots */}
-        <div className="hero-bg-dots no-print">
-          {HERO_IMAGES.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImgIndex(index)}
-              className={`hero-bg-dot${index === currentImgIndex ? ' active' : ''}`}
-              aria-label={`Image ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        <div className="container hero-grid" style={{ zIndex: 2 }}>
+      <section className="hero-section">
+        <div className="hero-bg-glow" />
+        <div className="container hero-grid">
           <div className="hero-content animate-fade-up">
-            {/* Small institution badge */}
-            <div className="lp-hero-badge">
-              <ShieldCheck size={13} />
-              Outil officiel CCI Bénin
-            </div>
-
+            <span className="tag" style={{
+              marginBottom: '20px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(0, 209, 186, 0.15)',
+              color: 'var(--color-accent)',
+              border: '1px solid rgba(0, 209, 186, 0.3)'
+            }}>
+              <Zap size={13} strokeWidth={2.5} /> Outil d'évaluation intelligent
+            </span>
             <h1 className="hero-title" style={{ color: '#ffffff' }}>
-              Business Check-up
-              <span className="hero-title-accent" style={{ fontSize: '1.5rem', display: 'block', marginTop: '8px', color: 'var(--color-accent)', fontWeight: 700 }}>
-                Powered by FUND.lab
-              </span>
+              Business Check-up<br />
+              <span className="hero-title-accent" style={{ fontSize: '1.6rem', display: 'block', marginTop: '4px', color: 'var(--color-accent)', fontWeight: 700 }}>Powered by FUND.lab</span>
             </h1>
-
-            <p className="hero-subtitle" style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.1rem', marginBottom: '28px' }}>
-              En quelques minutes, identifiez les points forts, les fragilités<br />
-              et les priorités d'action de votre entreprise.
+            <p className="hero-subtitle" style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.15rem', marginBottom: '20px' }}>
+              En quelques minutes, identifiez les points forts, les fragilités et les priorités d'action
             </p>
 
             <div className="hero-actions">
@@ -146,9 +92,9 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               </button>
             </div>
 
-            <div className="hero-trust" style={{ marginTop: '16px', color: 'rgba(255,255,255,0.55)' }}>
-              <ShieldCheck size={13} color="rgba(255,255,255,0.55)" />
-              <span style={{ fontSize: '0.73rem' }}>
+            <div className="hero-trust" style={{ marginTop: '16px', color: 'rgba(255, 255, 255, 0.6)' }}>
+              <ShieldCheck size={14} color="rgba(255, 255, 255, 0.6)" />
+              <span style={{ fontSize: '0.74rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
                 Diagnostic indicatif, fondé sur vos réponses. Il ne remplace pas une analyse approfondie.
               </span>
             </div>
