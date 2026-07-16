@@ -166,11 +166,18 @@
 }
 
 /* Catalog secondary link */
+.lp-hero-secondary-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
 .lp-hero-catalog-link {
   background: none;
   border: none;
   padding: 0;
-  margin-bottom: 20px;
   font-family: var(--font);
   font-size: 0.83rem;
   font-weight: 600;
