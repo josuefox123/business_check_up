@@ -241,8 +241,8 @@ Détail d'un module avec toutes ses questions et choix de réponses.
       "type": "single",
       "weight": 15,
       "choices": [
-        { "id": "yes", "label": "Oui, chaque semaine", "score": 15, "icon": "✅" },
-        { "id": "no",  "label": "Non, pas encore",    "score": 0,  "icon": "❌" }
+        { "id": "yes", "label": "Oui, chaque semaine", "score": 15 },
+        { "id": "no",  "label": "Non, pas encore",    "score": 0  }
       ]
     }
   ]
@@ -267,8 +267,8 @@ Ajouter une nouvelle question à un module.
   "type": "single",
   "weight": 10,
   "choices": [
-    { "id": "yes", "label": "Oui", "score": 10, "icon": "✅" },
-    { "id": "no",  "label": "Non", "score": 0,  "icon": "❌" }
+    { "id": "yes", "label": "Oui", "score": 10 },
+    { "id": "no",  "label": "Non", "score": 0  }
   ]
 }
 ```
