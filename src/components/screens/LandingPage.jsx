@@ -86,6 +86,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             <button className="lp-hero-catalog-link" onClick={onLearnMore}>
               Je veux comprendre ce que fait Business Check-up
             </button>
+            <span className="lp-hero-links-separator">•</span>
             <button className="lp-hero-catalog-link" onClick={onGoToCatalog}>
               Je sais déjà ce que je veux diagnostiquer →
             </button>
