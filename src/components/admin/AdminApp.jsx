@@ -1363,11 +1363,11 @@ const AdminLogin = ({ onLogin }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
-              background: 'rgba(0, 196, 180, 0.1)',
-              border: '1px solid rgba(0, 196, 180, 0.2)',
+              background: 'rgba(52, 190, 213, 0.1)',
+              border: '1px solid rgba(52, 190, 213, 0.2)',
               borderRadius: '8px',
               padding: '12px',
-              color: 'var(--color-accent-dark, #009E90)',
+              color: 'var(--color-accent-dark, #1A9DB8)',
               fontSize: '0.84rem',
               fontWeight: 500,
               lineHeight: 1.4,
@@ -1475,7 +1475,7 @@ const AdminLogin = ({ onLogin }) => {
                   setPasswordError('');
                   setSuccessMessage('');
                 }}
-                style={{ background: 'none', border: 'none', color: 'var(--color-accent, #00C4B4)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-accent, #34BED5)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
               >
                 Mot de passe oublié ?
               </button>

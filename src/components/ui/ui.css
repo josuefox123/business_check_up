@@ -59,13 +59,13 @@
   background: var(--color-accent);
   color: var(--color-primary);
   border-color: var(--color-accent);
-  box-shadow: 0 2px 8px rgba(0, 209, 186, 0.3);
+  box-shadow: 0 2px 8px rgba(52, 190, 213, 0.3);
 }
 .btn-teal:hover:not(:disabled) {
   background: var(--color-accent-dark);
   border-color: var(--color-accent-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 209, 186, 0.35);
+  box-shadow: 0 4px 16px rgba(52, 190, 213, 0.35);
 }
 
 /* Outline */

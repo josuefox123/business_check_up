@@ -39,9 +39,9 @@ export const PublicContactScreen = ({ onBack }) => {
         }}>
           <div className="container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
             <span className="screen-eyebrow" style={{ 
-              background: 'rgba(0, 209, 186, 0.15)', 
+              background: 'rgba(52, 190, 213, 0.15)', 
               color: 'var(--color-accent)', 
-              border: '1px solid rgba(0, 209, 186, 0.3)',
+              border: '1px solid rgba(52, 190, 213, 0.3)',
               marginBottom: '16px' 
             }}>
               Contact &amp; Support
@@ -300,7 +300,7 @@ export const PublicContactScreen = ({ onBack }) => {
 
               {/* Carte Partenaire / Support */}
               <div style={{ 
-                background: 'linear-gradient(135deg, rgba(38, 89, 242, 0.04) 0%, rgba(0, 209, 186, 0.04) 100%)', 
+                background: 'linear-gradient(135deg, rgba(38, 89, 242, 0.04) 0%, rgba(52, 190, 213, 0.04) 100%)', 
                 padding: '30px', 
                 borderRadius: '24px', 
                 border: '1.5px dashed var(--slate-200)',

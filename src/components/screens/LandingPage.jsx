@@ -168,7 +168,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
       {/* ── CTA BAND ── */}
       <section className="cta-band">
         <div className="container" style={{ textAlign: 'center' }}>
-          <span className="tag" style={{ marginBottom: '20px', display: 'inline-flex', background: 'rgba(0,209,186,0.15)', color: '#fff' }}>
+          <span className="tag" style={{ marginBottom: '20px', display: 'inline-flex', background: 'rgba(52, 190, 213,0.15)', color: '#fff' }}>
             <ShieldCheck size={13} /> Gratuit &amp; sans inscription
           </span>
           <h2 style={{ color: '#fff', marginBottom: '16px', fontSize: 'clamp(1.75rem,4vw,2.5rem)' }}>

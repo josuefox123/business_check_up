@@ -23,7 +23,7 @@
   left: -120px;
   width: 480px;
   height: 480px;
-  background: radial-gradient(circle, rgba(0, 196, 180, 0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213, 0.07) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -47,9 +47,9 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-accent-dark, #009E90);
-  background: rgba(0, 196, 180, 0.08);
-  border: 1px solid rgba(0, 196, 180, 0.2);
+  color: var(--color-accent-dark, #1A9DB8);
+  background: rgba(52, 190, 213, 0.08);
+  border: 1px solid rgba(52, 190, 213, 0.2);
   padding: 5px 14px;
   border-radius: 99px;
   margin-bottom: 28px;
@@ -59,7 +59,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--color-accent, #00C4B4);
+  background: var(--color-accent, #34BED5);
   animation: pulse-dot 2s infinite;
   flex-shrink: 0;
 }
@@ -102,7 +102,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-accent, #00C4B4);
+  background: var(--color-accent, #34BED5);
   color: var(--color-primary, #070E24);
   font-family: var(--font);
   font-size: 0.9rem;
@@ -112,14 +112,14 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 18px rgba(0, 196, 180, 0.3);
+  box-shadow: 0 4px 18px rgba(52, 190, 213, 0.3);
   white-space: nowrap;
 }
 
 .lp-btn-primary:hover {
-  background: var(--color-accent-dark, #009E90);
+  background: var(--color-accent-dark, #1A9DB8);
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(0, 196, 180, 0.42);
+  box-shadow: 0 6px 24px rgba(52, 190, 213, 0.42);
 }
 
 .lp-btn-outline {
@@ -140,9 +140,9 @@
 }
 
 .lp-btn-outline:hover {
-  border-color: var(--color-accent, #00C4B4);
-  color: var(--color-accent-dark, #009E90);
-  background: rgba(0, 196, 180, 0.04);
+  border-color: var(--color-accent, #34BED5);
+  color: var(--color-accent-dark, #1A9DB8);
+  background: rgba(52, 190, 213, 0.04);
 }
 
 /* Trust note */
@@ -194,7 +194,7 @@
 }
 
 .lp-hero-catalog-link:hover {
-  color: var(--color-accent-dark, #009E90);
+  color: var(--color-accent-dark, #1A9DB8);
   transform: translateY(-0.5px);
 }
 
@@ -343,7 +343,7 @@
   right: -80px;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(0, 209, 186, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213, 0.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: 1;
 }
@@ -387,7 +387,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 4px 18px rgba(0, 209, 186, 0.35);
+  box-shadow: 0 4px 18px rgba(52, 190, 213, 0.35);
   text-decoration: none;
   width: 100%;
 }
@@ -395,7 +395,7 @@
 .hero-cta-primary:hover {
   background: var(--color-accent-dark);
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(0, 209, 186, 0.45);
+  box-shadow: 0 6px 24px rgba(52, 190, 213, 0.45);
 }
 
 /* ── HERO LINK BUTTONS ── */
@@ -457,7 +457,7 @@
 .hero-bg-dot.active {
   background: var(--color-accent);
   width: 28px;
-  box-shadow: 0 2px 8px rgba(0, 209, 186, 0.45);
+  box-shadow: 0 2px 8px rgba(52, 190, 213, 0.45);
 }
 
 
@@ -807,7 +807,7 @@
   position: absolute;
   top: -80px; right: -80px;
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(0,209,186,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213,0.1) 0%, transparent 70%);
 }
 
 .cta-band::after {
@@ -879,7 +879,7 @@
     padding: 16px 20px;
     border-radius: 14px;
     min-height: 52px;
-    box-shadow: 0 6px 24px rgba(0, 209, 186, 0.4);
+    box-shadow: 0 6px 24px rgba(52, 190, 213, 0.4);
     letter-spacing: 0.01em;
     white-space: normal;
     text-align: center;
@@ -1047,7 +1047,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(0,209,186,0.12);
+  background: rgba(52, 190, 213,0.12);
   color: var(--color-accent, #00D1BA);
   display: flex;
   align-items: center;
@@ -1101,7 +1101,7 @@
   position: absolute;
   top: -40px; left: -40px;
   width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(0,209,186,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213,0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -1200,8 +1200,8 @@
 }
 
 .carousel-btn:hover {
-  background: rgba(0,209,186,0.15);
-  border-color: rgba(0,209,186,0.4);
+  background: rgba(52, 190, 213,0.15);
+  border-color: rgba(52, 190, 213,0.4);
   color: var(--color-accent, #00D1BA);
 }
 
@@ -1245,9 +1245,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 209, 186, 0.15);
+  background: rgba(52, 190, 213, 0.15);
   color: var(--color-accent);
-  border: 1px solid rgba(0, 209, 186, 0.3);
+  border: 1px solid rgba(52, 190, 213, 0.3);
   font-size: 0.78rem;
   font-weight: 700;
   padding: 5px 12px;
@@ -1282,7 +1282,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-accent, #8B4513);
-  background: rgba(0, 209, 186, 0.08);
+  background: rgba(52, 190, 213, 0.08);
   border-left: 3px solid var(--color-accent, #8B4513);
   padding: 3px 10px 3px 8px;
   border-radius: 0 4px 4px 0;
@@ -1349,7 +1349,7 @@
 .lp-why-icon {
   width: 46px;
   height: 46px;
-  background: rgba(0, 209, 186, 0.1);
+  background: rgba(52, 190, 213, 0.1);
   color: var(--color-accent-dark, #0d9488);
   border-radius: 10px;
   display: flex;
@@ -1416,7 +1416,7 @@
   color: var(--color-accent-dark, #0d9488);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: rgba(0, 209, 186, 0.1);
+  background: rgba(52, 190, 213, 0.1);
   border-radius: 99px;
   padding: 2px 8px;
 }

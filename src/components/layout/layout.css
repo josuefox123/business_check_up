@@ -53,13 +53,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 209, 186, 0.3);
+  box-shadow: 0 2px 8px rgba(52, 190, 213, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-logo:hover .navbar-logo-icon {
   transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(0, 209, 186, 0.4);
+  box-shadow: 0 4px 16px rgba(52, 190, 213, 0.4);
 }
 
 .navbar-logo-name {
@@ -123,13 +123,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 209, 186, 0.25);
+  box-shadow: 0 2px 8px rgba(52, 190, 213, 0.25);
 }
 
 .navbar-cta-btn:hover {
   background: var(--color-accent-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 209, 186, 0.35);
+  box-shadow: 0 4px 16px rgba(52, 190, 213, 0.35);
 }
 
 .navbar-cta-btn:active {
@@ -327,12 +327,12 @@
   }
 
   .bottom-nav-item.active {
-    color: var(--color-accent-dark, #009E90);
+    color: var(--color-accent-dark, #1A9DB8);
     font-weight: 700;
   }
 
   .bottom-nav-item.active .bottom-nav-icon {
-    color: var(--color-accent-dark, #009E90);
+    color: var(--color-accent-dark, #1A9DB8);
     transform: translateY(-1px);
   }
 }
