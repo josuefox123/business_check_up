@@ -55,4 +55,11 @@ export {
   getAvailableModulesForProfile,
   getJourneySteps,
   getTriageStepsForProfile,
+  submitTriageToBackendApi,
 } from './triage.js';
+
+// Sessions & Consentement
+export {
+  createSessionApi,
+  submitConsentApi,
+} from './sessionsApi.js';

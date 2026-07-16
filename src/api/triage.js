@@ -5,9 +5,21 @@
 
 import { PROFILES } from './profiles.js';
 import { MODULES_CATALOG } from './catalog.js';
+import { apiFetch } from './config.js';
 
 const CRITICAL_SIGNALS = ['charges', 'dettes', 'treso'];
 const HIGH_SIGNALS = ['ventes', 'client', 'livraison'];
+
+/**
+ * Soumettre les réponses de triage au backend
+ * POST /sessions/{sessionId}/triage
+ */
+export async function submitTriageToBackendApi(sessionId, answers) {
+  return apiFetch(`/sessions/${sessionId}/triage`, {
+    method: 'POST',
+    body: JSON.stringify({ answers })
+  });
+}
 
 // ─────────────────────────────────────────
 // ROUTING ENGINE

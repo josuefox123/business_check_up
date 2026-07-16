@@ -29,6 +29,9 @@ import {
   generateFullResults,
   getModule,
   calculateGlobalScore,
+  createSessionApi,
+  submitConsentApi,
+  submitTriageToBackendApi,
 } from './api/index.js';
 
 // Import domain services for "Backend Ready" architecture
@@ -104,7 +107,7 @@ function DiagnosticApp() {
     setTriageAnswers({});
     
     // Create new session in backend
-    apiFetch('/sessions', { method: 'POST' })
+    createSessionApi()
       .then(res => {
         if (res && res.id) {
           localStorage.setItem('bc_session_id', res.id);
@@ -131,10 +134,8 @@ function DiagnosticApp() {
     
     const sessionId = localStorage.getItem('bc_session_id');
     if (sessionId) {
-      apiFetch(`/sessions/${sessionId}/consent`, {
-        method: 'POST',
-        body: JSON.stringify({ consent: true })
-      }).catch(err => console.error('Error submitting consent:', err));
+      submitConsentApi(sessionId, true)
+        .catch(err => console.error('Error submitting consent:', err));
     }
 
     navigate('/triage/wizard');
@@ -175,15 +176,12 @@ function DiagnosticApp() {
   const submitTriageToBackend = (answers) => {
     const sessionId = localStorage.getItem('bc_session_id');
     if (!sessionId) {
-      const localRoute = getRouteFromAnswers(answers);
-      applyRoute(localRoute);
-      return;
+       const localRoute = getRouteFromAnswers(answers);
+       applyRoute(localRoute);
+       return;
     }
 
-    apiFetch(`/sessions/${sessionId}/triage`, {
-      method: 'POST',
-      body: JSON.stringify({ answers })
-    })
+    submitTriageToBackendApi(sessionId, answers)
     .then(res => {
       const backendModuleId = res.recommended_module || 'FLH-01';
       const backendRoute = res.route || 'S13';
