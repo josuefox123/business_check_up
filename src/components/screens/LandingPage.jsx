@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import './LandingPage.css';
+import heroOfficeTeam from '../../assets/hero_office_team.png';
 
 
 const DIAGNOSTICS = [
@@ -57,48 +58,50 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
     <div className="landing-page">
 
       {/* ── HERO ── */}
-      <section className="hero-section">
-        <div className="hero-bg-glow" />
-        <div className="container hero-grid">
-          <div className="hero-content animate-fade-up">
-            <span className="tag" style={{
-              marginBottom: '20px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(0, 209, 186, 0.15)',
-              color: 'var(--color-accent)',
-              border: '1px solid rgba(0, 209, 186, 0.3)'
-            }}>
-              <Zap size={13} strokeWidth={2.5} /> Outil d'évaluation intelligent
-            </span>
-            <h1 className="hero-title" style={{ color: '#ffffff' }}>
-              Business Check-up<br />
-              <span className="hero-title-accent" style={{ fontSize: '1.6rem', display: 'block', marginTop: '4px', color: 'var(--color-accent)', fontWeight: 700 }}>Powered by FUND.lab</span>
-            </h1>
-            <p className="hero-subtitle" style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.15rem', marginBottom: '20px' }}>
-              En quelques minutes, identifiez les points forts, les fragilités et les priorités d'action
-            </p>
-
-            <div className="hero-actions">
-              <button className="hero-cta-primary" onClick={onStart}>
-                Aidez-moi à choisir le bon diagnostic <ArrowRight size={18} strokeWidth={2.5} />
-              </button>
-              <button className="hero-link-btn" onClick={onGoToCatalog}>
-                Je sais déjà ce que je veux diagnostiquer
-              </button>
-              <button className="hero-link-btn" onClick={onLearnMore}>
-                Je veux comprendre ce que fait Business Check-up
-              </button>
-            </div>
-
-            <div className="hero-trust" style={{ marginTop: '16px', color: 'rgba(255, 255, 255, 0.6)' }}>
-              <ShieldCheck size={14} color="rgba(255, 255, 255, 0.6)" />
-              <span style={{ fontSize: '0.74rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
-                Diagnostic indicatif, fondé sur vos réponses. Il ne remplace pas une analyse approfondie.
-              </span>
-            </div>
+      <section className="lp-hero-split">
+        {/* Left: text content */}
+        <div className="lp-hero-split-left">
+          <div className="lp-hero-split-badge">
+            <span className="lp-badge-dot" />
+            Outil officiel CCI Bénin
           </div>
+
+          <h1 className="lp-hero-split-title">
+            Le diagnostic intelligent<br />
+            pour accompagner<br />
+            les entreprises.
+          </h1>
+
+          <p className="lp-hero-split-desc">
+            Évaluez votre entreprise grâce à Business Check-up et obtenez un
+            diagnostic personnalisé accompagné de recommandations adaptées.
+          </p>
+
+          <div className="lp-hero-split-actions">
+            <button className="lp-btn-primary" onClick={onStart}>
+              Commencer le diagnostic
+            </button>
+            <button className="lp-btn-outline" onClick={onLearnMore}>
+              Découvrir Business Check-up
+            </button>
+          </div>
+
+          <div className="lp-hero-split-trust">
+            <span className="lp-trust-dot" />
+            <span>
+              Aucune inscription nécessaire. Vos réponses sont conservées uniquement pendant
+              votre session de diagnostic.
+            </span>
+          </div>
+        </div>
+
+        {/* Right: professional photo */}
+        <div className="lp-hero-split-right">
+          <img
+            src={heroOfficeTeam}
+            alt="Entrepreneurs en séance de travail"
+            className="lp-hero-split-img"
+          />
         </div>
       </section>
 
