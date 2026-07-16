@@ -63,34 +63,38 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
         <div className="lp-hero-split-left">
           <div className="lp-hero-split-badge">
             <span className="lp-badge-dot" />
-            Outil officiel CCI Bénin
+            Outil d'évaluation intelligent
           </div>
 
           <h1 className="lp-hero-split-title">
-            Le diagnostic intelligent<br />
-            pour accompagner<br />
-            les entreprises.
+            Business Check-up
+            <span style={{ display: 'block', fontSize: '60%', fontWeight: 700, color: 'var(--color-accent)', marginTop: '6px', letterSpacing: '-0.01em' }}>
+              Powered by FUND.lab
+            </span>
           </h1>
 
           <p className="lp-hero-split-desc">
-            Évaluez votre entreprise grâce à Business Check-up et obtenez un
-            diagnostic personnalisé accompagné de recommandations adaptées.
+            En quelques minutes, identifiez les points forts, les fragilités
+            et les priorités d'action de votre entreprise.
           </p>
 
           <div className="lp-hero-split-actions">
             <button className="lp-btn-primary" onClick={onStart}>
-              Commencer le diagnostic
+              Aidez-moi à choisir le bon diagnostic
             </button>
             <button className="lp-btn-outline" onClick={onLearnMore}>
-              Découvrir Business Check-up
+              Je veux comprendre ce que fait Business Check-up
             </button>
           </div>
+
+          <button className="lp-hero-catalog-link" onClick={onGoToCatalog}>
+            Je sais déjà ce que je veux diagnostiquer →
+          </button>
 
           <div className="lp-hero-split-trust">
             <span className="lp-trust-dot" />
             <span>
-              Aucune inscription nécessaire. Vos réponses sont conservées uniquement pendant
-              votre session de diagnostic.
+              Diagnostic indicatif, fondé sur vos réponses. Il ne remplace pas une analyse approfondie.
             </span>
           </div>
         </div>
