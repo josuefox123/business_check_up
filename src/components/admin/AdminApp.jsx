@@ -419,7 +419,8 @@ const DiagnosticsModule = ({ diagnostics, onDelete }) => {
 
   // Search & Filter
   const filtered = diagnostics.filter(d => {
-    const matchesSearch = d.userName.toLowerCase().includes(searchTerm.toLowerCase()) || d.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (d.userName && d.userName.toLowerCase().includes(searchTerm.toLowerCase())) || 
+                          (d.id && d.id.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesModule = selectedModule ? d.moduleId === selectedModule : true;
     return matchesSearch && matchesModule;
   });
@@ -890,9 +891,9 @@ const UtilisateursModule = ({ users, onDelete, onAdd }) => {
   const [uProfile, setUProfile] = useState('active');
 
   const filtered = users.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
                           (u.companyName && u.companyName.toLowerCase().includes(searchTerm.toLowerCase())) || 
-                          u.email.toLowerCase().includes(searchTerm.toLowerCase());
+                          (u.email && u.email.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesProfile = selectedProfile ? u.profile === selectedProfile : true;
     return matchesSearch && matchesProfile;
   });
