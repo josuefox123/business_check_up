@@ -1260,15 +1260,60 @@ const AdminLogin = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [mode, setMode] = useState('login'); // 'login' or 'forgot'
   const [successMessage, setSuccessMessage] = useState('');
 
+  const validateEmailFormat = (val) => {
+    if (!val) {
+      setEmailError("L'adresse e-mail est requise.");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(val)) {
+      setEmailError("Format d'e-mail incorrect (ex: nom@domaine.com).");
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePasswordFormat = (val) => {
+    if (!val) {
+      setPasswordError("Le mot de passe est requis.");
+      return false;
+    }
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(val)) {
+      setPasswordError("Doit faire au moins 8 caractères, une majuscule et un chiffre.");
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    // If error was already shown, validate live
+    if (emailError) {
+      validateEmailFormat(val);
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value;
+    setPassword(val);
+    // If error was already shown, validate live
+    if (passwordError) {
+      validatePasswordFormat(val);
+    }
+  };
+
   const handleForgotSubmit = (e) => {
     e.preventDefault();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Veuillez entrer une adresse email valide.');
-      setSuccessMessage('');
+    if (!validateEmailFormat(email)) {
       return;
     }
     setError('');
@@ -1278,17 +1323,11 @@ const AdminLogin = ({ onLogin }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // 1. Validation format email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Veuillez saisir une adresse email valide.');
-      return;
-    }
+    const isEmailValid = validateEmailFormat(email);
+    const isPasswordValid = validatePasswordFormat(password);
 
-    // 2. Validation force mot de passe (min 8 car, 1 maj, 1 chiffre)
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule et un chiffre.');
+    if (!isEmailValid || !isPasswordValid) {
+      setError('Veuillez corriger les erreurs de saisie.');
       return;
     }
 
@@ -1342,17 +1381,23 @@ const AdminLogin = ({ onLogin }) => {
           <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="admin-login-field-group">
               <label className="admin-login-field-label">Adresse e-mail</label>
-              <div className="admin-login-input-container">
-                <Mail size={18} className="admin-login-field-icon" />
+              <div className="admin-login-input-container" style={{ border: emailError ? '1px solid #ef4444' : '' }}>
+                <Mail size={18} className="admin-login-field-icon" style={{ color: emailError ? '#ef4444' : '' }} />
                 <input 
                   type="email" 
                   placeholder="exemple@domaine.com" 
                   value={email} 
-                  onChange={e => setEmail(e.target.value)} 
+                  onChange={handleEmailChange} 
+                  onBlur={() => validateEmailFormat(email)}
                   className="admin-login-input"
                   required 
                 />
               </div>
+              {emailError && (
+                <span style={{ color: '#ef4444', fontSize: '0.74rem', marginTop: '4px', display: 'block', fontWeight: 500 }}>
+                  {emailError}
+                </span>
+              )}
             </div>
 
             <button type="submit" className="admin-login-submit-btn">
@@ -1366,6 +1411,8 @@ const AdminLogin = ({ onLogin }) => {
               onClick={() => {
                 setMode('login');
                 setError('');
+                setEmailError('');
+                setPasswordError('');
                 setSuccessMessage('');
               }}
               style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
@@ -1398,17 +1445,23 @@ const AdminLogin = ({ onLogin }) => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="admin-login-field-group">
             <label className="admin-login-field-label">Adresse e-mail</label>
-            <div className="admin-login-input-container">
-              <Mail size={18} className="admin-login-field-icon" />
+            <div className="admin-login-input-container" style={{ border: emailError ? '1px solid #ef4444' : '' }}>
+              <Mail size={18} className="admin-login-field-icon" style={{ color: emailError ? '#ef4444' : '' }} />
               <input 
                 type="email" 
                 placeholder="exemple@domaine.com" 
                 value={email} 
-                onChange={e => setEmail(e.target.value)} 
+                onChange={handleEmailChange} 
+                onBlur={() => validateEmailFormat(email)}
                 className="admin-login-input"
                 required 
               />
             </div>
+            {emailError && (
+              <span style={{ color: '#ef4444', fontSize: '0.74rem', marginTop: '4px', display: 'block', fontWeight: 500 }}>
+                {emailError}
+              </span>
+            )}
           </div>
           
           <div className="admin-login-field-group">
@@ -1419,6 +1472,8 @@ const AdminLogin = ({ onLogin }) => {
                 onClick={() => {
                   setMode('forgot');
                   setError('');
+                  setEmailError('');
+                  setPasswordError('');
                   setSuccessMessage('');
                 }}
                 style={{ background: 'none', border: 'none', color: 'var(--color-accent, #00C4B4)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
@@ -1426,17 +1481,23 @@ const AdminLogin = ({ onLogin }) => {
                 Mot de passe oublié ?
               </button>
             </div>
-            <div className="admin-login-input-container">
-              <Lock size={18} className="admin-login-field-icon" />
+            <div className="admin-login-input-container" style={{ border: passwordError ? '1px solid #ef4444' : '' }}>
+              <Lock size={18} className="admin-login-field-icon" style={{ color: passwordError ? '#ef4444' : '' }} />
               <input 
                 type="password" 
                 placeholder="••••••••" 
                 value={password} 
-                onChange={e => setPassword(e.target.value)} 
+                onChange={handlePasswordChange} 
+                onBlur={() => validatePasswordFormat(password)}
                 className="admin-login-input"
                 required 
               />
             </div>
+            {passwordError && (
+              <span style={{ color: '#ef4444', fontSize: '0.74rem', marginTop: '4px', display: 'block', fontWeight: 500 }}>
+                {passwordError}
+              </span>
+            )}
           </div>
 
           <button 
