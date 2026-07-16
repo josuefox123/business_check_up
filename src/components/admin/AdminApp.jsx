@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, Activity, Settings, Users, 
   FileText, ChevronRight, Bell, Search, Menu, X, Filter, Trash2, 
   Eye, Edit, Plus, Check, Download, AlertTriangle, Info, Calendar, RefreshCw,
-  User, Lock
+  User, Lock, Mail
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
 import './admin.css';
@@ -1257,18 +1257,126 @@ const ParametresModule = () => {
 
 // ─── ADMIN LOGIN COMPONENT ───
 const AdminLogin = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [mode, setMode] = useState('login'); // 'login' or 'forgot'
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const handleForgotSubmit = (e) => {
+    e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Veuillez entrer une adresse email valide.');
+      setSuccessMessage('');
+      return;
+    }
+    setError('');
+    setSuccessMessage(`Un lien de récupération a été envoyé à l'adresse : ${email}`);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin') {
+    
+    // 1. Validation format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Veuillez saisir une adresse email valide.');
+      return;
+    }
+
+    // 2. Validation force mot de passe (min 8 car, 1 maj, 1 chiffre)
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule et un chiffre.');
+      return;
+    }
+
+    setError('');
+    // Valid credentials (standard admin email/pass)
+    if (email === 'admin@fundlab.com' && password === 'Admin123') {
       onLogin();
     } else {
-      setError('Identifiant ou mot de passe incorrect.');
+      setError('Email ou mot de passe incorrect.');
     }
   };
+
+  if (mode === 'forgot') {
+    return (
+      <div className="admin-login-wrapper">
+        <div className="admin-login-card animate-fade-up">
+          <div className="admin-login-logo">
+            <div className="admin-login-logo-icon">F</div>
+            <span className="admin-login-logo-text">FUND<span>.admin</span></span>
+          </div>
+          <h2 className="admin-login-title">Mot de passe oublié</h2>
+          <p className="admin-login-sub">Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.</p>
+          
+          {error && (
+            <div className="admin-login-error">
+              <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="admin-login-success" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              background: 'rgba(0, 196, 180, 0.1)',
+              border: '1px solid rgba(0, 196, 180, 0.2)',
+              borderRadius: '8px',
+              padding: '12px',
+              color: 'var(--color-accent-dark, #009E90)',
+              fontSize: '0.84rem',
+              fontWeight: 500,
+              lineHeight: 1.4,
+              marginBottom: '20px'
+            }}>
+              <Check size={16} style={{ flexShrink: 0 }} />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="admin-login-field-group">
+              <label className="admin-login-field-label">Adresse e-mail</label>
+              <div className="admin-login-input-container">
+                <Mail size={18} className="admin-login-field-icon" />
+                <input 
+                  type="email" 
+                  placeholder="exemple@domaine.com" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)} 
+                  className="admin-login-input"
+                  required 
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="admin-login-submit-btn">
+              Envoyer le lien
+            </button>
+          </form>
+          
+          <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
+            <button 
+              type="button" 
+              onClick={() => {
+                setMode('login');
+                setError('');
+                setSuccessMessage('');
+              }}
+              style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+            >
+              Retourner à la connexion
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-login-wrapper">
@@ -1289,14 +1397,14 @@ const AdminLogin = ({ onLogin }) => {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="admin-login-field-group">
-            <label className="admin-login-field-label">Identifiant</label>
+            <label className="admin-login-field-label">Adresse e-mail</label>
             <div className="admin-login-input-container">
-              <User size={18} className="admin-login-field-icon" />
+              <Mail size={18} className="admin-login-field-icon" />
               <input 
-                type="text" 
-                placeholder="Entrez votre identifiant" 
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
+                type="email" 
+                placeholder="exemple@domaine.com" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
                 className="admin-login-input"
                 required 
               />
@@ -1304,7 +1412,20 @@ const AdminLogin = ({ onLogin }) => {
           </div>
           
           <div className="admin-login-field-group">
-            <label className="admin-login-field-label">Mot de passe</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label className="admin-login-field-label" style={{ marginBottom: 0 }}>Mot de passe</label>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setMode('forgot');
+                  setError('');
+                  setSuccessMessage('');
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-accent, #00C4B4)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
             <div className="admin-login-input-container">
               <Lock size={18} className="admin-login-field-icon" />
               <input 
