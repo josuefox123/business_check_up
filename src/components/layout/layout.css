@@ -215,6 +215,11 @@
   animation: fadeIn 0.2s ease;
 }
 
+/* BOTTOM NAV (HIDDEN ON DESKTOP) */
+.bottom-nav {
+  display: none;
+}
+
 /* ============================================
    SCREEN WRAPPER
    ============================================ */
@@ -257,22 +262,79 @@
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   .navbar {
-    padding: 0 20px;
-    height: 64px;
+    padding: 0 16px;
+    height: 56px;
     z-index: 1000;
   }
   .navbar-links { display: none; }
   .navbar-cta { display: none; }
-  .navbar-burger { display: flex; }
+  .navbar-burger { display: none !important; }
 
-  /* Drawer needs to sit above the navbar */
-  .mobile-drawer { z-index: 1001; top: 0; }
-  .mobile-overlay { z-index: 1000; }
-
-  /* Screen content */
-  .screen-wrapper { padding-top: 64px; }
+  /* Screen content: add bottom padding to prevent content overlap with bottom tab bar */
+  .screen-wrapper { 
+    padding-top: 56px; 
+    padding-bottom: 64px; 
+  }
   .screen-inner, .screen-inner-wide {
     padding: 20px 16px 32px;
+  }
+
+  /* Bottom Tab Navigation Layout */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 58px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(7, 14, 36, 0.08);
+    box-shadow: 0 -4px 16px rgba(7, 14, 36, 0.04);
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    padding: 2px 8px;
+  }
+
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--slate-500, #5c6680);
+    font-family: var(--font);
+    font-size: 0.65rem;
+    font-weight: 500;
+    gap: 4px;
+    flex: 1;
+    height: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .bottom-nav-icon {
+    color: var(--slate-400, #9ba3b8);
+    transition: all 0.2s ease;
+  }
+
+  .bottom-nav-label {
+    letter-spacing: -0.01em;
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.96);
+  }
+
+  .bottom-nav-item.active {
+    color: var(--color-primary, #070E24);
+    font-weight: 700;
+  }
+
+  .bottom-nav-item.active .bottom-nav-icon {
+    color: var(--color-accent-dark, #009E90);
+    transform: translateY(-1px);
   }
 }
 
@@ -280,10 +342,6 @@
 @media (max-width: 480px) {
   .navbar { padding: 0 16px; }
   .navbar-logo-name { font-size: 1.1rem; }
-
-  /* Larger touch targets in drawer */
-  .mobile-nav-link { padding: 16px 18px; font-size: 1rem; }
-
   .screen-inner, .screen-inner-wide { padding: 16px 12px 28px; }
 }
 

@@ -1,31 +1,26 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, Zap } from 'lucide-react';
+import { Zap, Home, Compass, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import '../layout/layout.css';
 
 export const Navbar = ({ onGoHome }) => {
-  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const toggleMenu = () => setIsOpen(!isOpen);
-
   const handleLogoClick = () => {
-    setIsOpen(false);
     if (onGoHome) onGoHome();
     else navigate('/');
   };
 
   const handleStartClick = () => {
-    setIsOpen(false);
     navigate('/triage/consent');
   };
 
   const links = [
-    { to: '/', label: 'Accueil', end: true },
-    { to: '/comment-ca-marche', label: 'Fonctionnement' },
-    { to: '/a-propos', label: 'À propos' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/', label: 'Accueil', end: true, icon: Home },
+    { to: '/comment-ca-marche', label: 'Fonctionnement', icon: Compass },
+    { to: '/a-propos', label: 'À propos', icon: HelpCircle },
+    { to: '/contact', label: 'Contact', icon: Mail },
   ];
 
   return (
@@ -61,46 +56,23 @@ export const Navbar = ({ onGoHome }) => {
               Aidez-moi
             </button>
           </div>
-
-          {/* Mobile Burger */}
-          <button
-            className={`navbar-burger${isOpen ? ' open' : ''}`}
-            aria-label="Ouvrir le menu"
-            onClick={toggleMenu}
-          >
-            {isOpen
-              ? <X size={22} strokeWidth={2.5} />
-              : <Menu size={22} strokeWidth={2.5} />}
-          </button>
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
-      <div className={`mobile-drawer no-print${isOpen ? ' open' : ''}`} role="dialog" aria-modal="true">
-        <div className="mobile-drawer-inner">
-          {links.map(({ to, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) => `mobile-nav-link${isActive ? ' active' : ''}`}
-              onClick={() => setIsOpen(false)}
-            >
-              {label}
-            </NavLink>
-          ))}
-          <div className="mobile-drawer-cta">
-            <button className="navbar-cta-btn" style={{ width: '100%' }} onClick={handleStartClick}>
-              Aidez-moi →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Overlay */}
-      {isOpen && (
-        <div className="mobile-overlay no-print" onClick={() => setIsOpen(false)} />
-      )}
+      {/* Mobile bottom tab navigation */}
+      <nav className="bottom-nav no-print">
+        {links.map(({ to, label, end, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
+          >
+            <Icon size={20} className="bottom-nav-icon" />
+            <span className="bottom-nav-label">{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </>
   );
 };
