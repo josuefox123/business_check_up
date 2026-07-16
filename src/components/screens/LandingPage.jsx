@@ -24,23 +24,6 @@ const STEPS = [
   { num: '05', title: 'Rapport personnalisé', desc: 'Score, forces, fragilités et plan d\'action prêt à partager.', Icon: FileText },
 ];
 
-const WHY_ITEMS = [
-  {
-    Icon: Search,
-    title: 'Révéler les fragilités cachées',
-    desc: 'Mettez en lumière les goulots d\'étranglement financiers et opérationnels avant qu\'ils ne ralentissent votre croissance.',
-  },
-  {
-    Icon: TrendingUp,
-    title: 'Prendre des décisions éclairées',
-    desc: 'Validez vos choix de développement, de recrutement et de financement à l\'aide d\'indicateurs clairs et fiables.',
-  },
-  {
-    Icon: Target,
-    title: 'Piloter avec un plan d\'action',
-    desc: 'Bénéficiez d\'un plan d\'action structuré et hiérarchisé à partager facilement avec vos partenaires et accompagnateurs.',
-  },
-];
 
 /* ── Section title component  ── */
 const SectionTitle = ({ tag, title, subtitle }) => (
@@ -115,30 +98,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
         </div>
       </section>
 
-      {/* ── NOTRE MISSION (style Abomey) ── */}
-      <section className="lp-band lp-band--white">
-        <div className="container">
-          <SectionTitle
-            tag="Notre mission"
-            title="Un outil au service des entrepreneurs béninois"
-            subtitle="FUND.lab Business Check-up aide les dirigeants d'entreprise à évaluer leur situation, identifier leurs fragilités et bâtir un plan d'action concret — gratuitement, en quelques minutes."
-          />
-
-          <div className="lp-why-grid">
-            {WHY_ITEMS.map((item, i) => (
-              <div key={i} className="lp-why-card animate-fade-up" style={{ animationDelay: `${i * 100 + 100}ms` }}>
-                <div className="lp-why-icon">
-                  <item.Icon size={22} strokeWidth={2} />
-                </div>
-                <div>
-                  <h5 className="lp-why-title">{item.title}</h5>
-                  <p className="lp-why-desc">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── COMMENT ÇA MARCHE ── */}
       <section className="lp-band lp-band--light">
