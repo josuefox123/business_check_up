@@ -35,6 +35,7 @@ import {
 import { QuestionService } from './services/QuestionService.js';
 import { DiagnosticService } from './services/DiagnosticService.js';
 import { UtilisateurService } from './services/UtilisateurService.js';
+import { apiFetch } from './api/config.js';
 
 
 // Routing via API
@@ -83,6 +84,7 @@ function DiagnosticApp() {
   const [score, setScore] = useState(0);
   const [chosenForVerif, setChosenForVerif] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [currentRunId, setCurrentRunId] = useState(null);
 
   // Fetch questions dynamically when currentModule changes (Backend Ready)
   useEffect(() => {
@@ -100,6 +102,16 @@ function DiagnosticApp() {
   const onStartAssisted = () => {
     setTriageStep(3);
     setTriageAnswers({});
+    
+    // Create new session in backend
+    apiFetch('/sessions', { method: 'POST' })
+      .then(res => {
+        if (res && res.id) {
+          localStorage.setItem('bc_session_id', res.id);
+        }
+      })
+      .catch(err => console.error('Error creating session:', err));
+
     navigate('/triage/consent');
   };
   const onGoToCatalog   = () => navigate('/catalog');
@@ -109,12 +121,22 @@ function DiagnosticApp() {
     setCurrentModule(null);
     setModuleAnswers({});
     setQuestionIndex(0);
+    setCurrentRunId(null);
     navigate('/');
   };
 
   // S01 Consent
   const onConsent = () => {
     setTriageStep(3);
+    
+    const sessionId = localStorage.getItem('bc_session_id');
+    if (sessionId) {
+      apiFetch(`/sessions/${sessionId}/consent`, {
+        method: 'POST',
+        body: JSON.stringify({ consent: true })
+      }).catch(err => console.error('Error submitting consent:', err));
+    }
+
     navigate('/triage/wizard');
   };
 
@@ -150,22 +172,59 @@ function DiagnosticApp() {
     setTriageStep(8);
   };
 
+  const submitTriageToBackend = (answers) => {
+    const sessionId = localStorage.getItem('bc_session_id');
+    if (!sessionId) {
+      const localRoute = getRouteFromAnswers(answers);
+      applyRoute(localRoute);
+      return;
+    }
+
+    apiFetch(`/sessions/${sessionId}/triage`, {
+      method: 'POST',
+      body: JSON.stringify({ answers })
+    })
+    .then(res => {
+      const backendModuleId = res.recommended_module || 'FLH-01';
+      const backendRoute = res.route || 'S13';
+      
+      setRouteKey(backendRoute);
+      
+      const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
+      setCurrentModule({
+        ...baseMod,
+        id: backendModuleId
+      });
+
+      // Confirm default recommended module code in backend
+      apiFetch(`/sessions/${sessionId}/triage/confirm`, {
+        method: 'POST',
+        body: JSON.stringify({ module_code: backendModuleId })
+      }).catch(err => console.error('Error confirming triage module:', err));
+
+      navigate('/diagnostic/route');
+    })
+    .catch(err => {
+      console.error('Error submitting triage to backend, fallback to local:', err);
+      const localRoute = getRouteFromAnswers(answers);
+      applyRoute(localRoute);
+    });
+  };
+
   const onS08 = (val) => {
     setTA('s08', val);
     const answersWithS08 = { ...triageAnswers, s08: val };
     if (val === 'no' || val === 'idk') {
       setTriageStep(9);
     } else {
-      const route = getRouteFromAnswers(answersWithS08);
-      applyRoute(route);
+      submitTriageToBackend(answersWithS08);
     }
   };
 
   const onS09 = (val) => {
     setTA('s09', val);
     const answersWithS09 = { ...triageAnswers, s09: val };
-    const route = getRouteFromAnswers(answersWithS09);
-    applyRoute(route);
+    submitTriageToBackend(answersWithS09);
   };
 
   const applyRoute = (route) => {
@@ -217,12 +276,40 @@ function DiagnosticApp() {
   const onIntroStart = () => {
     setQuestionIndex(0);
     setModuleAnswers({});
+    
+    const sessionId = localStorage.getItem('bc_session_id');
+    if (sessionId && currentModule) {
+      apiFetch(`/sessions/${sessionId}/diagnostics`, {
+        method: 'POST',
+        body: JSON.stringify({ module_code: currentModule.id })
+      })
+      .then(res => {
+        if (res && res.id) {
+          setCurrentRunId(res.id);
+        }
+      })
+      .catch(err => console.error('Error starting diagnostic run:', err));
+    }
+    
     navigate('/diagnostic/question');
   };
 
   const onAnswer = (answer, proof) => {
     const q = questions[questionIndex];
     setModuleAnswers(p => ({ ...p, [q.id]: answer, ...(proof ? { [`${q.id}_proof`]: proof } : {}) }));
+    
+    // Post answer in background if run active
+    if (currentRunId) {
+      apiFetch(`/diagnostics/${currentRunId}/answers`, {
+        method: 'POST',
+        body: JSON.stringify({
+          question_code: q.id,
+          answer_value: answer,
+          proof_data: proof || null
+        })
+      }).catch(err => console.error('Error posting answer:', err));
+    }
+
     if (questionIndex + 1 >= questions.length) {
       navigate('/diagnostic/calcul');
     } else {
@@ -246,9 +333,34 @@ function DiagnosticApp() {
 
   // S40 Calcul
   const onCalcDone = () => {
-    const s = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
-    setScore(s);
-    navigate('/diagnostic/resultats');
+    if (currentRunId) {
+      // Complete the run on backend
+      apiFetch(`/diagnostics/${currentRunId}/complete`, { method: 'POST' })
+        .then(() => {
+          // Fetch final scoring results from backend
+          return apiFetch(`/diagnostics/${currentRunId}/result`);
+        })
+        .then(res => {
+          // Update local score from backend engine
+          if (res && typeof res.score !== 'undefined') {
+            setScore(res.score);
+          } else {
+            const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
+            setScore(localScore);
+          }
+          navigate('/diagnostic/resultats');
+        })
+        .catch(err => {
+          console.error('Error calculating score on backend, fallback to local scoring:', err);
+          const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
+          setScore(localScore);
+          navigate('/diagnostic/resultats');
+        });
+    } else {
+      const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
+      setScore(localScore);
+      navigate('/diagnostic/resultats');
+    }
   };
 
   // Results transitions

@@ -1,16 +1,4 @@
-/**
- * STATISTIQUES API — MOCK LAYER
- * Returns JS Promises resolving live-computed data from LocalStoreRepository.
- * Each method maps 1-to-1 with a future REST endpoint:
- *   GET /api/admin/stats/overview
- *   GET /api/admin/stats/activity?days=7
- *   GET /api/admin/stats/modules
- *   GET /api/admin/stats/scores/distribution
- *   GET /api/admin/stats/sectors
- *
- * To switch to real API: replace Promise.resolve(...) with fetch/axios calls.
- */
-
+import { apiFetch } from './config.js';
 import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 // Human-readable module names (mirrors the catalog)
@@ -34,173 +22,200 @@ const computeTrend = (current, previous) => {
 export const statistiquesApi = {
 
   /**
-   * GET /api/admin/stats/overview
+   * GET /api/bc/admin/dashboard
    * Returns global KPI summary for the dashboard top cards.
    */
   getOverview() {
-    const diags = LocalStoreRepository.getDiagnostics();
-    const users = LocalStoreRepository.getUsers();
+    return apiFetch('/admin/dashboard')
+      .catch(err => {
+        console.error('Error fetching admin dashboard overview from backend, using fallback:', err);
+        const diags = LocalStoreRepository.getDiagnostics();
+        const users = LocalStoreRepository.getUsers();
 
-    const now = new Date();
-    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-    const fourteenDaysAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+        const fourteenDaysAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
 
-    // Split into current week vs previous week
-    const diagsThisWeek = diags.filter(d => new Date(d.date) >= sevenDaysAgo);
-    const diagsPrevWeek = diags.filter(d => {
-      const dt = new Date(d.date);
-      return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
-    });
-    const usersThisWeek = users.filter(u => new Date(u.dateJoined || u.date || now) >= sevenDaysAgo);
-    const usersPrevWeek = users.filter(u => {
-      const dt = new Date(u.dateJoined || u.date || now);
-      return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
-    });
+        const diagsThisWeek = diags.filter(d => new Date(d.date) >= sevenDaysAgo);
+        const diagsPrevWeek = diags.filter(d => {
+          const dt = new Date(d.date);
+          return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
+        });
+        const usersThisWeek = users.filter(u => new Date(u.dateJoined || u.date || now) >= sevenDaysAgo);
+        const usersPrevWeek = users.filter(u => {
+          const dt = new Date(u.dateJoined || u.date || now);
+          return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
+        });
 
-    // Average score across all diagnostics
-    const totalScore = diags.reduce((sum, d) => sum + (d.score || 0), 0);
-    const avgScore = diags.length > 0 ? Math.round(totalScore / diags.length) : 0;
+        const totalScore = diags.reduce((sum, d) => sum + (d.score || 0), 0);
+        const avgScore = diags.length > 0 ? Math.round(totalScore / diags.length) : 0;
 
-    // Score this week vs last week
-    const avgScoreThisWeek = diagsThisWeek.length > 0
-      ? Math.round(diagsThisWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsThisWeek.length)
-      : 0;
-    const avgScorePrevWeek = diagsPrevWeek.length > 0
-      ? Math.round(diagsPrevWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsPrevWeek.length)
-      : 0;
+        const avgScoreThisWeek = diagsThisWeek.length > 0
+          ? Math.round(diagsThisWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsThisWeek.length)
+          : 0;
+        const avgScorePrevWeek = diagsPrevWeek.length > 0
+          ? Math.round(diagsPrevWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsPrevWeek.length)
+          : 0;
 
-    // Module counts
-    const moduleCounts = {};
-    diags.forEach(d => {
-      moduleCounts[d.moduleId] = (moduleCounts[d.moduleId] || 0) + 1;
-    });
+        const moduleCounts = {};
+        diags.forEach(d => {
+          moduleCounts[d.moduleId] = (moduleCounts[d.moduleId] || 0) + 1;
+        });
 
-    // Most used module
-    let mostUsedModule = 'Aucun';
-    let mostUsedModuleName = 'Aucun';
-    let maxCount = 0;
-    Object.entries(moduleCounts).forEach(([mId, count]) => {
-      if (count > maxCount) {
-        maxCount = count;
-        mostUsedModule = mId;
-        mostUsedModuleName = MODULE_NAMES[mId] || mId;
-      }
-    });
+        let mostUsedModule = 'Aucun';
+        let mostUsedModuleName = 'Aucun';
+        let maxCount = 0;
+        Object.entries(moduleCounts).forEach(([mId, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            mostUsedModule = mId;
+            mostUsedModuleName = MODULE_NAMES[mId] || mId;
+          }
+        });
 
-    // Unread notifications count
-    const notifs = LocalStoreRepository.getNotifications();
-    const unreadNotifs = notifs.filter(n => !n.read).length;
+        const notifs = LocalStoreRepository.getNotifications();
+        const unreadNotifs = notifs.filter(n => !n.read).length;
 
-    return Promise.resolve({
-      // --- Core KPIs ---
-      totalDiagnostics: diags.length,
-      totalUsers: users.length,
-      avgScore,
-      unreadNotifications: unreadNotifs,
-
-      // --- Weekly trends (for trend badges) ---
-      diagsThisWeek: diagsThisWeek.length,
-      diagsTrend: computeTrend(diagsThisWeek.length, diagsPrevWeek.length),
-      usersTrend: computeTrend(usersThisWeek.length, usersPrevWeek.length),
-      scoreTrend: computeTrend(avgScoreThisWeek, avgScorePrevWeek),
-
-      // --- Module breakdown ---
-      mostUsedModule,
-      mostUsedModuleName,
-      mostUsedModulePercentage: diags.length > 0 ? Math.round((maxCount / diags.length) * 100) : 0,
-      moduleCounts,
-    });
+        return {
+          totalDiagnostics: diags.length,
+          totalUsers: users.length,
+          avgScore,
+          unreadNotifications: unreadNotifs,
+          diagsThisWeek: diagsThisWeek.length,
+          diagsTrend: computeTrend(diagsThisWeek.length, diagsPrevWeek.length),
+          usersTrend: computeTrend(usersThisWeek.length, usersPrevWeek.length),
+          scoreTrend: computeTrend(avgScoreThisWeek, avgScorePrevWeek),
+          mostUsedModule,
+          mostUsedModuleName,
+          mostUsedModulePercentage: diags.length > 0 ? Math.round((maxCount / diags.length) * 100) : 0,
+          moduleCounts,
+        };
+      });
   },
 
   /**
-   * GET /api/admin/stats/activity?days=7
+   * GET /api/bc/admin/dashboard (calculé ou extrait)
    * Returns daily diagnostic counts for the last N days.
    */
   getActivityChart(days = 7) {
-    const diags = LocalStoreRepository.getDiagnostics();
-    const result = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dayStr = date.toISOString().split('T')[0];
-      const count = diags.filter(d => d.date && d.date.startsWith(dayStr)).length;
-      result.push({
-        date: dayStr,
-        label: date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
-        count,
+    // Note: Utilise les données agrégées ou extrait de l'historique du backend
+    return apiFetch('/admin/dashboard')
+      .then(res => {
+        // Formater les données du backend si disponibles sous forme d'historique
+        if (res && res.activity) {
+          return res.activity;
+        }
+        throw new Error('No activity data in overview');
+      })
+      .catch(() => {
+        const diags = LocalStoreRepository.getDiagnostics();
+        const result = [];
+        for (let i = days - 1; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dayStr = date.toISOString().split('T')[0];
+          const count = diags.filter(d => d.date && d.date.startsWith(dayStr)).length;
+          result.push({
+            date: dayStr,
+            label: date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' }),
+            count,
+          });
+        }
+        return result;
       });
-    }
-    return Promise.resolve(result);
   },
 
   /**
-   * GET /api/admin/stats/modules
+   * GET /api/bc/admin/dashboard/modules
    * Returns per-module stats: count, average score, completion rate.
    */
   getModuleStats() {
-    const diags = LocalStoreRepository.getDiagnostics();
-    const stats = {};
+    return apiFetch('/admin/dashboard/modules')
+      .then(res => {
+        if (!Array.isArray(res)) return [];
+        return res.map(m => ({
+          ...m,
+          name: MODULE_NAMES[m.moduleId] || m.name || m.moduleId
+        }));
+      })
+      .catch(err => {
+        console.error('Error fetching module stats from backend, fallback:', err);
+        const diags = LocalStoreRepository.getDiagnostics();
+        const stats = {};
 
-    diags.forEach(d => {
-      if (!stats[d.moduleId]) {
-        stats[d.moduleId] = { moduleId: d.moduleId, name: MODULE_NAMES[d.moduleId] || d.moduleId, count: 0, totalScore: 0 };
-      }
-      stats[d.moduleId].count += 1;
-      stats[d.moduleId].totalScore += d.score || 0;
-    });
+        diags.forEach(d => {
+          if (!stats[d.moduleId]) {
+            stats[d.moduleId] = { moduleId: d.moduleId, name: MODULE_NAMES[d.moduleId] || d.moduleId, count: 0, totalScore: 0 };
+          }
+          stats[d.moduleId].count += 1;
+          stats[d.moduleId].totalScore += d.score || 0;
+        });
 
-    const total = diags.length;
-    return Promise.resolve(
-      Object.values(stats).map(m => ({
-        ...m,
-        avgScore: m.count > 0 ? Math.round(m.totalScore / m.count) : 0,
-        percentage: total > 0 ? Math.round((m.count / total) * 100) : 0,
-      })).sort((a, b) => b.count - a.count)
-    );
+        const total = diags.length;
+        return Object.values(stats).map(m => ({
+          ...m,
+          avgScore: m.count > 0 ? Math.round(m.totalScore / m.count) : 0,
+          percentage: total > 0 ? Math.round((m.count / total) * 100) : 0,
+        })).sort((a, b) => b.count - a.count);
+      });
   },
 
   /**
-   * GET /api/admin/stats/scores/distribution
-   * Returns score bracket breakdown: Critical / Medium / Good / Excellent.
+   * GET /api/bc/admin/dashboard/scores
+   * Returns score bracket breakdown.
    */
   getScoreDistribution() {
-    const diags = LocalStoreRepository.getDiagnostics();
-    const brackets = [
-      { label: 'Critique',   min: 0,  max: 29,  color: '#ef4444', count: 0 },
-      { label: 'Faible',     min: 30, max: 49,  color: '#f97316', count: 0 },
-      { label: 'Moyen',      min: 50, max: 69,  color: '#eab308', count: 0 },
-      { label: 'Bon',        min: 70, max: 84,  color: '#22c55e', count: 0 },
-      { label: 'Excellent',  min: 85, max: 100, color: '#0d9488', count: 0 },
-    ];
-    diags.forEach(d => {
-      const score = d.score || 0;
-      const b = brackets.find(br => score >= br.min && score <= br.max);
-      if (b) b.count += 1;
-    });
-    const total = diags.length;
-    return Promise.resolve(brackets.map(b => ({
-      ...b,
-      percentage: total > 0 ? Math.round((b.count / total) * 100) : 0,
-    })));
+    return apiFetch('/admin/dashboard/scores')
+      .catch(err => {
+        console.error('Error fetching score distribution from backend, fallback:', err);
+        const diags = LocalStoreRepository.getDiagnostics();
+        const brackets = [
+          { label: 'Critique',   min: 0,  max: 29,  color: '#ef4444', count: 0 },
+          { label: 'Faible',     min: 30, max: 49,  color: '#f97316', count: 0 },
+          { label: 'Moyen',      min: 50, max: 69,  color: '#eab308', count: 0 },
+          { label: 'Bon',        min: 70, max: 84,  color: '#22c55e', count: 0 },
+          { label: 'Excellent',  min: 85, max: 100, color: '#0d9488', count: 0 },
+        ];
+        diags.forEach(d => {
+          const score = d.score || 0;
+          const b = brackets.find(br => score >= br.min && score <= br.max);
+          if (b) b.count += 1;
+        });
+        const total = diags.length;
+        return brackets.map(b => ({
+          ...b,
+          percentage: total > 0 ? Math.round((b.count / total) * 100) : 0,
+        }));
+      });
   },
 
   /**
-   * GET /api/admin/stats/sectors
-   * Returns top sectors from the user profiles.
+   * GET /api/bc/admin/dashboard/territory
+   * Returns top sectors.
    */
   getTopSectors() {
-    const users = LocalStoreRepository.getUsers();
-    const sectorCounts = {};
-    users.forEach(u => {
-      if (u.sector) {
-        sectorCounts[u.sector] = (sectorCounts[u.sector] || 0) + 1;
-      }
-    });
-    return Promise.resolve(
-      Object.entries(sectorCounts)
-        .map(([sector, count]) => ({ sector, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
-    );
+    return apiFetch('/admin/dashboard/territory')
+      .then(res => {
+        // Adapter le format du backend (par exemple répartition par secteur)
+        if (res && res.sectors) {
+          return res.sectors;
+        }
+        if (Array.isArray(res)) return res;
+        return [];
+      })
+      .catch(err => {
+        console.error('Error fetching sectors from backend, fallback:', err);
+        const users = LocalStoreRepository.getUsers();
+        const sectorCounts = {};
+        users.forEach(u => {
+          if (u.sector) {
+            sectorCounts[u.sector] = (sectorCounts[u.sector] || 0) + 1;
+          }
+        });
+        return Object.entries(sectorCounts)
+          .map(([sector, count]) => ({ sector, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+      });
   },
 };
