@@ -285,10 +285,10 @@
   }
   
   .lp-btn-primary { 
-    width: 100%; 
-    max-width: 320px; 
-    text-align: left; 
-    justify-content: flex-start; 
+    width: auto; 
+    align-self: flex-start;
+    text-align: center; 
+    justify-content: center; 
   }
   
   .lp-hero-secondary-links { 
