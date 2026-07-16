@@ -45,33 +45,27 @@ const WHY_ITEMS = [
 const TESTIMONIALS = [
   {
     name: 'Koffi Mensah',
-    role: 'Gérant, Mensah Trading Co.',
-    location: 'Cotonou, Bénin',
+    role: 'Chef d\'entreprise',
     avatar: 'KM',
     avatarBg: 'var(--color-blue)',
     text: 'Le diagnostic Flash de la CCI Bénin m\'a permis de faire un point clair sur la trésorerie et la gestion de mon commerce en moins de 10 minutes. C\'est simple, rapide et gratuit.',
-    module: 'Diagnostic Flash',
-    score: 72
+    module: 'Diagnostic Flash'
   },
   {
     name: 'Amina Balogoun',
-    role: 'Co-fondatrice, AgriBenin',
-    location: 'Porto-Novo, Bénin',
+    role: 'Porteuse de projet',
     avatar: 'AB',
     avatarBg: 'var(--color-accent-dark)',
     text: 'En tant que porteuse de projet, j\'ai évalué notre idée de coopérative avec le Diagnostic Projet. Le plan d\'action généré nous a permis de structurer nos priorités pour convaincre nos partenaires.',
-    module: 'Diagnostic Projet',
-    score: 85
+    module: 'Diagnostic Projet'
   },
   {
     name: 'Sébastien Houessou',
-    role: 'Directeur, BTP Service',
-    location: 'Parakou, Bénin',
+    role: 'Directeur de société',
     avatar: 'SH',
     avatarBg: '#8b5cf6',
     text: 'Face à une baisse de régime, le Diagnostic Difficulté a pointé du doigt des failles organisationnelles précises. Le rapport d\'évaluation est d\'une pertinence remarquable pour redresser la barre.',
-    module: 'Diagnostic Difficulté',
-    score: 42
+    module: 'Diagnostic Difficulté'
   }
 ];
 
@@ -174,11 +168,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
                 <div className="lp-carousel-author-info">
                   <div className="lp-carousel-author-name">{TESTIMONIALS[currentTestimonial].name}</div>
                   <div className="lp-carousel-author-role">{TESTIMONIALS[currentTestimonial].role}</div>
-                  <div className="lp-carousel-author-loc">{TESTIMONIALS[currentTestimonial].location}</div>
-                </div>
-                <div className="lp-carousel-score">
-                  <div className="lp-carousel-score-num">{TESTIMONIALS[currentTestimonial].score}/100</div>
-                  <div className="lp-carousel-score-label">Score obtenu</div>
                 </div>
               </div>
               

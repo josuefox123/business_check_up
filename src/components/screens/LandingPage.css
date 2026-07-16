@@ -297,36 +297,6 @@
   text-overflow: ellipsis;
 }
 
-.lp-carousel-author-loc {
-  font-size: 0.75rem;
-  color: var(--slate-400, #8892aa);
-}
-
-.lp-carousel-score {
-  text-align: right;
-  flex-shrink: 0;
-  background: var(--slate-50, #f9f9fb);
-  border: 1px solid var(--slate-100, #f0f1f5);
-  padding: 8px 12px;
-  border-radius: 8px;
-}
-
-.lp-carousel-score-num {
-  font-size: 1.15rem;
-  font-weight: 900;
-  color: var(--color-accent-dark, #009E90);
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.lp-carousel-score-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--slate-400, #8892aa);
-  letter-spacing: 0.02em;
-}
-
 .lp-carousel-nav {
   display: flex;
   align-items: center;
