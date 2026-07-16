@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Shield, BarChart2, Download, Zap, Compass, Search, FileText, Users } from 'lucide-react';
+import logoImg from '../../assets/logo.png';
 import './CommentCaMarche.css';
 
 const STEPS = [
@@ -131,7 +132,9 @@ export const CommentCaMarche = ({ onStart }) => {
       <footer className="footer no-print">
         <div className="footer-content container">
           <div className="footer-brand">
-            <span className="logo-text">FUND<span style={{ color: 'var(--color-accent)' }}>.lab</span></span>
+            <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
+              <img src={logoImg} alt="FUND.lab Logo" style={{ height: '36px', width: 'auto', display: 'block', filter: 'brightness(0) invert(1)' }} />
+            </Link>
             <p>Le diagnostic intelligent au service de la croissance des entrepreneurs et des entreprises en Afrique.</p>
           </div>
           <div className="footer-links">

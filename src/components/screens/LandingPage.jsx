@@ -5,6 +5,7 @@ import {
   Search, Users, TrendingUp, FileText
 } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
+import logoImg from '../../assets/logo.png';
 import './LandingPage.css';
 
 const DIAGNOSTICS = [
@@ -186,7 +187,9 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
       <footer className="lp-footer no-print">
         <div className="container lp-footer-inner">
           <div className="lp-footer-brand">
-            <span className="logo-text">FUND<span style={{ color: 'var(--color-accent)' }}>.lab</span></span>
+            <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
+              <img src={logoImg} alt="FUND.lab Logo" style={{ height: '36px', width: 'auto', display: 'block', filter: 'brightness(0) invert(1)' }} />
+            </Link>
             <p>Le diagnostic intelligent au service de la croissance des entrepreneurs et des entreprises.</p>
             <p style={{ marginTop: '8px', fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
               Un service de la CCI Bénin

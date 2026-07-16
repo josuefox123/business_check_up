@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar, ScoreGauge, Badge } from '../ui/index.jsx';
 import { ScreenWrapper } from '../layout/Navbar.jsx';
+import logoImg from '../../assets/logo.png';
 import './screens.css';
 import aboutIllustration from '../../assets/about_illustration.png';
 
@@ -1547,7 +1548,9 @@ export const InstitutionnelleScreen = ({ onBack, onContact }) => (
       <div className="container">
         <div className="footer-content">
           <div className="footer-brand">
-            <span className="logo-text">FUND.lab</span>
+            <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
+              <img src={logoImg} alt="FUND.lab Logo" style={{ height: '36px', width: 'auto', display: 'block', filter: 'brightness(0) invert(1)' }} />
+            </Link>
             <p>Le diagnostic intelligent au service de la croissance des entrepreneurs et des entreprises en Afrique.</p>
           </div>
           <div className="footer-links">

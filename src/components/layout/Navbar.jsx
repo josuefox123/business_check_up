@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Zap, Home, Compass, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
+import logoImg from '../../assets/logo.png';
 import '../layout/layout.css';
 
 export const Navbar = ({ onGoHome }) => {
@@ -28,11 +29,8 @@ export const Navbar = ({ onGoHome }) => {
       <nav className="navbar no-print">
         <div className="navbar-inner">
           {/* Logo */}
-          <button className="navbar-logo" onClick={handleLogoClick} aria-label="Accueil FUND.lab">
-            <div className="navbar-logo-icon">
-              <Zap size={18} strokeWidth={3} color="var(--color-primary)" />
-            </div>
-            <span className="navbar-logo-name">FUND<span className="navbar-logo-dot">.lab</span></span>
+          <button className="navbar-logo" onClick={handleLogoClick} aria-label="Accueil FUND.lab" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '38px', width: 'auto', display: 'block' }} />
           </button>
 
           {/* Desktop Nav */}

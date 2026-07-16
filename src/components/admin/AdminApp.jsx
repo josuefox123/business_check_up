@@ -7,6 +7,7 @@ import {
   User, Lock, Mail
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
+import logoImg from '../../assets/logo.png';
 import './admin.css';
 
 // Admin layout shell
@@ -1344,10 +1345,9 @@ const AdminLogin = ({ onLogin }) => {
     return (
       <div className="admin-login-wrapper">
         <div className="admin-login-card animate-fade-up">
-          <div className="admin-login-logo">
-            <div className="admin-login-logo-icon">F</div>
-            <span className="admin-login-logo-text">FUND<span>.admin</span></span>
-          </div>
+          <Link to="/" className="admin-login-logo" style={{ display: 'block', margin: '0 auto 20px', textAlign: 'center' }}>
+            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '40px', width: 'auto', display: 'block', margin: '0 auto' }} />
+          </Link>
           <h2 className="admin-login-title">Mot de passe oublié</h2>
           <p className="admin-login-sub">Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.</p>
           
@@ -1428,10 +1428,9 @@ const AdminLogin = ({ onLogin }) => {
   return (
     <div className="admin-login-wrapper">
       <div className="admin-login-card animate-fade-up">
-        <div className="admin-login-logo">
-          <div className="admin-login-logo-icon">F</div>
-          <span className="admin-login-logo-text">FUND<span>.admin</span></span>
-        </div>
+        <Link to="/" className="admin-login-logo" style={{ display: 'block', margin: '0 auto 20px', textAlign: 'center' }}>
+          <img src={logoImg} alt="FUND.lab Logo" style={{ height: '40px', width: 'auto', display: 'block', margin: '0 auto' }} />
+        </Link>
         <h2 className="admin-login-title">Espace Administration</h2>
         <p className="admin-login-sub">Identifiez-vous pour accéder au tableau de bord.</p>
         
