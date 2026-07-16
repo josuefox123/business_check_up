@@ -83,12 +83,21 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           </div>
 
           <div className="lp-hero-secondary-links">
-            <button className="lp-hero-catalog-link" onClick={onLearnMore}>
+            {/* Desktop view (compact) */}
+            <button className="lp-hero-catalog-link hide-on-mobile" onClick={onLearnMore}>
               Comprendre Business Check-up
             </button>
-            <span className="lp-hero-links-separator">•</span>
-            <button className="lp-hero-catalog-link" onClick={onGoToCatalog}>
+            <span className="lp-hero-links-separator hide-on-mobile">•</span>
+            <button className="lp-hero-catalog-link hide-on-mobile" onClick={onGoToCatalog}>
               Accéder au catalogue →
+            </button>
+
+            {/* Mobile view (expanded and left-aligned) */}
+            <button className="lp-hero-catalog-link show-on-mobile" onClick={onLearnMore}>
+              Je veux comprendre ce que fait Business Check-up
+            </button>
+            <button className="lp-hero-catalog-link show-on-mobile" onClick={onGoToCatalog}>
+              Je sais déjà ce que je veux diagnostiquer →
             </button>
           </div>
         </div>

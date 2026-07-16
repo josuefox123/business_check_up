@@ -205,6 +205,14 @@
   pointer-events: none;
 }
 
+/* Visibility Utilities */
+.show-on-mobile {
+  display: none !important;
+}
+.hide-on-mobile {
+  display: inline-block !important;
+}
+
 /* Right image pane */
 .lp-hero-split-right {
   height: 100%;
@@ -265,12 +273,43 @@
 
 @media (max-width: 480px) {
   .lp-hero-split-left { padding: 88px 20px 32px; }
-  .lp-hero-split-right { padding: 0 20px 36px; }
-  .lp-hero-split-actions { flex-direction: column; align-items: stretch; }
-  .lp-btn-primary, .lp-btn-outline { text-align: center; justify-content: center; }
-  .lp-hero-secondary-links { flex-direction: column; align-items: stretch; gap: 10px; }
-  .lp-hero-links-separator { display: none; }
-  .lp-hero-catalog-link { text-align: center; }
+  
+  /* Hide the split-right disclaimer box on mobile */
+  .lp-hero-split-right { display: none !important; }
+  
+  /* Left align layout rules matching Business Check-up style */
+  .lp-hero-split-actions { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    width: 100%;
+  }
+  
+  .lp-btn-primary { 
+    width: 100%; 
+    max-width: 320px; 
+    text-align: left; 
+    justify-content: flex-start; 
+  }
+  
+  .lp-hero-secondary-links { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 12px; 
+    width: 100%;
+  }
+  
+  .lp-hero-links-separator { display: none !important; }
+  
+  .lp-hero-catalog-link { 
+    text-align: left; 
+    white-space: normal; /* allow wrapping on narrow mobile screens */
+    font-size: 0.84rem; /* slightly larger for readability on mobile list */
+    line-height: 1.4;
+  }
+
+  /* Visibility Utilities toggling */
+  .hide-on-mobile { display: none !important; }
+  .show-on-mobile { display: block !important; }
 }
 
 /* ══════════════════════════════════════════
