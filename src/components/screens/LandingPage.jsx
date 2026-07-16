@@ -158,7 +158,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '36px' }}>
-            <Button variant="outline" onClick={onGoToCatalog}>
+            <Button variant="primary" onClick={onGoToCatalog}>
               Voir tous les diagnostics <ArrowRight size={16} />
             </Button>
           </div>
