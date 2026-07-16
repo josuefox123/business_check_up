@@ -906,8 +906,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-accent);
-  color: var(--color-primary);
+  background: var(--color-dusk);
+  color: #ffffff;
   font-family: var(--font);
   font-size: 0.95rem;
   font-weight: 700;
@@ -916,14 +916,14 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(52, 190, 213, 0.3);
+  box-shadow: 0 4px 20px rgba(23, 33, 45, 0.3);
   margin-top: 10px;
 }
 
 .admin-login-submit-btn:hover {
-  background: #00d5bd;
+  background: #0f1820;
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(52, 190, 213, 0.45);
+  box-shadow: 0 6px 24px rgba(23, 33, 45, 0.42);
 }
 
 .admin-login-submit-btn:active {

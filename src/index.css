@@ -35,9 +35,10 @@ img { max-width: 100%; height: auto; display: block; }
   --color-primary:       #070E24;   /* near-black navy */
   --color-primary-mid:   #0C1A45;   /* deep navy */
   --color-primary-light: #1A306E;   /* rich navy */
-  --color-accent:        #34BED5;   /* deeper teal */
+  --color-accent:        #34BED5;   /* Dark Turquoise */
   --color-accent-dark:   #1A9DB8;   /* dark teal hover */
   --color-accent-light:  rgba(52, 190, 213, 0.10);
+  --color-dusk:          #17212D;   /* Bleu crépuscule — boutons sur fond blanc */
   --color-blue:          #1A44D6;   /* richer, deeper blue */
   --color-blue-mid:      #2957E8;
   --color-blue-light:    rgba(26, 68, 214, 0.07);
