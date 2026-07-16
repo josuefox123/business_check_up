@@ -273,28 +273,29 @@
   /* Screen content: add bottom padding to prevent content overlap with bottom tab bar */
   .screen-wrapper { 
     padding-top: 56px; 
-    padding-bottom: calc(92px + env(safe-area-inset-bottom, 16px)); 
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 12px)); 
   }
   .screen-inner, .screen-inner-wide {
     padding: 20px 16px 32px;
   }
 
-  /* Bottom Tab Navigation Layout (Floating Style for Native App Feel) */
+  /* Bottom Tab Navigation Layout (Standard App Tab Bar Style) */
   .bottom-nav {
     display: flex;
     position: fixed;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-    left: 14px;
-    right: 14px;
-    height: 68px;
-    background: #ffffff;
-    border: 2px solid var(--color-accent, #00C4B4);
-    box-shadow: 0 12px 32px rgba(0, 196, 180, 0.22);
-    border-radius: 22px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
-    padding: 0 6px;
+    padding: 0 4px;
     box-sizing: border-box;
   }
 
@@ -304,21 +305,19 @@
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: var(--slate-600, #3f4a63);
+    color: var(--slate-500, #5c6680);
     font-family: var(--font);
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.68rem;
+    font-weight: 500;
     gap: 3px;
     flex: 1;
-    height: 82%;
-    border-radius: 16px;
-    transition: all 0.22s ease;
-    box-sizing: border-box;
+    height: 100%;
+    transition: all 0.18s ease;
   }
 
   .bottom-nav-icon {
-    color: var(--slate-500, #5c6680);
-    transition: all 0.2s ease;
+    color: var(--slate-400, #9ba3b8);
+    transition: all 0.18s ease;
   }
 
   .bottom-nav-label {
@@ -326,18 +325,17 @@
   }
 
   .bottom-nav-item:active {
-    transform: scale(0.92);
+    transform: scale(0.96);
   }
 
   .bottom-nav-item.active {
     color: var(--color-accent-dark, #009E90);
-    background: rgba(0, 196, 180, 0.12);
-    font-weight: 800;
+    font-weight: 700;
   }
 
   .bottom-nav-item.active .bottom-nav-icon {
     color: var(--color-accent-dark, #009E90);
-    transform: scale(1.05);
+    transform: translateY(-1px);
   }
 }
 
