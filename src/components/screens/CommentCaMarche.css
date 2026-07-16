@@ -231,6 +231,8 @@
   top: -80px; right: -80px;
   width: 400px; height: 400px;
   background: radial-gradient(circle, rgba(52, 190, 213,0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ═══════════════════════════════════════════════

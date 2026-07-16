@@ -115,14 +115,14 @@ export const CommentCaMarche = ({ onStart }) => {
 
       {/* ── CTA ── */}
       <section className="hiw-cta-section">
-        <div className="container" style={{ textAlign: 'center' }}>
+        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <h2 style={{ color: '#fff', marginBottom: '14px', fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
             Prêt à lancer votre diagnostic ?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px', maxWidth: '460px', margin: '0 auto 32px' }}>
             Aucune inscription requise. Vos réponses restent confidentielles.
           </p>
-          <button className="hero-cta-primary" onClick={onStart} style={{ background: 'var(--color-accent)', color: 'var(--color-primary)' }}>
+          <button className="hero-cta-primary" onClick={onStart}>
             Commencer le diagnostic <ArrowRight size={18} strokeWidth={2.5} />
           </button>
         </div>
