@@ -68,7 +68,7 @@ export const Navbar = ({ onGoHome }) => {
             end={end}
             className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
           >
-            <Icon size={20} className="bottom-nav-icon" />
+            <Icon size={22} className="bottom-nav-icon" />
             <span className="bottom-nav-label">{label}</span>
           </NavLink>
         ))}
