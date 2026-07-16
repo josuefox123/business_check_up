@@ -109,8 +109,9 @@ function DiagnosticApp() {
     // Create new session in backend
     createSessionApi()
       .then(res => {
-        if (res && res.id) {
-          localStorage.setItem('bc_session_id', res.id);
+        const sessionId = res?.data?.session_id;
+        if (sessionId) {
+          localStorage.setItem('bc_session_id', sessionId);
         }
       })
       .catch(err => console.error('Error creating session:', err));
@@ -183,8 +184,23 @@ function DiagnosticApp() {
 
     submitTriageToBackendApi(sessionId, answers)
     .then(res => {
-      const backendModuleId = res.recommended_module || 'FLH-01';
-      const backendRoute = res.route || 'S13';
+      const data = res?.data || {};
+      const recommended = data.recommended_module || {};
+      const backendModuleId = recommended.code || 'FLH-01';
+      
+      const triageId = data.triage_id;
+      if (triageId) {
+        localStorage.setItem('bc_triage_id', triageId);
+      }
+
+      // Map module code to local route
+      const routeMap = {
+        'PRJ-02': 'S10',
+        'DIF-03': 'S11',
+        'OPP-04': 'S12',
+        'FLH-01': 'S13'
+      };
+      const backendRoute = routeMap[backendModuleId] || 'S13';
       
       setRouteKey(backendRoute);
       
@@ -194,11 +210,16 @@ function DiagnosticApp() {
         id: backendModuleId
       });
 
-      // Confirm default recommended module code in backend
-      apiFetch(`/sessions/${sessionId}/triage/confirm`, {
-        method: 'POST',
-        body: JSON.stringify({ module_code: backendModuleId })
-      }).catch(err => console.error('Error confirming triage module:', err));
+      // Confirm recommended module in backend
+      if (triageId) {
+        apiFetch(`/sessions/${sessionId}/triage/confirm`, {
+          method: 'POST',
+          body: JSON.stringify({ 
+            triage_id: triageId,
+            confirmed: true
+          })
+        }).catch(err => console.error('Error confirming triage module:', err));
+      }
 
       navigate('/diagnostic/route');
     })
@@ -276,14 +297,21 @@ function DiagnosticApp() {
     setModuleAnswers({});
     
     const sessionId = localStorage.getItem('bc_session_id');
+    const triageId = localStorage.getItem('bc_triage_id');
     if (sessionId && currentModule) {
       apiFetch(`/sessions/${sessionId}/diagnostics`, {
         method: 'POST',
-        body: JSON.stringify({ module_code: currentModule.id })
+        body: JSON.stringify({
+          module_code: currentModule.id,
+          triage_id: triageId || null,
+          is_recommended: true, // simplified or matching recommended module
+          is_override: false
+        })
       })
       .then(res => {
-        if (res && res.id) {
-          setCurrentRunId(res.id);
+        const runId = res?.data?.diagnostic_run_id;
+        if (runId) {
+          setCurrentRunId(runId);
         }
       })
       .catch(err => console.error('Error starting diagnostic run:', err));
@@ -298,11 +326,20 @@ function DiagnosticApp() {
     
     // Post answer in background if run active
     if (currentRunId) {
+      const choiceObj = Array.isArray(q.choices) ? q.choices.find(c => c.id === answer) : null;
+      
       apiFetch(`/diagnostics/${currentRunId}/answers`, {
         method: 'POST',
         body: JSON.stringify({
-          question_code: q.id,
+          question_id: q.id,
+          question_version: q.version || 'v1.0',
+          question_dimension: q.dimension || 'generale',
+          answer_type: q.type || 'choice',
           answer_value: answer,
+          answer_label: choiceObj?.label || answer,
+          score_1_5: choiceObj?.score_1_5 || null,
+          weight: choiceObj?.weight || 1,
+          is_critical_question: q.is_critical || false,
           proof_data: proof || null
         })
       }).catch(err => console.error('Error posting answer:', err));
