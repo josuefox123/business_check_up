@@ -72,7 +72,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             </button>
             <span className="lp-hero-links-separator hide-on-mobile">•</span>
             <button className="lp-hero-catalog-link hide-on-mobile" onClick={onGoToCatalog}>
-              Accéder au catalogue →
+              Accéder au catalogue
             </button>
 
             {/* Mobile view (expanded and left-aligned) */}

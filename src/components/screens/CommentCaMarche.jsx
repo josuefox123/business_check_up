@@ -55,15 +55,6 @@ export const CommentCaMarche = ({ onStart }) => {
       {/* ── HERO ── */}
       <section className="hiw-hero">
         <div className="container hiw-hero-inner">
-          <span className="tag" style={{ 
-            marginBottom: '20px', 
-            display: 'inline-flex',
-            background: 'rgba(0, 209, 186, 0.15)',
-            color: 'var(--color-accent)',
-            border: '1px solid rgba(0, 209, 186, 0.3)'
-          }}>
-            <Zap size={14} /> Comment ça marche
-          </span>
           <h1 className="hiw-hero-title">
             Un parcours guidé,<br />
             <span style={{ color: 'var(--color-accent)' }}>étape par étape</span>
