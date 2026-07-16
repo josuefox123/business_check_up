@@ -167,7 +167,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
 
       {/* ── CTA BAND ── */}
       <section className="cta-band">
-        <div className="container" style={{ textAlign: 'center' }}>
+        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <span className="tag" style={{ marginBottom: '20px', display: 'inline-flex', background: 'rgba(52, 190, 213,0.15)', color: '#fff' }}>
             <ShieldCheck size={13} /> Gratuit &amp; sans inscription
           </span>
@@ -177,7 +177,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           <p style={{ color: 'rgba(255,255,255,0.75)', marginBottom: '36px', maxWidth: '480px', margin: '0 auto 36px' }}>
             Démarrez votre diagnostic guidé maintenant et obtenez votre score de maturité en quelques minutes.
           </p>
-          <button className="hero-cta-primary" onClick={onStart} style={{ background: 'var(--color-accent)', color: 'var(--color-primary)', display: 'inline-flex', width: 'auto' }}>
+          <button className="hero-cta-primary" onClick={onStart} style={{ display: 'inline-flex', width: 'auto' }}>
             Commencer maintenant <ArrowRight size={20} strokeWidth={2.5} />
           </button>
         </div>
