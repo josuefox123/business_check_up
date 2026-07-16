@@ -32,11 +32,13 @@ const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
           <div className="admin-logo">
-            <div className="admin-logo-icon" style={{ background: 'var(--color-accent)', borderRadius: '8px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', color: 'var(--color-primary)' }}>F</div>
-            <span className="admin-logo-text" style={{ fontWeight: '800', color: 'var(--color-primary)' }}>FUND<span style={{ color: 'var(--color-accent)' }}>.admin</span></span>
+            <div className="admin-logo-icon">F</div>
+            <span className="admin-logo-text">FUND<span>.admin</span></span>
           </div>
         </div>
+
         <nav className="admin-nav">
+          <span className="admin-nav-label">Navigation</span>
           {MENU.map((item) => (
             <Link 
               key={item.path} 
@@ -48,19 +50,32 @@ const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
               <span>{item.name}</span>
             </Link>
           ))}
-          <div style={{ marginTop: 'auto', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <Link to="/" className="btn btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'center' }}>
-              ← Retour au site
-            </Link>
-            <button 
-              onClick={onLogout} 
-              className="btn btn-sm" 
-              style={{ width: '100%', justifyContent: 'center', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: '700' }}
-            >
-              Déconnexion
-            </button>
-          </div>
+
+          <span className="admin-nav-label" style={{ marginTop: '8px' }}>Accès rapide</span>
+          <Link to="/" className="admin-nav-item" onClick={() => setSidebarOpen(false)}>
+            <ChevronRight size={16} style={{ transform: 'rotate(180deg)' }} />
+            <span>Retour au site</span>
+          </Link>
         </nav>
+
+        {/* Sidebar user profile footer */}
+        <div className="admin-sidebar-bottom">
+          <div className="admin-sidebar-user">
+            <div className="admin-sidebar-avatar">AD</div>
+            <div className="admin-sidebar-user-info">
+              <div className="admin-sidebar-user-name">Administrateur</div>
+              <div className="admin-sidebar-user-role">CCI Bénin</div>
+            </div>
+          </div>
+          <button 
+            onClick={onLogout} 
+            className="admin-nav-item"
+            style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(252,165,165,0.9)', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
+          >
+            <X size={16} style={{ opacity: 0.7 }} />
+            <span>Déconnexion</span>
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -69,35 +84,35 @@ const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
         <header className="admin-topbar">
           <div className="admin-topbar-left">
             <button className="admin-mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
-              <Menu size={24} color="var(--slate-700)" />
+              <Menu size={22} />
             </button>
-            <div className="admin-search" style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)' }}>
-              <Search size={18} color="var(--slate-400)" />
+            <div className="admin-search">
+              <Search size={16} color="var(--adm-muted)" />
               <input type="text" placeholder="Recherche globale..." disabled />
             </div>
           </div>
           <div className="admin-topbar-right" style={{ position: 'relative' }}>
             <button className="admin-icon-btn" onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}>
-              <Bell size={20} />
+              <Bell size={18} />
               {unreadNotifications.length > 0 && (
                 <span className="admin-badge">{unreadNotifications.length}</span>
               )}
             </button>
 
             {notifDropdownOpen && (
-              <div style={{ position: 'absolute', top: '50px', right: 0, width: '320px', background: 'white', border: '1px solid var(--slate-200)', borderRadius: '12px', boxShadow: 'var(--shadow-lg)', zIndex: 1000, padding: '12px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', fontWeight: 800 }}>Notifications récentes</h4>
-                <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+              <div style={{ position: 'absolute', top: '52px', right: 0, width: '320px', background: 'white', border: '1px solid rgba(0,0,0,0.08)', borderRadius: '14px', boxShadow: '0 8px 40px rgba(0,0,0,0.12)', zIndex: 1000, padding: '16px', overflow: 'hidden' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '0.875rem', fontWeight: 800, color: '#0f172a' }}>Notifications récentes</h4>
+                <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {notifications.length === 0 ? (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', margin: '10px 0' }}>Aucune notification</p>
+                    <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '10px 0', textAlign: 'center' }}>Aucune notification</p>
                   ) : (
                     notifications.map(n => (
-                      <div key={n.id} style={{ padding: '8px', borderBottom: '1px solid var(--slate-100)', opacity: n.read ? 0.6 : 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{n.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)' }}>{n.message}</div>
+                      <div key={n.id} style={{ padding: '10px', borderRadius: '8px', background: n.read ? 'transparent' : '#f0fdf9', border: '1px solid', borderColor: n.read ? 'transparent' : '#99f6e4', opacity: n.read ? 0.7 : 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0f172a' }}>{n.title}</div>
+                        <div style={{ fontSize: '0.73rem', color: '#64748b', marginTop: '2px' }}>{n.message}</div>
                         {!n.read && (
-                          <button onClick={() => { onMarkRead(n.id); setNotifDropdownOpen(false); }} style={{ background: 'none', border: 'none', color: 'var(--color-blue)', fontSize: '0.7rem', padding: '2px 0', cursor: 'pointer', textDecoration: 'underline' }}>
-                            Marquer comme lu
+                          <button onClick={() => { onMarkRead(n.id); setNotifDropdownOpen(false); }} style={{ background: 'none', border: 'none', color: '#0d9488', fontSize: '0.7rem', padding: '4px 0 0', cursor: 'pointer', fontWeight: 700 }}>
+                            ✓ Marquer comme lu
                           </button>
                         )}
                       </div>
@@ -107,7 +122,7 @@ const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
               </div>
             )}
 
-            <div className="admin-avatar">CCI</div>
+            <div className="admin-avatar">AD</div>
           </div>
         </header>
 
