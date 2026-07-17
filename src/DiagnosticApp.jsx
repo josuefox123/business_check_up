@@ -407,20 +407,25 @@ function DiagnosticApp() {
   };
 
   const onContactSubmit = (data, mode) => {
-    console.log('Formulaire contact soumis:', data, mode);
+    const action = data.action || mode;
+    const name = data.nom || data.name || 'Anonyme';
+    const email = data.email || '';
+    const phone = data.tel || data.phone || '';
+
+    console.log('Formulaire contact soumis:', { name, email, phone, action });
     
     // Register prospect user in store
     const userData = {
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
+      name,
+      email,
+      phone,
       companyName: data.companyName || '',
       sector: data.sector || '',
       department: data.department || '',
       commune: data.commune || '',
       profile: triageAnswers.s03 || 'active',
-      contactRequested: mode === 'suivi',
-      pdfDownloaded: mode === 'pdf'
+      contactRequested: action === 'suivi',
+      pdfDownloaded: action === 'pdf'
     };
 
     UtilisateurService.registerUser(userData).then(user => {
@@ -428,6 +433,26 @@ function DiagnosticApp() {
       if (currentModule) {
         DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, user);
       }
+
+      // Si l'utilisateur demande le PDF et qu'il y a un diagnostic actif en ligne
+      if (action === 'pdf' && currentRunId) {
+        // Appeler le backend pour générer le PDF
+        apiFetch(`/diagnostics/${currentRunId}/pdf`, { method: 'POST' })
+          .then(res => {
+            const pdfUrl = res?.data?.pdf_url || res?.pdf_url;
+            if (pdfUrl) {
+              window.open(pdfUrl, '_blank');
+            } else {
+              console.error('Aucune URL de PDF retournée par le backend');
+              alert('Impossible de générer le PDF pour le moment.');
+            }
+          })
+          .catch(err => {
+            console.error('Erreur lors de la génération du PDF du backend:', err);
+            alert('Une erreur est survenue lors de la génération du rapport PDF.');
+          });
+      }
+
       navigate('/diagnostic/fin');
     });
   };
