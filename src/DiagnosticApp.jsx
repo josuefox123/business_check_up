@@ -326,21 +326,20 @@ function DiagnosticApp() {
     
     // Post answer in background if run active
     if (currentRunId) {
-      const choiceObj = Array.isArray(q.choices) ? q.choices.find(c => c.id === answer) : null;
-      
+      const evidenceLevelMap = {
+        'E0': 'E0_declarative',
+        'E1': 'E1_concrete_indice',
+        'E2': 'E2_document_available',
+        'E3': 'E3_verifiable_data'
+      };
+      const evidence_level = evidenceLevelMap[proof] || null;
+
       apiFetch(`/diagnostics/${currentRunId}/answers`, {
         method: 'POST',
         body: JSON.stringify({
           question_id: q.id,
-          question_version: q.version || 'v1.0',
-          question_dimension: q.dimension || 'generale',
-          answer_type: q.type || 'choice',
           answer_value: answer,
-          answer_label: choiceObj?.label || answer,
-          score_1_5: choiceObj?.score_1_5 || null,
-          weight: choiceObj?.weight || 1,
-          is_critical_question: q.is_critical || false,
-          proof_data: proof || null
+          evidence_level: evidence_level
         })
       }).catch(err => console.error('Error posting answer:', err));
     }
