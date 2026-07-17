@@ -356,8 +356,11 @@ const S09_CHOICES = [
 /* ============================================================
    GENERIC CHOICE SCREEN (Triage)
    ============================================================ */
-export const TriageScreen = ({ step, question, hint, choices, multi = false, onContinue, onBack, progress }) => {
-  const [selected, setSelected] = useState(multi ? [] : null);
+export const TriageScreen = ({ step, question, hint, choices, multi = false, onContinue, onBack, progress, initialAnswer }) => {
+  const [selected, setSelected] = useState(() => {
+    if (initialAnswer !== null && initialAnswer !== undefined) return initialAnswer;
+    return multi ? [] : null;
+  });
 
   const toggle = (id) => {
     if (multi) {
@@ -425,9 +428,18 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
 
 
-export const S04Screen = ({ onContinue, onBack }) => {
-  const [selected, setSelected] = useState(null);
-  const [subSelected, setSubSelected] = useState(null); // for 'occ' sub-question
+export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
+  const [selected, setSelected] = useState(() => {
+    if (!initialAnswer) return null;
+    // Les valeurs occ_oui / occ_non sont des sous-cas de 'occ'
+    if (initialAnswer === 'occ_oui' || initialAnswer === 'occ_non') return 'occ';
+    return initialAnswer;
+  });
+  const [subSelected, setSubSelected] = useState(() => {
+    if (initialAnswer === 'occ_oui') return 'yes';
+    if (initialAnswer === 'occ_non') return 'no';
+    return null;
+  });
 
   const handleContinue = () => {
     if (!selected) return;
@@ -506,10 +518,10 @@ export const S04Screen = ({ onContinue, onBack }) => {
     </ScreenWrapper>
   );
 };
-export const S05Screen = ({ onContinue, onBack }) => {
+export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
   const REGIONS = ['Atlantique', 'Littoral', 'Ouémé', 'Borgou', 'Zou', 'Collines', 'Plateau', 'Mono', 'Couffo', 'Donga', 'Atacora', 'Alibori', 'Autre'];
   const SECTORS = ['Agriculture','Agro-transformation','Commerce','Services','Industrie','Numérique','Artisanat','Transport','Tourisme','Santé','Éducation','BTP','Autre'];
-  const [data, setData] = useState({ region:'', commune:'', secteur:'', soussecteur:'' });
+  const [data, setData] = useState(initialAnswer && typeof initialAnswer === 'object' ? initialAnswer : { region:'', commune:'', secteur:'', soussecteur:'' });
   const canContinue = data.region && data.secteur;
 
   return (

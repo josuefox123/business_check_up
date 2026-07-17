@@ -485,13 +485,13 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {triageStep === 3 && <S03Screen onContinue={onS03} onBack={() => navigate('/triage/consent')} />}
-            {triageStep === 4 && <S04Screen onContinue={onS04} onBack={() => setTriageStep(3)} />}
-            {triageStep === 5 && <S05Screen onContinue={onS05} onBack={() => setTriageStep(4)} />}
-            {triageStep === 6 && <S06Screen onContinue={onS06} onBack={() => setTriageStep(5)} />}
-            {triageStep === 7 && <S07Screen onContinue={onS07} onBack={() => setTriageStep(6)} />}
-            {triageStep === 8 && <S08Screen onContinue={onS08} onBack={() => setTriageStep(7)} />}
-            {triageStep === 9 && <S09Screen onContinue={onS09} onBack={() => setTriageStep(8)} />}
+            {triageStep === 3 && <S03Screen onContinue={onS03} onBack={() => navigate('/triage/consent')} initialAnswer={triageAnswers.s03 ?? null} />}
+            {triageStep === 4 && <S04Screen onContinue={onS04} onBack={() => setTriageStep(3)} initialAnswer={triageAnswers.s04 ?? null} />}
+            {triageStep === 5 && <S05Screen onContinue={onS05} onBack={() => setTriageStep(4)} initialAnswer={triageAnswers.s05 ?? null} />}
+            {triageStep === 6 && <S06Screen onContinue={onS06} onBack={() => setTriageStep(5)} initialAnswer={triageAnswers.s06 ?? null} />}
+            {triageStep === 7 && <S07Screen onContinue={onS07} onBack={() => setTriageStep(6)} initialAnswer={triageAnswers.s07 ?? null} />}
+            {triageStep === 8 && <S08Screen onContinue={onS08} onBack={() => setTriageStep(7)} initialAnswer={triageAnswers.s08 ?? null} />}
+            {triageStep === 9 && <S09Screen onContinue={onS09} onBack={() => setTriageStep(8)} initialAnswer={triageAnswers.s09 ?? null} />}
           </>
         } />
 
