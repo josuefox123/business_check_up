@@ -122,7 +122,7 @@ export const CommentCaMarche = ({ onStart }) => {
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px', maxWidth: '460px', margin: '0 auto 32px' }}>
             Aucune inscription requise. Vos réponses restent confidentielles.
           </p>
-          <button className="hero-cta-primary" onClick={onStart}>
+          <button className="hero-cta-primary" onClick={onStart} style={{ background: 'var(--color-accent)', color: 'var(--color-primary)' }}>
             Commencer le diagnostic <ArrowRight size={18} strokeWidth={2.5} />
           </button>
         </div>
