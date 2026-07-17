@@ -2,7 +2,7 @@
  * Configuration de l'API Laravel pour Business Check-up
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/bc';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://business-chekcup.nicktep.com/api/bc';
 
 /**
  * Client API générique (fetch wrapper)
