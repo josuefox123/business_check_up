@@ -7,6 +7,7 @@ import {
   User, Lock, Mail
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
+import { apiFetch } from '../../api/config.js';
 import logoImg from '../../assets/logo.png';
 import './admin.css';
 
@@ -1333,12 +1334,30 @@ const AdminLogin = ({ onLogin }) => {
     }
 
     setError('');
-    // Valid credentials (standard admin email/pass)
-    if (email === 'admin@fundlab.com' && password === 'Admin123') {
-      onLogin();
-    } else {
-      setError('Email ou mot de passe incorrect.');
-    }
+    
+    // Tenter de se connecter via l'API du backend en ligne
+    apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    })
+    .then(res => {
+      const token = res?.data?.access_token || res?.access_token;
+      if (token) {
+        onLogin(token);
+      } else {
+        // En cas de succès sans token renvoyé, utiliser le mode local
+        onLogin();
+      }
+    })
+    .catch(err => {
+      console.warn('Backend login failed, trying local fallback:', err);
+      // Valid credentials (standard admin email/pass mock local)
+      if (email === 'admin@fundlab.com' && password === 'Admin123') {
+        onLogin();
+      } else {
+        setError('Identifiants incorrects. Veuillez réessayer.');
+      }
+    });
   };
 
   if (mode === 'forgot') {
@@ -1556,12 +1575,16 @@ export const AdminApp = () => {
     loadAllData();
   }, [isAuthenticated]);
 
-  const handleLogin = () => {
+  const handleLogin = (token = null) => {
+    if (token) {
+      localStorage.setItem('admin_token', token);
+    }
     sessionStorage.setItem('admin_authenticated', 'true');
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('admin_token');
     sessionStorage.removeItem('admin_authenticated');
     setIsAuthenticated(false);
   };

@@ -33,6 +33,7 @@ export const questionsApi = {
 
           return {
             id: q.question_id,
+            db_id: q.question_db_id || null,
             order: q.order || 1,
             axe: q.role || q.dimension || 'Général',
             question: q.text,
@@ -55,8 +56,9 @@ export const questionsApi = {
   
   save(moduleId, question) {
     // Admin request (authenticated via bearer token automatically inside apiFetch wrapper)
-    const method = question.id ? 'PUT' : 'POST';
-    const endpoint = question.id ? `/admin/questions/${question.id}` : '/admin/questions';
+    const dbId = question.db_id;
+    const method = dbId ? 'PUT' : 'POST';
+    const endpoint = dbId ? `/admin/questions/${dbId}` : '/admin/questions';
     
     return apiFetch(endpoint, {
       method,
@@ -70,13 +72,15 @@ export const questionsApi = {
   },
   
   delete(moduleId, qId) {
-    return apiFetch(`/admin/questions/${qId}`, {
+    // Si on a un identifiant technique db_id, l'utiliser, sinon repli sur l'id technique
+    const targetId = typeof qId === 'object' ? qId.db_id : qId;
+    return apiFetch(`/admin/questions/${targetId}`, {
       method: 'DELETE'
     })
     .then(() => true)
     .catch(err => {
       console.error('Error deleting question on backend, deleting locally:', err);
-      LocalStoreRepository.deleteQuestion(moduleId, qId);
+      LocalStoreRepository.deleteQuestion(moduleId, typeof qId === 'object' ? qId.id : qId);
       return true;
     });
   }

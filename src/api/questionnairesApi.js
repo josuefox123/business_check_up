@@ -1,32 +1,82 @@
-/**
- * QUESTIONNAIRES API — MOCK LAYER
- * Returns JS Promises resolving data from LocalStoreRepository.
- * Safe to swap with REST calls later.
- */
-
+import { apiFetch } from './config.js';
+import { questionsApi } from './questionsApi.js';
 import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 export const questionnairesApi = {
   getAll() {
-    const qData = LocalStoreRepository.getQuestionnaires();
-    return Promise.resolve(Object.keys(qData.modules).map(moduleId => ({
-      id: moduleId,
-      name: qData.catalog[moduleId]?.name || moduleId,
-      questionsCount: qData.modules[moduleId]?.questions?.length || 0,
-      axes: qData.modules[moduleId]?.axes || []
-    })));
+    return apiFetch('/modules')
+      .then(res => {
+        const modulesList = res?.data?.modules || res?.modules || [];
+        if (modulesList.length === 0) {
+          throw new Error('No modules returned from backend');
+        }
+        return modulesList.map(m => ({
+          id: m.code,
+          name: m.name,
+          questionsCount: m.question_count || 0,
+          axes: ['Général']
+        }));
+      })
+      .catch(err => {
+        console.error('Error listing modules from backend, using fallback:', err);
+        const qData = LocalStoreRepository.getQuestionnaires();
+        return Object.keys(qData.modules).map(moduleId => ({
+          id: moduleId,
+          name: qData.catalog[moduleId]?.name || moduleId,
+          questionsCount: qData.modules[moduleId]?.questions?.length || 0,
+          axes: qData.modules[moduleId]?.axes || []
+        }));
+      });
   },
+  
   getById(moduleId) {
-    const qData = LocalStoreRepository.getQuestionnaires();
-    if (qData.modules[moduleId]) {
+    // Triage est un cas spécial local au front-end
+    if (moduleId === 'triage') {
+      const qData = LocalStoreRepository.getQuestionnaires();
       return Promise.resolve({
-        id: moduleId,
-        name: qData.catalog[moduleId]?.name || moduleId,
-        estimatedTime: qData.modules[moduleId].estimatedTime || '',
-        axes: qData.modules[moduleId].axes || [],
-        questions: qData.modules[moduleId].questions || []
+        id: 'triage',
+        name: 'Formulaire de Triage',
+        estimatedTime: '3 min',
+        axes: ['Général'],
+        questions: Object.values(qData.triage)
       });
     }
-    return Promise.resolve(null);
+
+    return Promise.all([
+      apiFetch(`/modules/${moduleId}`).catch(() => null),
+      questionsApi.getByModule(moduleId).catch(() => [])
+    ])
+    .then(([modRes, questions]) => {
+      const mod = modRes?.data || modRes;
+      if (!mod || !mod.code) {
+        throw new Error('Module detail lookup failed');
+      }
+
+      // Extraire les axes uniques de la liste des questions
+      const axes = Array.from(new Set(questions.map(q => q.axe).filter(Boolean)));
+      if (axes.length === 0) axes.push('Général');
+
+      return {
+        id: mod.code,
+        name: mod.name,
+        estimatedTime: mod.target_duration_formatted || mod.target_duration || '',
+        axes: axes,
+        questions: questions
+      };
+    })
+    .catch(err => {
+      console.error(`Error loading module detail for ${moduleId} from backend, using fallback:`, err);
+      const qData = LocalStoreRepository.getQuestionnaires();
+      if (qData.modules[moduleId]) {
+        return {
+          id: moduleId,
+          name: qData.catalog[moduleId]?.name || moduleId,
+          estimatedTime: qData.modules[moduleId].estimatedTime || '',
+          axes: qData.modules[moduleId].axes || [],
+          questions: qData.modules[moduleId].questions || []
+        };
+      }
+      return null;
+    });
   }
 };
