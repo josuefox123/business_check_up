@@ -10,8 +10,34 @@ export const questionsApi = {
     
     return apiFetch(`/modules/${moduleId}/questions`)
       .then(res => {
-        // En cas de succès, retourner les questions formatées du backend
-        return res || [];
+        const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
+        
+        // Formater les questions du backend pour correspondre à l'interface frontend
+        return questionsList.map(q => {
+          let type = q.answer_type || 'single';
+          if (type === 'single_choice') type = 'single';
+          else if (type === 'multi_choice') type = 'multi';
+          else if (type === 'scale_1_5') type = 'scale_1_5';
+          else if (type === 'text_libre') type = 'text';
+
+          const choices = (q.options || []).map(opt => ({
+            id: opt.value,
+            label: opt.label,
+            icon: opt.icon || null,
+            desc: opt.desc || null
+          }));
+
+          return {
+            id: q.question_id,
+            order: q.order || 1,
+            axe: q.role || q.dimension || 'Général',
+            question: q.text,
+            hint: q.helper_text || null,
+            type: type,
+            choices: choices,
+            requireProof: !!q.evidence_required
+          };
+        });
       })
       .catch(err => {
         console.error(`Error loading questions for ${moduleId} from backend, loading fallback:`, err);

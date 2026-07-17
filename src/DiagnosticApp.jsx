@@ -374,8 +374,9 @@ function DiagnosticApp() {
         })
         .then(res => {
           // Update local score from backend engine
-          if (res && typeof res.score !== 'undefined') {
-            setScore(res.score);
+          const backendScore = res?.data?.scoring?.credibilized_score_0_100 ?? res?.data?.scoring?.converted_score_0_100;
+          if (typeof backendScore === 'number') {
+            setScore(backendScore);
           } else {
             const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
             setScore(localScore);
