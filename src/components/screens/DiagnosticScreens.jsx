@@ -823,6 +823,79 @@ export const IntroModuleScreen = ({ moduleId, onStart, onCatalog }) => {
 };
 
 /* ============================================================
+   QUIT CONFIRM MODAL — Modale stylisée de confirmation quitter
+   ============================================================ */
+const QuitConfirmModal = ({ onConfirm, onCancel }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '20px',
+      padding: '36px 32px 28px',
+      maxWidth: '400px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      textAlign: 'center',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+    }}>
+      {/* Icône d'avertissement */}
+      <div style={{
+        width: '56px', height: '56px',
+        background: 'rgba(220, 38, 38, 0.08)',
+        borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <AlertTriangle size={26} strokeWidth={2} style={{ color: '#dc2626' }} />
+      </div>
+
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '10px' }}>
+        Quitter le diagnostic ?
+      </h2>
+      <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: 1.6, marginBottom: '28px' }}>
+        Votre progression sera <strong style={{ color: 'var(--slate-700)' }}>perdue</strong>.
+        Vous serez redirigé vers l’accueil.
+      </p>
+
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button
+          onClick={onCancel}
+          style={{
+            flex: 1, padding: '12px 16px',
+            borderRadius: '10px', fontWeight: 600, fontSize: '0.9rem',
+            border: '1.5px solid var(--slate-200)', background: '#fff',
+            color: 'var(--slate-700)', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+          }}
+        >
+          Continuer
+        </button>
+        <button
+          onClick={onConfirm}
+          style={{
+            flex: 1, padding: '12px 16px',
+            borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem',
+            border: 'none', background: '#dc2626',
+            color: '#fff', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+            boxShadow: '0 4px 14px rgba(220,38,38,0.28)',
+          }}
+        >
+          Quitter
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ============================================================
    S31/S32/S33 — QUESTION LOOP
    ============================================================ */
 export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
@@ -842,6 +915,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   );
   const [showProof, setShowProof] = useState(false);
   const [proof, setProof] = useState(null);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const PROOF_CHOICES = [
     { id:'E0', label:'C\'est une estimation ou mon ressenti' },
@@ -873,6 +947,14 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
   return (
     <ScreenWrapper>
+      {/* Modale de confirmation quitter */}
+      {showQuitModal && (
+        <QuitConfirmModal
+          onConfirm={() => { setShowQuitModal(false); onQuit(); }}
+          onCancel={() => setShowQuitModal(false)}
+        />
+      )}
+
       <div className="question-wrap animate-fade-up">
         <div style={{marginBottom:'var(--space-6)'}}>
           <ProgressBar current={current} total={total} />
@@ -931,7 +1013,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           <>
             <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Niveau de preuve</p>
             <h1 className="question-heading">Sur quoi vous basez-vous pour cette réponse ?</h1>
-            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information nous permet d'ajuster la confiance accordée à votre résultat.</p>
+            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information nous permet d’ajuster la confiance accordée à votre résultat.</p>
             <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {PROOF_CHOICES.map(c => (
                 <ChoiceCard key={c.id} label={c.label} selected={proof === c.id} onClick={() => setProof(c.id)} />
@@ -942,10 +1024,15 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
         <div className="screen-nav">
           <Button variant="outline" onClick={showProof ? () => setShowProof(false) : onBack}>
-            {showProof ? 'Retour' : 'Retour'}
+            Retour
           </Button>
           <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <button style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}} onClick={onQuit}>Quitter</button>
+            <button
+              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
+              onClick={() => setShowQuitModal(true)}
+            >
+              Quitter
+            </button>
             <Button variant="primary" disabled={showProof ? !proof : !canContinue} onClick={handleContinue}>
               {showProof ? 'Valider la preuve' : 'Continuer'}
             </Button>

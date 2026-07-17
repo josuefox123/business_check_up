@@ -361,9 +361,7 @@ function DiagnosticApp() {
   };
 
   const onQuit = () => {
-    if (window.confirm('Quitter le diagnostic ? Votre progression sera perdue.')) {
-      onGoHome();
-    }
+    onGoHome();
   };
 
   // S40 Calcul
