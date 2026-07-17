@@ -12,6 +12,10 @@ export const questionsApi = {
       .then(res => {
         const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
         
+        if (questionsList.length === 0) {
+          throw new Error('Backend returned empty questions list');
+        }
+        
         // Formater les questions du backend pour correspondre à l'interface frontend
         return questionsList.map(q => {
           let type = q.answer_type || 'single';
