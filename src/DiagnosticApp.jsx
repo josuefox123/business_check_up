@@ -5,6 +5,69 @@ import { LandingPage } from './components/screens/LandingPage.jsx';
 import { CommentCaMarche } from './components/screens/CommentCaMarche.jsx';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { PublicContactScreen } from './components/screens/PublicContact.jsx';
+import { AlertTriangle } from 'lucide-react';
+
+/* ── Modale d'erreur stylisée du système ── */
+const ErrorModal = ({ title, message, onClose }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '20px',
+      padding: '36px 32px 28px',
+      maxWidth: '400px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      textAlign: 'center',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+    }}>
+      <div style={{
+        width: '56px', height: '56px',
+        background: 'rgba(239, 68, 68, 0.08)',
+        borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <AlertTriangle size={26} strokeWidth={2} style={{ color: '#ef4444' }} />
+      </div>
+
+      <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1E293B', marginBottom: '10px' }}>
+        {title}
+      </h2>
+      <p style={{ fontSize: '0.9rem', color: '#64748B', lineHeight: 1.6, marginBottom: '28px' }}>
+        {message}
+      </p>
+
+      <button
+        onClick={onClose}
+        style={{
+          width: '100%',
+          padding: '13px 20px',
+          borderRadius: '12px',
+          fontWeight: 750,
+          fontSize: '0.95rem',
+          border: 'none',
+          background: '#17212D',
+          color: '#ffffff',
+          cursor: 'pointer',
+          fontFamily: 'inherit',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={(e) => e.target.style.background = '#2B3A4A'}
+        onMouseLeave={(e) => e.target.style.background = '#17212D'}
+      >
+        Fermer
+      </button>
+    </div>
+  </div>
+);
 import {
   ConsentScreen,
   S03Screen, S04Screen, S05Screen, S06Screen, S07Screen, S08Screen, S09Screen,
@@ -88,6 +151,7 @@ function DiagnosticApp() {
   const [chosenForVerif, setChosenForVerif] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentRunId, setCurrentRunId] = useState(null);
+  const [errorModal, setErrorModal] = useState(null);
 
   // Fetch questions dynamically when currentModule changes (Backend Ready)
   useEffect(() => {
@@ -402,7 +466,6 @@ function DiagnosticApp() {
   const onPrioNext = () => navigate('/diagnostic/orientation');
   const onContact = () => navigate('/diagnostic/contact');
   const onDownload = () => {
-    alert('Téléchargement du rapport PDF en cours de génération...');
     navigate('/diagnostic/contact');
   };
 
@@ -444,12 +507,18 @@ function DiagnosticApp() {
               window.open(pdfUrl, '_blank');
             } else {
               console.error('Aucune URL de PDF retournée par le backend');
-              alert('Impossible de générer le PDF pour le moment.');
+              setErrorModal({
+                title: 'Rapport PDF indisponible',
+                message: 'Le serveur a validé votre demande mais n’a pas pu créer le document. Veuillez réessayer.'
+              });
             }
           })
           .catch(err => {
             console.error('Erreur lors de la génération du PDF du backend:', err);
-            alert('Une erreur est survenue lors de la génération du rapport PDF.');
+            setErrorModal({
+              title: 'Erreur de téléchargement',
+              message: 'Une erreur est survenue lors de la génération du rapport PDF. Veuillez vérifier votre connexion ou réessayer.'
+            });
           });
       }
 
@@ -480,6 +549,13 @@ function DiagnosticApp() {
   return (
     <>
       {showNavbar && <Navbar onGoHome={onGoHome} />}
+      {errorModal && (
+        <ErrorModal
+          title={errorModal.title}
+          message={errorModal.message}
+          onClose={() => setErrorModal(null)}
+        />
+      )}
 
       <Routes>
         <Route path="/" element={
