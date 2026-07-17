@@ -813,15 +813,23 @@ export const IntroModuleScreen = ({ moduleId, onStart, onCatalog }) => {
 /* ============================================================
    S31/S32/S33 — QUESTION LOOP
    ============================================================ */
-export const QuestionScreen = ({ moduleId, questionData, current, total, onContinue, onBack, onQuit }) => {
-  const [answer, setAnswer] = useState(null);
-  const [multiAnswer, setMultiAnswer] = useState([]);
-  const [showProof, setShowProof] = useState(false);
-  const [proof, setProof] = useState(null);
+export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
   const isMulti = questionData.type === 'multi';
   const isScale = questionData.type === 'scale_1_5';
   const isText  = questionData.type === 'short_text';
-  const [textVal, setTextVal] = useState('');
+
+  // Initialise les états avec la réponse sauvegardée si l'utilisateur revient en arrière
+  const [answer, setAnswer] = useState(
+    (!isMulti && !isText && savedAnswer !== null) ? savedAnswer : null
+  );
+  const [multiAnswer, setMultiAnswer] = useState(
+    isMulti && Array.isArray(savedAnswer) ? savedAnswer : []
+  );
+  const [textVal, setTextVal] = useState(
+    isText && typeof savedAnswer === 'string' ? savedAnswer : ''
+  );
+  const [showProof, setShowProof] = useState(false);
+  const [proof, setProof] = useState(null);
 
   const PROOF_CHOICES = [
     { id:'E0', label:'C\'est une estimation ou mon ressenti' },

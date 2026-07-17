@@ -527,6 +527,7 @@ function DiagnosticApp() {
               questionData={questions[questionIndex]}
               current={questionIndex + 1}
               total={questions.length}
+              savedAnswer={moduleAnswers[questions[questionIndex]?.id] ?? null}
               onContinue={onAnswer}
               onBack={onQuestionBack}
               onQuit={onQuit}
