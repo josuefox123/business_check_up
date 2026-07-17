@@ -21,6 +21,11 @@ export async function createSessionApi() {
 export async function submitConsentApi(sessionId, consent = true) {
   return apiFetch(`/sessions/${sessionId}/consent`, {
     method: 'POST',
-    body: JSON.stringify({ consent })
+    body: JSON.stringify({
+      consent_diagnostic: consent,
+      consent_aggregate: consent,
+      consent_contact: false,
+      consent_pdf_email: false
+    })
   });
 }
