@@ -765,10 +765,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #080f25;
+  background-color: #ffffff;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(38, 89, 242, 0.15) 0, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(52, 190, 213, 0.1) 0, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(38, 89, 242, 0.04) 0, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(52, 190, 213, 0.06) 0, transparent 50%);
   padding: var(--space-4);
   position: relative;
   overflow: hidden;
@@ -777,15 +777,13 @@
 .admin-login-card {
   width: 100%;
   max-width: 440px;
-  background: rgba(10, 23, 69, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 24px;
   padding: 40px 32px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   box-shadow: 
-    0 4px 30px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    0 10px 40px -10px rgba(15, 23, 42, 0.05),
+    0 20px 50px -20px rgba(15, 23, 42, 0.08);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -810,25 +808,25 @@
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  box-shadow: 0 4px 12px rgba(52, 190, 213, 0.3);
+  box-shadow: 0 4px 12px rgba(52, 190, 213, 0.2);
 }
 
 .admin-login-logo-text {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   letter-spacing: -0.02em;
 }
 
 .admin-login-logo-text span {
-  color: rgba(255, 255, 255, 0.4);
+  color: #94a3b8;
   font-weight: 400;
 }
 
 .admin-login-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #0f172a;
   margin-bottom: 6px;
   text-align: center;
   letter-spacing: -0.01em;
@@ -836,7 +834,7 @@
 
 .admin-login-sub {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: #64748b;
   margin-bottom: 28px;
   text-align: center;
   line-height: 1.4;
@@ -851,9 +849,9 @@
 }
 
 .admin-login-field-label {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.8);
+  color: #475569;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -868,7 +866,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.35);
+  color: #94a3b8;
   pointer-events: none;
   transition: color 0.2s ease;
 }
@@ -876,10 +874,10 @@
 .admin-login-input {
   width: 100%;
   padding: 14px 16px 14px 44px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
-  color: #ffffff;
+  color: #0f172a;
   font-family: var(--font);
   font-size: 0.95rem;
   outline: none;
@@ -887,11 +885,11 @@
 }
 
 .admin-login-input::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: #cbd5e1;
 }
 
 .admin-login-input:focus {
-  background: rgba(255, 255, 255, 0.07);
+  background: #ffffff;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 4px rgba(52, 190, 213, 0.12);
 }
@@ -906,7 +904,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-dusk);
+  background: #0f172a;
   color: #ffffff;
   font-family: var(--font);
   font-size: 0.95rem;
@@ -916,14 +914,14 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 20px rgba(23, 33, 45, 0.3);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
   margin-top: 10px;
 }
 
 .admin-login-submit-btn:hover {
-  background: #0f1820;
+  background: #1e293b;
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(23, 33, 45, 0.42);
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.15);
 }
 
 .admin-login-submit-btn:active {
@@ -935,9 +933,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #991b1b;
   padding: 12px 14px;
   border-radius: 12px;
   font-size: 0.8rem;

@@ -1435,7 +1435,7 @@ const AdminLogin = ({ onLogin }) => {
                 setPasswordError('');
                 setSuccessMessage('');
               }}
-              style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer' }}
             >
               Retourner à la connexion
             </button>
@@ -1528,7 +1528,7 @@ const AdminLogin = ({ onLogin }) => {
         </form>
         
         <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-          <Link to="/" style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8rem', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+          <Link to="/" style={{ color: '#64748b', fontSize: '0.8rem', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
             Retourner au site principal
           </Link>
         </div>
