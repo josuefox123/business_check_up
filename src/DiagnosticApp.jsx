@@ -286,14 +286,29 @@ function DiagnosticApp() {
       
       // Construire le module avec les données réelles du backend
       const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
-      setCurrentModule({
-        ...baseMod,
-        id: backendModuleId,
-        // Priorité aux données backend sur les données statiques
-        name: backendModuleName || baseMod.name,
-        duration: backendDuration || baseMod.duration,
-        description: backendDescription
-      });
+      
+      apiFetch(`/modules/${backendModuleId}`)
+        .then(modRes => {
+          const modDetail = modRes?.data || modRes || {};
+          setCurrentModule({
+            ...baseMod,
+            id: backendModuleId,
+            name: modDetail.name || backendModuleName || baseMod.name,
+            duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || backendDuration || baseMod.duration,
+            description: modDetail.description || null,
+            question_count: modDetail.question_count || null
+          });
+        })
+        .catch(err => {
+          console.error('Error fetching module details:', err);
+          setCurrentModule({
+            ...baseMod,
+            id: backendModuleId,
+            name: backendModuleName || baseMod.name,
+            duration: backendDuration || baseMod.duration,
+            question_count: null
+          });
+        });
 
       // Confirm recommended module in backend
       if (triageId) {

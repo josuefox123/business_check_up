@@ -663,6 +663,12 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
                 <span>Durée estimée : <strong>{modDuration}</strong></span>
               </div>
             )}
+            {recommendedModule?.question_count && (
+              <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
+                <FileText size={15} className="text-blue" />
+                <span>Nombre de questions : <strong>{recommendedModule.question_count} questions</strong></span>
+              </div>
+            )}
             <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
               <BarChart2 size={15} className="text-blue" />
               <span>Vous recevrez : <strong>Score, forces, fragilités, priorités d'action, orientation</strong></span>
@@ -738,6 +744,8 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
               id: m.code,
               name: m.name,
               duration: m.target_duration_formatted || m.target_duration || '',
+              question_count: m.question_count || null,
+              description: m.description || null,
               ...MODULE_STYLE_MAP[m.code]
             })));
           }
@@ -775,7 +783,14 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
               >
                 <div className="catalog-module-info">
                   <div className="catalog-module-name">{m.name}</div>
-                  {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                    {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
+                    {m.question_count && (
+                      <div className="catalog-module-dur" style={{ color: 'var(--slate-400)', fontWeight: 500 }}>
+                        {m.question_count} questions
+                      </div>
+                    )}
+                  </div>
                 </div>
               </button>
             ))}
@@ -835,7 +850,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) 
 
   // Charger les détails du module depuis le backend si pas encore reçus via prop
   useEffect(() => {
-    if (moduleData?.name) {
+    if (moduleData?.name && moduleData?.question_count) {
       setBackendModule(moduleData);
       return;
     }
@@ -849,7 +864,8 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) 
               id: d.code,
               name: d.name,
               duration: d.target_duration_formatted || d.target_duration || '',
-              description: d.description || ''
+              description: d.description || '',
+              question_count: d.question_count || null
             });
           }
         })
@@ -859,6 +875,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) 
 
   const title    = backendModule?.name     || moduleData?.name     || moduleId || '';
   const duration = backendModule?.duration || moduleData?.duration || '';
+  const qCount   = backendModule?.question_count || moduleData?.question_count || null;
 
   return (
     <ScreenWrapper>
@@ -875,6 +892,12 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) 
             <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Clock size={14} style={{ color: 'var(--slate-500)' }} />
               {duration}
+            </span>
+          )}
+          {qCount && (
+            <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <FileText size={14} style={{ color: 'var(--slate-500)' }} />
+              {qCount} questions
             </span>
           )}
           <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
