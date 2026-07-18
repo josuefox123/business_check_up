@@ -7,7 +7,7 @@ import {
   User, Lock, Mail
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
-import { apiFetch } from '../../api/config.js';
+import { apiFetch, API_BASE_URL } from '../../api/config.js';
 import logoImg from '../../assets/logo.png';
 import './admin.css';
 
@@ -1335,8 +1335,9 @@ const AdminLogin = ({ onLogin }) => {
 
     setError('');
     
-    // Tenter de se connecter via l'API du backend en ligne
-    apiFetch('/auth/login', {
+    // Tenter de se connecter via l'API du backend en ligne (préfixe /api/auth/login)
+    const loginUrl = `${API_BASE_URL.replace('/api/bc', '')}/auth/login`;
+    apiFetch(loginUrl, {
       method: 'POST',
       body: JSON.stringify({ email, password })
     })
