@@ -1684,13 +1684,13 @@ const getConfidence = (a) => {
   return 'Déclaratif';
 };
 
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { generateDiagnosticPDF } from '../../utils/generateDiagnosticPDF.js';
 
 export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution }) => {
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
-  // Calcul des scores réels par axe / dimension
+  // radarData kept for legacy (not displayed)
   const realAxeScores = calculateAxeScores(moduleId, answers);
   let radarData = Object.entries(realAxeScores).map(([axeName, data]) => ({
     subject: axeName,
@@ -1755,6 +1755,28 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         { label:'Préparation', text:'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
       ]);
 
+  const handleExportPDF = () => {
+    const moduleNames = {
+      'PRJ-02': 'Diagnostic Projet',
+      'DIF-03': 'Diagnostic Difficulté',
+      'OPP-04': 'Diagnostic Opportunité',
+      'FLH-01': 'Diagnostic Flash',
+    };
+    const moduleName = moduleNames[moduleId] || moduleId;
+
+    generateDiagnosticPDF({
+      score,
+      moduleId,
+      moduleName,
+      forces,
+      fragilites,
+      priorityText,
+      priorities,
+      totalQuestions: Object.keys(answers || {}).length,
+      confidence: conf,
+    });
+  };
+
   return (
     <ScreenWrapper wide>
       <div className="animate-fade-up">
@@ -1772,51 +1794,30 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
           </div>
         </div>
 
-        {/* Grid 2 columns */}
-        <div className="dashboard-grid">
-          {/* Main KPI Card */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <ShieldCheck size={20} color="var(--brand-blue)" />
-              <div className="dash-card-title">Diagnostic de Maturité</div>
-            </div>
-            <div className="results-kpi-row">
-              <ScoreGauge score={score} size={140} />
-              <div>
-                <div style={{fontSize:'1.1rem', fontWeight:700, color:'var(--slate-900)', marginBottom:'var(--space-1)'}}>
-                  Niveau : <span style={{color:lvl.color}}>{lvl.label}</span>
-                </div>
-                <div style={{fontSize:'0.9rem', color:'var(--slate-500)'}}>
-                  Fiabilité de l'évaluation : <strong>{conf}</strong>
-                </div>
+        {/* KPI Card */}
+        <div className="dash-card" style={{ marginBottom: '16px' }}>
+          <div className="dash-card-header">
+            <ShieldCheck size={20} color="var(--brand-blue)" />
+            <div className="dash-card-title">Diagnostic de Maturité</div>
+          </div>
+          <div className="results-kpi-row">
+            <ScoreGauge score={score} size={140} />
+            <div>
+              <div style={{fontSize:'1.1rem', fontWeight:700, color:'var(--slate-900)', marginBottom:'var(--space-1)'}}>
+                Niveau : <span style={{color:lvl.color}}>{lvl.label}</span>
+              </div>
+              <div style={{fontSize:'0.9rem', color:'var(--slate-500)'}}>
+                Fiabilité de l'évaluation : <strong>{conf}</strong>
               </div>
             </div>
-            <p style={{fontSize:'0.95rem', color:'var(--slate-600)', lineHeight:1.6}}>
-              {score < 40
-                ? 'Situation nécessitant une attention immédiate sur les fondamentaux.'
-                : score < 70
-                ? 'Base saine mais des optimisations sont nécessaires pour passer un cap.'
-                : 'Structure solide, prête pour la croissance ou la mise à l\'échelle.'}
-            </p>
           </div>
-
-          {/* Chart Card */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <Activity size={20} color="var(--brand-teal)" />
-              <div className="dash-card-title">Analyse Multidimensionnelle</div>
-            </div>
-            <div className="chart-container">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-                  <PolarGrid stroke="var(--slate-200)" />
-                  <PolarAngleAxis dataKey="subject" tick={{fill:'var(--slate-600)', fontSize:12, fontWeight:600}} />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                  <Radar name="Score" dataKey="A" stroke="var(--brand-blue)" fill="var(--brand-blue)" fillOpacity={0.4} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+          <p style={{fontSize:'0.95rem', color:'var(--slate-600)', lineHeight:1.6, marginTop: 'var(--space-4)'}}>
+            {score < 40
+              ? 'Situation nécessitant une attention immédiate sur les fondamentaux.'
+              : score < 70
+              ? 'Base saine mais des optimisations sont nécessaires pour passer un cap.'
+              : 'Structure solide, prête pour la croissance ou la mise à l\'échelle.'}
+          </p>
         </div>
 
         {/* ── PLAN D'ACTION DÉTAILLÉ INLINE ── */}
@@ -1889,7 +1890,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
 
         {/* Actions Footer */}
         <div className="results-actions" style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
-          <Button variant="outline" onClick={onContact}><Download size={18}/> Exporter PDF</Button>
+          <Button variant="outline" onClick={handleExportPDF}><Download size={18}/> Exporter PDF</Button>
           <Button variant="teal" onClick={onContact}><Calendar size={18}/> Planifier un suivi</Button>
           <Button variant="primary" onClick={onDetail}>Orientation &amp; Suite <ArrowRight size={18}/></Button>
         </div>
