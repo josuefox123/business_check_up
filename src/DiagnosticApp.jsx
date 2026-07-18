@@ -168,10 +168,14 @@ function DiagnosticApp() {
     }
   }, [currentModule]);
 
-  // Navigation callbacks
   const onStartAssisted = () => {
     setTriageStep(3);
     setTriageAnswers({});
+    setCurrentModule(null);
+    setRestitution(null);
+    setCurrentRunId(null);
+    setQuestions([]);
+    setScore(0);
     
     // Create new session in backend
     createSessionApi()
