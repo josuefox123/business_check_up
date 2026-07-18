@@ -346,7 +346,7 @@ export const PublicContactScreen = ({ onBack }) => {
                       <span style={{ color: '#17212D', fontWeight: 700, lineHeight: 1.5 }}>
                         Cotonou, Bénin<br />
                         <span style={{ fontWeight: 500, fontSize: '0.85rem', color: '#64748B' }}>
-                          Quartier Ganhi, Avenue Proche CCI
+                          Marché de Wologuèdè
                         </span><br />
                         <a
                           href="https://maps.app.goo.gl/zAXiCx6rSomNADwn7?g_st=aw"
