@@ -283,6 +283,8 @@ function DiagnosticApp() {
     if (!isRestored) return;
 
     if (
+      location.pathname === '/triage/consent' ||
+      localStorage.getItem('bc_session_id') ||
       Object.keys(triageAnswers).length > 0 ||
       Object.keys(moduleAnswers).length > 0 ||
       currentModule ||
@@ -346,6 +348,20 @@ function DiagnosticApp() {
         const sessionId = res?.data?.session_id;
         if (sessionId) {
           localStorage.setItem('bc_session_id', sessionId);
+          saveState({
+            triageStep: 3,
+            triageAnswers: {},
+            currentModule: null,
+            routeKey: null,
+            questionIndex: 0,
+            moduleAnswers: {},
+            score: 0,
+            chosenForVerif: null,
+            currentRunId: null,
+            restitution: null,
+            currentPath: '/triage/consent',
+            sessionId: sessionId
+          });
         }
       })
       .catch(err => console.error('Error creating session:', err));
