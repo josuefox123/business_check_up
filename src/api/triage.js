@@ -145,6 +145,31 @@ export async function submitTriageToBackendApi(sessionId, answers) {
   };
   const sector = sectorMapping[s05.secteur] || 'other';
 
+  // Liste des communes officielles validées par le backend
+  const COMMUNE_LIST = [
+    'Banikoara', 'Gogounou', 'Kandi', 'Karimama', 'Malanville', 'Segbana',
+    'Boukoumbé', 'Cobly', 'Kérou', 'Kouandé', 'Matéri', 'Natitingou', 'Péhunco', 'Tanguiéta', 'Toucountouna',
+    'Abomey-Calavi', 'Allada', 'Kpomassè', 'Ouidah', 'Sô-Ava', 'Toffo', 'Tori-Bossito', 'Zè',
+    'Bembéréké', 'Kalalé', "N'Dali", 'Nikki', 'Parakou', 'Pèrèrè', 'Sinendé', 'Tchaourou',
+    'Bantè', 'Dassa-Zoumé', 'Glazoué', 'Ouèssè', 'Savalou', 'Savè',
+    'Aplahoué', 'Djakotomey', 'Dogbo', 'Klouékanmè', 'Lalo', 'Toviklin',
+    'Bassila', 'Copargo', 'Djougou', 'Ouaké',
+    'Cotonou',
+    'Athiémé', 'Bopa', 'Comè', 'Grand-Popo', 'Houéyogbé', 'Lokossa',
+    'Adjarra', 'Adjohoun', 'Aguégués', 'Akpro-Missérété', 'Avrankou', 'Bonou', 'Dangbo', 'Porto-Novo', 'Sèmè-Kpodji',
+    'Adja-Ouèrè', 'Ifangni', 'Kétou', 'Pobè', 'Sakété',
+    'Abomey', 'Agbangnizoun', 'Bohicon', 'Covè', 'Djidja', 'Ouinhi', 'Za-Kpota', 'Zagnanado', 'Zogbodomey'
+  ];
+
+  let normalizedCommune = null;
+  if (s05.commune) {
+    const clean = s05.commune.trim().toLowerCase();
+    // Correspondance exacte ou partielle
+    const match = COMMUNE_LIST.find(c => c.toLowerCase() === clean) ||
+                  COMMUNE_LIST.find(c => c.toLowerCase().includes(clean) || clean.includes(c.toLowerCase()));
+    normalizedCommune = match || null;
+  }
+
   const payload = {
     user_profile_type,
     full_name: answers.name || null,
@@ -152,7 +177,7 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     email: answers.email || null,
     business_name: s05.business_name || null,
     region,
-    commune: s05.commune || null,
+    commune: normalizedCommune,
     sector,
     sub_sector: s05.soussecteur || null,
     activity_stage,
