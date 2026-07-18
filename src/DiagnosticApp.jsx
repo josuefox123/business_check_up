@@ -137,7 +137,7 @@ const ResumeDiagnosticModal = ({ onConfirm, onCancel }) => (
             boxShadow: '0 4px 14px rgba(38,89,242,0.25)',
           }}
         >
-          Reprendre
+          Continuer
         </button>
       </div>
     </div>
