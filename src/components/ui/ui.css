@@ -108,7 +108,7 @@
 /* Sizes */
 .btn-sm  { padding: 7px 14px; font-size: 0.85rem; border-radius: 8px; }
 .btn-lg  { padding: 14px 28px; font-size: 1.05rem; border-radius: 14px; }
-.btn-full { width: 100%; }
+.btn-full { width: 100%; white-space: normal; height: auto; min-height: 48px; text-align: center; }
 
 /* ============================================
    CHOICE CARD

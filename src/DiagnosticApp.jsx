@@ -379,7 +379,7 @@ function DiagnosticApp() {
   const onRouteStart = () => navigate('/diagnostic/intro');
   const onRouteCatalog = () => navigate('/catalog');
   const onRouteBack = () => {
-    setTriageStep(3);
+    setTriageStep(9);
     navigate('/triage/wizard');
   };
 
