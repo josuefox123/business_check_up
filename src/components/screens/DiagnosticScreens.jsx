@@ -999,6 +999,129 @@ const QuitConfirmModal = ({ onConfirm, onCancel }) => (
 );
 
 /* ============================================================
+   CONFIDENCE MODAL — Modale d'évaluation de certitude responsive
+   ============================================================ */
+const ConfidenceModal = ({ confidence, setConfidence, onConfirm, onCancel, choices }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '24px',
+      padding: '32px 24px',
+      maxWidth: '440px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }} onClick={e => e.stopPropagation()}>
+      <div style={{ textAlign: 'center' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '8px' }}>
+          Êtes-vous sûr(e) de votre réponse ?
+        </h3>
+        <p style={{ fontSize: '0.85rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
+          Votre niveau de certitude nous aide à calibrer la précision de votre diagnostic.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {choices.map(c => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => setConfidence(c.id)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              width: '100%',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              border: '1.5px solid',
+              borderColor: confidence === c.id ? 'var(--color-blue)' : 'var(--slate-200)',
+              background: confidence === c.id ? 'rgba(38,89,242,0.04)' : '#ffffff',
+              color: 'var(--slate-800)',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.15s'
+            }}
+          >
+            <div style={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: confidence === c.id ? 'var(--color-blue)' : 'var(--slate-300)',
+              background: confidence === c.id ? 'var(--color-blue)' : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {confidence === c.id && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffffff' }} />}
+            </div>
+            <span>{c.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '10px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            border: '1.5px solid var(--slate-200)',
+            background: '#fff',
+            color: 'var(--slate-700)',
+            cursor: 'pointer',
+            fontFamily: 'var(--font)',
+            transition: 'all 0.15s',
+            textAlign: 'center'
+          }}
+        >
+          Retour
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={!confidence}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '10px',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            border: 'none',
+            background: confidence ? 'var(--color-blue)' : 'var(--slate-200)',
+            color: '#fff',
+            cursor: confidence ? 'pointer' : 'not-allowed',
+            fontFamily: 'var(--font)',
+            transition: 'all 0.15s',
+            textAlign: 'center',
+            boxShadow: confidence ? '0 4px 14px rgba(38,89,242,0.25)' : 'none'
+          }}
+        >
+          Confirmer
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ============================================================
    S31/S32/S33 — QUESTION LOOP
    ============================================================ */
 export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
@@ -1016,7 +1139,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const [textVal, setTextVal] = useState(
     isText && typeof savedAnswer === 'string' ? savedAnswer : ''
   );
-  const [showConfidence, setShowConfidence] = useState(false);
+  const [showConfidenceModal, setShowConfidenceModal] = useState(false);
   const [confidence, setConfidence] = useState(null);
   const [showProof, setShowProof] = useState(false);
   const [proof, setProof] = useState(null);
@@ -1046,23 +1169,30 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
   const canContinue = showProof 
     ? proof !== null 
-    : showConfidence 
-      ? confidence !== null 
-      : (isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null);
+    : (isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null);
 
   const handleContinue = () => {
-    const ans = isMulti ? multiAnswer : isText ? textVal : answer;
     if (questionData.requireProof) {
-      if (!showConfidence) {
-        setShowConfidence(true);
-      } else if (!showProof) {
-        setShowProof(true);
-      } else {
-        onContinue(ans, proof, confidence);
-      }
+      setShowConfidenceModal(true);
     } else {
+      const ans = isMulti ? multiAnswer : isText ? textVal : answer;
       onContinue(ans, null, null);
     }
+  };
+
+  const handleConfirmConfidence = () => {
+    setShowConfidenceModal(false);
+    if (confidence === 'sure') {
+      setShowProof(true);
+    } else {
+      const ans = isMulti ? multiAnswer : isText ? textVal : answer;
+      onContinue(ans, null, confidence); // s'il n'est pas sûr, on n'affiche plus la preuve
+    }
+  };
+
+  const handleConfirmProof = () => {
+    const ans = isMulti ? multiAnswer : isText ? textVal : answer;
+    onContinue(ans, proof, confidence);
   };
 
   const SCALE_LABELS = ['1 — Pas du tout', '2 — Peu', '3 — Modérément', '4 — Bien', '5 — Très bien'];
@@ -1074,6 +1204,17 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         <QuitConfirmModal
           onConfirm={() => { setShowQuitModal(false); onQuit(); }}
           onCancel={() => setShowQuitModal(false)}
+        />
+      )}
+
+      {/* Modale d'évaluation de certitude */}
+      {showConfidenceModal && (
+        <ConfidenceModal
+          confidence={confidence}
+          setConfidence={setConfidence}
+          choices={CONFIDENCE_CHOICES}
+          onConfirm={handleConfirmConfidence}
+          onCancel={() => setShowConfidenceModal(false)}
         />
       )}
 
@@ -1093,17 +1234,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
               ))}
             </div>
           </>
-        ) : showConfidence ? (
-          <>
-            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Évaluation de certitude</p>
-            <h1 className="question-heading">Êtes-vous sûr(e) de votre réponse ?</h1>
-            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Indiquez votre niveau de confiance concernant la réponse fournie.</p>
-            <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {CONFIDENCE_CHOICES.map(c => (
-                <ChoiceCard key={c.id} label={c.label} selected={confidence === c.id} onClick={() => setConfidence(c.id)} />
-              ))}
-            </div>
-          </>
         ) : (
           <>
             <p style={{fontWeight:700, color:'var(--slate-400)', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'var(--space-4)'}}>
@@ -1114,7 +1244,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
             {/* Relance */}
             {questionData.relance && (
-              <div className="alert alert-info" style={{marginBottom:'var(--space-8)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <div className="alert alert-info" style={{marginBottom:'var(--space-8)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <MessageSquare size={18} className="text-blue" style={{ flexShrink: 0 }} />
                 <span>{questionData.relance}</span>
               </div>
@@ -1156,7 +1286,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         )}
 
         <div className="screen-nav">
-          <Button variant="outline" onClick={showProof ? () => setShowProof(false) : showConfidence ? () => setShowConfidence(false) : onBack}>
+          <Button variant="outline" onClick={showProof ? () => { setShowProof(false); setShowConfidenceModal(true); } : onBack}>
             Retour
           </Button>
           <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -1166,8 +1296,8 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             >
               Quitter
             </button>
-            <Button variant="primary" disabled={showProof ? !proof : !canContinue} onClick={handleContinue}>
-              {showProof ? 'Valider la preuve' : showConfidence ? 'Confirmer la certitude' : 'Continuer'}
+            <Button variant="primary" disabled={showProof ? !proof : !canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
+              {showProof ? 'Valider la preuve' : 'Continuer'}
             </Button>
           </div>
         </div>
