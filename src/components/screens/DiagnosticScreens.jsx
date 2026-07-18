@@ -18,11 +18,39 @@ const CheckIcon = () => (
 );
 
 import { 
-  Rocket, Store, Building2, AlertTriangle, Target, Lightbulb, ArrowRight, ChevronLeft,
+  Rocket, Store, Building2, AlertTriangle, Target, Lightbulb, ArrowRight, ChevronLeft, ArrowLeft,
   Lock, AlertOctagon, HelpCircle, Check, CheckSquare, Award, Clock, BarChart2, FileText,
   Users, TrendingUp, Calendar, CheckCircle, ShieldCheck, Download, Activity, Zap,
   Globe, MessageSquare, Handshake
 } from 'lucide-react';
+
+/* ── REUSABLE TOP BACK LINK ── */
+const TopBackLink = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      background: 'none',
+      border: 'none',
+      color: 'var(--color-blue)',
+      fontWeight: 700,
+      fontSize: '0.9rem',
+      cursor: 'pointer',
+      padding: '0',
+      marginBottom: '20px',
+      transition: 'opacity 0.2s ease',
+      fontFamily: 'var(--font)',
+    }}
+    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+  >
+    <ArrowLeft size={16} strokeWidth={2.5} />
+    <span>Retour</span>
+  </button>
+);
 
 /* ============================================================
    S01 — CONSENTEMENT
@@ -50,6 +78,7 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       {showConfirmModal && (
         <AnswerConfirmModal
           label="Conditions d'utilisation et politique de données"
@@ -135,10 +164,6 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
             <span>Vous devez accepter l'utilisation des réponses ET l'usage agrégé pour commencer.</span>
           </div>
         )}
-
-        <div className="screen-nav">
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-        </div>
       </div>
     </ScreenWrapper>
   );
@@ -211,6 +236,7 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
 
   return (
     <ScreenWrapper wide>
+      {onBack && <TopBackLink onClick={onBack} />}
       {showConfirmModal && (
         <AnswerConfirmModal
           label={selectedLabel}
@@ -290,12 +316,6 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
             );
           })}
         </div>
-
-        {onBack && (
-          <div className="screen-nav" style={{ marginTop: 'var(--space-8)' }}>
-            <Button variant="outline" onClick={onBack}>Retour</Button>
-          </div>
-        )}
 
         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: 'var(--space-5)', fontWeight: 500 }}>
           Pas sûr ? Sélectionnez le profil le plus proche — vous pourrez préciser ensuite.
@@ -409,6 +429,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
   return (
     <ScreenWrapper>
+      {!multi && onBack && <TopBackLink onClick={onBack} />}
       {showConfirmModal && (
         <AnswerConfirmModal
           label={selectedLabel}
@@ -450,7 +471,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
           ))}
         </div>
 
-        {multi ? (
+        {multi && (
           <div className="screen-nav">
             <Button variant="outline" onClick={onBack}>Retour</Button>
             <div className="screen-nav-right">
@@ -458,10 +479,6 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
                 Continuer
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="screen-nav">
-            <Button variant="outline" onClick={onBack}>Retour</Button>
           </div>
         )}
 
@@ -622,6 +639,7 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       {showConfirmModal && (
         <AnswerConfirmModal
           label={selectedLabel}
@@ -665,9 +683,6 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
               }}
             />
           ))}
-        </div>
-        <div className="screen-nav" style={{ marginTop: '28px' }}>
-          <Button variant="outline" onClick={onBack}>Retour</Button>
         </div>
       </div>
     </ScreenWrapper>
@@ -1397,6 +1412,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
   return (
     <ScreenWrapper>
+      {!showProof && onBack && <TopBackLink onClick={onBack} />}
       {/* Modale de confirmation quitter */}
       {showQuitModal && (
         <QuitConfirmModal
@@ -1561,19 +1577,14 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             </div>
           </div>
         ) : (
-          <div className="screen-nav">
-            <Button variant="outline" onClick={onBack}>
-              Retour
-            </Button>
-            <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <button
-                type="button"
-                style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
-                onClick={() => setShowQuitModal(true)}
-              >
-                Quitter
-              </button>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-6)' }}>
+            <button
+              type="button"
+              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600, padding: '8px 16px'}}
+              onClick={() => setShowQuitModal(true)}
+            >
+              Quitter le diagnostic
+            </button>
           </div>
         )}
       </div>
