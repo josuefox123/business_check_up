@@ -444,13 +444,15 @@ function DiagnosticApp() {
     navigate('/diagnostic/question');
   };
 
-  const onAnswer = (answer, proof, confidence) => {
+  const onAnswer = (answer, proof, confidence, evidenceType, evidenceLabel) => {
     const q = questions[questionIndex];
     setModuleAnswers(p => ({ 
       ...p, 
       [q.id]: answer, 
       ...(proof ? { [`${q.id}_proof`]: proof } : {}),
-      ...(confidence ? { [`${q.id}_confidence`]: confidence } : {})
+      ...(confidence ? { [`${q.id}_confidence`]: confidence } : {}),
+      ...(evidenceType ? { [`${q.id}_evidence_type`]: evidenceType } : {}),
+      ...(evidenceLabel ? { [`${q.id}_evidence_label`]: evidenceLabel } : {})
     }));
     
     // Post answer in background if run active
@@ -469,7 +471,9 @@ function DiagnosticApp() {
           question_id: q.id,
           answer_value: answer,
           response_confidence_user: confidence || null,
-          evidence_level: evidence_level
+          evidence_level: evidence_level,
+          evidence_type: evidenceType || null,
+          evidence_label: evidenceLabel || null
         })
       }).catch(err => console.error('Error posting answer:', err));
     }

@@ -8,6 +8,7 @@ import { ScreenWrapper } from '../layout/Navbar.jsx';
 import logoImg from '../../assets/logo.png';
 import './screens.css';
 import aboutIllustration from '../../assets/about_illustration.png';
+import { calculateAxeScores } from '../../api/scoring.js';
 
 
 const CheckIcon = () => (
@@ -31,7 +32,15 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
   const [error, setError] = useState(false);
 
   const toggle = (key) => {
-    setChecked(prev => ({ ...prev, [key]: !prev[key] }));
+    setChecked(prev => {
+      const nextChecked = { ...prev, [key]: !prev[key] };
+      if (nextChecked.diag && nextChecked.stats) {
+        setTimeout(() => {
+          onContinue(nextChecked);
+        }, 250);
+      }
+      return nextChecked;
+    });
     setError(false);
   };
 
@@ -216,7 +225,10 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
               <button
                 key={profile.id}
                 className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}`}
-                onClick={() => setSelected(profile.id)}
+                onClick={() => {
+                  setSelected(profile.id);
+                  if (handleCb) handleCb(profile.id);
+                }}
                 style={{
                   '--p-color':  profile.color,
                   '--p-light':  profile.colorLight,
@@ -261,18 +273,15 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
         {/* Navigation */}
         <div className="screen-nav" style={{ marginTop: 'var(--space-8)' }}>
           {onBack && (
-            <button className="btn btn-outline" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ChevronLeft size={16} /> Retour
-            </button>
+            <Button variant="outline" onClick={onBack}>
+              Retour
+            </Button>
           )}
-          <button
-            className="btn btn-primary"
-            onClick={handleConfirm}
-            disabled={!selected}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', opacity: selected ? 1 : 0.45, cursor: selected ? 'pointer' : 'not-allowed' }}
-          >
-            Continuer <ArrowRight size={16} strokeWidth={2.5} />
-          </button>
+          <div className="screen-nav-right">
+            <Button variant="primary" disabled={!selected} onClick={handleConfirm}>
+              Continuer
+            </Button>
+          </div>
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: 'var(--space-5)', fontWeight: 500 }}>
@@ -375,6 +384,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
       }
     } else {
       setSelected(id);
+      onContinue(id);
     }
   };
 
@@ -482,6 +492,9 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
               onClick={() => {
                 setSelected(c.id);
                 setSubSelected(null);
+                if (c.id !== 'occ') {
+                  onContinue(c.id);
+                }
               }}
             />
           ))}
@@ -494,15 +507,23 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
+                type="button"
                 className={`btn ${subSelected === 'yes' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setSubSelected('yes')}
+                onClick={() => {
+                  setSubSelected('yes');
+                  onContinue('occ_oui');
+                }}
                 style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
               >
                 Oui
               </button>
               <button 
+                type="button"
                 className={`btn ${subSelected === 'no' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setSubSelected('no')}
+                onClick={() => {
+                  setSubSelected('no');
+                  onContinue('occ_non');
+                }}
                 style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
               >
                 Non
@@ -803,7 +824,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
         )}
 
         <div className="screen-nav" style={{justifyContent:'flex-start', marginTop:'var(--space-6)'}}>
-          <Button variant="outline" onClick={onBack}>← Retour</Button>
+          <Button variant="outline" onClick={onBack}>Retour</Button>
         </div>
       </div>
     </ScreenWrapper>
@@ -1142,7 +1163,8 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const [showConfidenceModal, setShowConfidenceModal] = useState(false);
   const [confidence, setConfidence] = useState(null);
   const [showProof, setShowProof] = useState(false);
-  const [proof, setProof] = useState(null);
+  const [evidenceType, setEvidenceType] = useState('');
+  const [evidenceLabel, setEvidenceLabel] = useState('');
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   const CONFIDENCE_CHOICES = [
@@ -1152,11 +1174,19 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     { id: 'unknown', label: 'Je doute fortement / je ne sais pas' },
   ];
 
-  const PROOF_CHOICES = [
-    { id:'E0', label:'C\'est une estimation ou mon ressenti' },
-    { id:'E1', label:'J\'ai un indice concret : commandes, clients, reçus...' },
-    { id:'E2', label:'J\'ai un document : facture, cahier, Excel, relevé...' },
-    { id:'E3', label:'J\'ai une donnée vérifiable et récente' },
+  const EVIDENCE_TYPES = [
+    { id: 'invoice', label: 'Facture', level: 'E2' },
+    { id: 'receipt', label: 'Reçu / Ticket de caisse', level: 'E1' },
+    { id: 'bank_statement', label: 'Relevé bancaire', level: 'E3' },
+    { id: 'mobile_money', label: 'Relevé Mobile Money', level: 'E3' },
+    { id: 'order', label: 'Bon de commande', level: 'E1' },
+    { id: 'contract', label: 'Contrat', level: 'E2' },
+    { id: 'excel', label: 'Fichier Excel', level: 'E2' },
+    { id: 'notebook', label: 'Cahier de caisse', level: 'E2' },
+    { id: 'photo', label: 'Photo de preuve', level: 'E1' },
+    { id: 'customer_message', label: 'Message client (WhatsApp, SMS...)', level: 'E1' },
+    { id: 'tax_document', label: 'Document fiscal', level: 'E3' },
+    { id: 'other', label: 'Autre justificatif', level: 'E1' }
   ];
 
   const toggleMulti = (id) => {
@@ -1168,7 +1198,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   };
 
   const canContinue = showProof 
-    ? proof !== null 
+    ? evidenceType !== '' 
     : (isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null);
 
   const handleContinue = () => {
@@ -1176,7 +1206,16 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
       setShowConfidenceModal(true);
     } else {
       const ans = isMulti ? multiAnswer : isText ? textVal : answer;
-      onContinue(ans, null, null);
+      onContinue(ans, null, null, null, null);
+    }
+  };
+
+  const handleChoiceSelect = (val) => {
+    setAnswer(val);
+    if (questionData.requireProof) {
+      setShowConfidenceModal(true);
+    } else {
+      onContinue(val, null, null, null, null);
     }
   };
 
@@ -1186,13 +1225,15 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
       setShowProof(true);
     } else {
       const ans = isMulti ? multiAnswer : isText ? textVal : answer;
-      onContinue(ans, null, confidence); // s'il n'est pas sûr, on n'affiche plus la preuve
+      onContinue(ans, null, confidence, null, null); // s'il n'est pas sûr, on n'affiche plus la preuve
     }
   };
 
   const handleConfirmProof = () => {
     const ans = isMulti ? multiAnswer : isText ? textVal : answer;
-    onContinue(ans, proof, confidence);
+    const selectedTypeObj = EVIDENCE_TYPES.find(t => t.id === evidenceType);
+    const resolvedLevel = selectedTypeObj ? selectedTypeObj.level : 'E1';
+    onContinue(ans, resolvedLevel, confidence, evidenceType, evidenceLabel);
   };
 
   const SCALE_LABELS = ['1 — Pas du tout', '2 — Peu', '3 — Modérément', '4 — Bien', '5 — Très bien'];
@@ -1225,13 +1266,60 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
         {showProof ? (
           <>
-            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Niveau de preuve</p>
-            <h1 className="question-heading">Sur quoi vous basez-vous pour cette réponse ?</h1>
-            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information nous permet d’ajuster la confiance accordée à votre résultat.</p>
-            <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {PROOF_CHOICES.map(c => (
-                <ChoiceCard key={c.id} label={c.label} selected={proof === c.id} onClick={() => setProof(c.id)} />
-              ))}
+            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Justification de la réponse</p>
+            <h1 className="question-heading">Sur quel justificatif vous basez-vous ?</h1>
+            <p className="proof-intro" style={{ marginBottom: '24px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information permet de valider la certitude de vos réponses pour l'analyse.</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--slate-600)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Type de justificatif / preuve
+                </label>
+                <select
+                  value={evidenceType}
+                  onChange={e => setEvidenceType(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    border: '1.5px solid var(--slate-200)',
+                    background: '#ffffff',
+                    color: 'var(--slate-800)',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    fontFamily: 'var(--font)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Sélectionnez un type de justificatif --</option>
+                  {EVIDENCE_TYPES.map(t => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--slate-600)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Description / Libellé de la preuve
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Fichier Excel trésorerie juin 2026, Facture client..."
+                  value={evidenceLabel}
+                  onChange={e => setEvidenceLabel(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    border: '1.5px solid var(--slate-200)',
+                    background: '#ffffff',
+                    color: 'var(--slate-800)',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    fontFamily: 'var(--font)'
+                  }}
+                />
+              </div>
             </div>
           </>
         ) : (
@@ -1262,9 +1350,9 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             ) : isScale ? (
               <div className="choices-list">
                 {SCALE_LABELS.map((l, i) => (
-                  <ChoiceCard key={i+1} label={l} selected={answer === i+1} onClick={() => setAnswer(i+1)} />
+                  <ChoiceCard key={i+1} label={l} selected={answer === i+1} onClick={() => handleChoiceSelect(i+1)} />
                 ))}
-                <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => setAnswer('idk')} />
+                <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => handleChoiceSelect('idk')} />
               </div>
             ) : isMulti ? (
               <div className="choices-list">
@@ -1275,10 +1363,10 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             ) : (
               <div className="choices-list">
                 {questionData.choices.map(c => (
-                  <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => setAnswer(c.id)} />
+                  <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => handleChoiceSelect(c.id)} />
                 ))}
                 {!questionData.noUnknown && !questionData.choices.some(c => c.id === 'idk' || c.label.toLowerCase().includes('ne sais pas')) && (
-                  <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => setAnswer('idk')} />
+                  <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => handleChoiceSelect('idk')} />
                 )}
               </div>
             )}
@@ -1296,7 +1384,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             >
               Quitter
             </button>
-            <Button variant="primary" disabled={showProof ? !proof : !canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
+            <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
               {showProof ? 'Valider la preuve' : 'Continuer'}
             </Button>
           </div>
@@ -1377,14 +1465,23 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
-  // Fake data for radar chart based on score
-  const radarData = [
-    { subject: 'Finance', A: score > 50 ? score : score + 20, fullMark: 100 },
-    { subject: 'Marketing', A: score > 30 ? score - 10 : 40, fullMark: 100 },
-    { subject: 'Orga', A: score > 60 ? score : 50, fullMark: 100 },
-    { subject: 'Tech', A: score > 40 ? score + 10 : 30, fullMark: 100 },
-    { subject: 'Legal', A: score > 20 ? score + 5 : 45, fullMark: 100 },
-  ];
+  // Calcul des scores réels par axe / dimension
+  const realAxeScores = calculateAxeScores(moduleId, answers);
+  let radarData = Object.entries(realAxeScores).map(([axeName, data]) => ({
+    subject: axeName,
+    A: data.score,
+    fullMark: 100
+  }));
+
+  if (radarData.length === 0) {
+    radarData = [
+      { subject: 'Finance', A: score, fullMark: 100 },
+      { subject: 'Marketing', A: score, fullMark: 100 },
+      { subject: 'Orga', A: score, fullMark: 100 },
+      { subject: 'Tech', A: score, fullMark: 100 },
+      { subject: 'Legal', A: score, fullMark: 100 },
+    ];
+  }
 
   return (
     <ScreenWrapper wide>
@@ -1787,19 +1884,6 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 value={form.tel}
                 onChange={(e) => setForm({ ...form, tel: e.target.value })}
               />
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '6px' }}>
-              <input
-                type="checkbox"
-                id="accept"
-                checked={form.accept}
-                onChange={(e) => setForm({ ...form, accept: e.target.checked })}
-                style={{ marginTop: '3px', cursor: 'pointer' }}
-              />
-              <label htmlFor="accept" style={{ fontSize: '0.8rem', color: 'var(--slate-500)', lineHeight: '1.4', cursor: 'pointer', userSelect: 'none' }}>
-                J'autorise la CCI et FUND.lab à me recontacter concernant ce diagnostic.
-              </label>
             </div>
           </div>
 

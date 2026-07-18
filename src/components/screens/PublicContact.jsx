@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Mail, Phone, MapPin, Send, MessageSquare,
-  User, Info, ArrowLeft, CheckCircle, Clock, HeadphonesIcon
+  User, Info, ArrowLeft, CheckCircle, Clock, HeadphonesIcon, Globe
 } from 'lucide-react';
 
 /* ── Petit composant champ réutilisable ── */
@@ -330,11 +330,15 @@ export const PublicContactScreen = ({ onBack }) => {
                 {[
                   {
                     icon: Mail, label: 'Email professionnel',
-                    value: <a href="mailto:contact@fundlab.co" style={{ color: '#34BED5', fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseEnter={(e) => e.target.style.color = '#1A9DB8'} onMouseLeave={(e) => e.target.style.color = '#34BED5'}>contact@fundlab.co</a>,
+                    value: <a href="mailto:info@fund-lab.org" style={{ color: '#34BED5', fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseEnter={(e) => e.target.style.color = '#1A9DB8'} onMouseLeave={(e) => e.target.style.color = '#34BED5'}>info@fund-lab.org</a>,
                   },
                   {
                     icon: Phone, label: 'Téléphone / WhatsApp',
-                    value: <span style={{ color: '#17212D', fontWeight: 700 }}>+229 00 00 00 00</span>,
+                    value: <span style={{ color: '#17212D', fontWeight: 700 }}>+229 01 9797 1299</span>,
+                  },
+                  {
+                    icon: Globe, label: 'Site Internet',
+                    value: <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#34BED5', fontWeight: 700, textDecoration: 'none', transition: 'color 0.2s ease' }} onMouseEnter={(e) => e.target.style.color = '#1A9DB8'} onMouseLeave={(e) => e.target.style.color = '#34BED5'}>https://fund-lab.org/</a>,
                   },
                   {
                     icon: MapPin, label: 'Siège social',
@@ -364,43 +368,6 @@ export const PublicContactScreen = ({ onBack }) => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Carte Partenariat & Accompagnement CCI */}
-            <div style={{
-              borderRadius: '24px',
-              background: 'linear-gradient(135deg, rgba(23, 33, 45, 0.02) 0%, rgba(52, 190, 213, 0.04) 100%)',
-              border: '2px dashed #CBD5E1',
-              padding: '32px',
-            }}>
-              <h4 style={{ color: '#17212D', fontWeight: 800, marginBottom: '10px', fontSize: '1.1rem', lineHeight: 1.4 }}>
-                Besoin d'un accompagnement direct ?
-              </h4>
-              <p style={{ color: '#64748B', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '20px' }}>
-                Le Business Check-up est conçu en partenariat avec des structures d'appui aux entreprises pour vous offrir des solutions de financement et de coaching.
-              </p>
-              <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.03)' }}>
-                <iframe
-                  title="Carte CCI Bénin"
-                  width="100%"
-                  height="200"
-                  frameBorder="0"
-                  scrolling="no"
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=2.430%2C6.347%2C2.446%2C6.357&layer=mapnik&marker=6.35209%2C2.43795"
-                  style={{ display: 'block' }}
-                />
-              </div>
-              <div style={{ textAlign: 'right', marginTop: '10px' }}>
-                <a
-                  href="https://www.openstreetmap.org/query?lat=6.35209&lon=2.43795#map=17/6.35209/2.43795"
-                  target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: '0.8rem', color: '#34BED5', fontWeight: 700, textDecoration: 'none' }}
-                  onMouseEnter={(e) => e.target.style.color = '#1A9DB8'}
-                  onMouseLeave={(e) => e.target.style.color = '#34BED5'}
-                >
-                  Agrandir la carte ↗
-                </a>
               </div>
             </div>
 
