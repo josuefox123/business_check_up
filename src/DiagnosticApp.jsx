@@ -444,9 +444,14 @@ function DiagnosticApp() {
     navigate('/diagnostic/question');
   };
 
-  const onAnswer = (answer, proof) => {
+  const onAnswer = (answer, proof, confidence) => {
     const q = questions[questionIndex];
-    setModuleAnswers(p => ({ ...p, [q.id]: answer, ...(proof ? { [`${q.id}_proof`]: proof } : {}) }));
+    setModuleAnswers(p => ({ 
+      ...p, 
+      [q.id]: answer, 
+      ...(proof ? { [`${q.id}_proof`]: proof } : {}),
+      ...(confidence ? { [`${q.id}_confidence`]: confidence } : {})
+    }));
     
     // Post answer in background if run active
     if (currentRunId) {
@@ -463,6 +468,7 @@ function DiagnosticApp() {
         body: JSON.stringify({
           question_id: q.id,
           answer_value: answer,
+          response_confidence_user: confidence || null,
           evidence_level: evidence_level
         })
       }).catch(err => console.error('Error posting answer:', err));

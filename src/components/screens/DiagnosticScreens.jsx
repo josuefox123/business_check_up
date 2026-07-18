@@ -1016,9 +1016,18 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const [textVal, setTextVal] = useState(
     isText && typeof savedAnswer === 'string' ? savedAnswer : ''
   );
+  const [showConfidence, setShowConfidence] = useState(false);
+  const [confidence, setConfidence] = useState(null);
   const [showProof, setShowProof] = useState(false);
   const [proof, setProof] = useState(null);
   const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const CONFIDENCE_CHOICES = [
+    { id: 'sure', label: 'Je suis tout à fait sûr(e)' },
+    { id: 'estimate', label: 'C\'est une estimation raisonnable' },
+    { id: 'not_sure', label: 'Je ne suis pas très sûr(e)' },
+    { id: 'unknown', label: 'Je doute fortement / je ne sais pas' },
+  ];
 
   const PROOF_CHOICES = [
     { id:'E0', label:'C\'est une estimation ou mon ressenti' },
@@ -1035,14 +1044,24 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     });
   };
 
-  const canContinue = isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null;
+  const canContinue = showProof 
+    ? proof !== null 
+    : showConfidence 
+      ? confidence !== null 
+      : (isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null);
 
   const handleContinue = () => {
     const ans = isMulti ? multiAnswer : isText ? textVal : answer;
-    if (questionData.requireProof && !showProof) {
-      setShowProof(true);
+    if (questionData.requireProof) {
+      if (!showConfidence) {
+        setShowConfidence(true);
+      } else if (!showProof) {
+        setShowProof(true);
+      } else {
+        onContinue(ans, proof, confidence);
+      }
     } else {
-      onContinue(ans, proof);
+      onContinue(ans, null, null);
     }
   };
 
@@ -1063,7 +1082,29 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           <ProgressBar current={current} total={total} />
         </div>
 
-        {!showProof ? (
+        {showProof ? (
+          <>
+            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Niveau de preuve</p>
+            <h1 className="question-heading">Sur quoi vous basez-vous pour cette réponse ?</h1>
+            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information nous permet d’ajuster la confiance accordée à votre résultat.</p>
+            <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {PROOF_CHOICES.map(c => (
+                <ChoiceCard key={c.id} label={c.label} selected={proof === c.id} onClick={() => setProof(c.id)} />
+              ))}
+            </div>
+          </>
+        ) : showConfidence ? (
+          <>
+            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Évaluation de certitude</p>
+            <h1 className="question-heading">Êtes-vous sûr(e) de votre réponse ?</h1>
+            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Indiquez votre niveau de confiance concernant la réponse fournie.</p>
+            <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {CONFIDENCE_CHOICES.map(c => (
+                <ChoiceCard key={c.id} label={c.label} selected={confidence === c.id} onClick={() => setConfidence(c.id)} />
+              ))}
+            </div>
+          </>
+        ) : (
           <>
             <p style={{fontWeight:700, color:'var(--slate-400)', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'var(--space-4)'}}>
               {moduleId} · Question {current}/{total}
@@ -1112,21 +1153,10 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
               </div>
             )}
           </>
-        ) : (
-          <>
-            <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>Niveau de preuve</p>
-            <h1 className="question-heading">Sur quoi vous basez-vous pour cette réponse ?</h1>
-            <p className="proof-intro" style={{ marginBottom: '20px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information nous permet d’ajuster la confiance accordée à votre résultat.</p>
-            <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {PROOF_CHOICES.map(c => (
-                <ChoiceCard key={c.id} label={c.label} selected={proof === c.id} onClick={() => setProof(c.id)} />
-              ))}
-            </div>
-          </>
         )}
 
         <div className="screen-nav">
-          <Button variant="outline" onClick={showProof ? () => setShowProof(false) : onBack}>
+          <Button variant="outline" onClick={showProof ? () => setShowProof(false) : showConfidence ? () => setShowConfidence(false) : onBack}>
             Retour
           </Button>
           <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -1137,7 +1167,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
               Quitter
             </button>
             <Button variant="primary" disabled={showProof ? !proof : !canContinue} onClick={handleContinue}>
-              {showProof ? 'Valider la preuve' : 'Continuer'}
+              {showProof ? 'Valider la preuve' : showConfidence ? 'Confirmer la certitude' : 'Continuer'}
             </Button>
           </div>
         </div>
