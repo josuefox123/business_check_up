@@ -251,6 +251,10 @@ function DiagnosticApp() {
       const data = res?.data || {};
       const recommended = data.recommended_module || {};
       const backendModuleId = recommended.code || 'FLH-01';
+      // Extraire directement le nom et la durée depuis la réponse backend
+      const backendModuleName = recommended.name || recommended.module_name || null;
+      const backendDuration = recommended.target_duration_formatted || recommended.duration || null;
+      const backendDescription = recommended.description || null;
       
       const triageId = data.triage_id;
       if (triageId) {
@@ -268,10 +272,15 @@ function DiagnosticApp() {
       
       setRouteKey(backendRoute);
       
+      // Construire le module avec les données réelles du backend
       const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
       setCurrentModule({
         ...baseMod,
-        id: backendModuleId
+        id: backendModuleId,
+        // Priorité aux données backend sur les données statiques
+        name: backendModuleName || baseMod.name,
+        duration: backendDuration || baseMod.duration,
+        description: backendDescription
       });
 
       // Confirm recommended module in backend
@@ -616,7 +625,7 @@ function DiagnosticApp() {
           )
         } />
         <Route path="/diagnostic/intro" element={
-          currentModule && <IntroModuleScreen moduleId={currentModule.id} onStart={onIntroStart} onCatalog={onGoToCatalog} />
+          currentModule && <IntroModuleScreen moduleId={currentModule.id} moduleData={currentModule} onStart={onIntroStart} onCatalog={onGoToCatalog} />
         } />
         <Route path="/diagnostic/question" element={
           currentModule && questions.length > 0 && (

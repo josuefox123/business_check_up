@@ -387,7 +387,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
             <ProgressBar current={progress.current} total={progress.total} label={`Étape ${progress.current}/${progress.total}`} />
           </div>
         )}
-        <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>{step}</p>
+
         <h1 className="question-heading">{question}</h1>
         {hint && <p className="question-hint">{hint}</p>}
 
@@ -468,7 +468,7 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
   return (
     <ScreenWrapper>
       <div className="question-wrap animate-fade-up">
-        <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>S04</p>
+
         <h1 className="question-heading">Votre activité vend-elle déjà des produits ou services ?</h1>
         <p className="question-hint" style={{marginBottom:'var(--space-6)'}}>Cette question affine votre profil et nous aide à vous orienter vers le diagnostic le plus adapté.</p>
 
@@ -527,7 +527,7 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
   return (
     <ScreenWrapper>
       <div className="question-wrap animate-fade-up">
-        <p className="question-meta-label" style={{marginBottom:'var(--space-3)'}}>S05</p>
+
         <h1 className="question-heading">Département & Secteur d'activité</h1>
         <p className="question-hint">Ces informations nous permettent de contextualiser votre diagnostic.</p>
         <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)',marginBottom:'var(--space-6)'}}>
@@ -608,21 +608,51 @@ const ROUTE_CONFIGS = {
   },
 };
 
+
 export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, onBack }) => {
-  const cfg = ROUTE_CONFIGS[routeKey] || {
+  // Les données du module viennent du backend via recommendedModule
+  const modName = recommendedModule?.name || '';
+  const modDuration = recommendedModule?.duration || '';
+  const modDescription = recommendedModule?.description || '';
+
+  // Config d'affichage selon le type de route (chip, texte contextuel)
+  const routeDisplay = {
+    S10: {
+      chip: 'route-chip-projet', chipLabel: '🚀 Module Projet',
+      cardTitle: `Votre orientation recommandée : ${modName}`,
+      body: modDescription || `Votre situation correspond à un projet ou une activité en préparation. Le module "${modName}" est conçu pour vous aider à valider vos hypothèses et identifier vos prochaines étapes.`,
+      cta: `Démarrer ${modName}`,
+      warning: null,
+    },
+    S11: {
+      chip: 'route-chip-urgent', chipLabel: '⚡ Priorité Urgente',
+      cardTitle: `Votre entreprise traverse une difficulté`,
+      body: modDescription || `Votre entreprise semble traverser une difficulté. Notre outil vous recommande le module "${modName}" — conçu pour identifier rapidement les causes et les actions de stabilisation.`,
+      cta: `Démarrer ${modName}`,
+      warning: 'Ce module est prioritaire. Il est fortement recommandé de le compléter avant tout autre diagnostic.',
+    },
+    S12: {
+      chip: 'route-chip-opport', chipLabel: '🎯 Opportunité',
+      cardTitle: `Vous cherchez à saisir une opportunité`,
+      body: modDescription || `Vous cherchez à saisir une opportunité. Le module "${modName}" vérifie si votre entreprise est prête et sous quelles conditions le succès est envisageable.`,
+      cta: `Démarrer ${modName}`,
+      warning: 'Ce diagnostic ne constitue PAS une validation d\'éligibilité à un financement.',
+    },
+  };
+
+  const cfg = routeDisplay[routeKey] || {
     chip: 'route-chip-recommend', chipLabel: '✅ Recommandé',
-    type: '', cardTitle: `Votre orientation recommandée : ${recommendedModule?.name || ''}`,
-    body: `Notre outil vous recommande le module "${recommendedModule?.name || ''}" parce que vos réponses indiquent que votre priorité actuelle correspond à ce diagnostic.`,
-    module: recommendedModule?.id || '', duration: recommendedModule?.duration || '',
-    output: 'Score, forces, fragilités, priorités d\'action, orientation',
-    cta: 'Démarrer ce diagnostic',
+    cardTitle: `Votre orientation recommandée : ${modName}`,
+    body: modDescription || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`,
+    cta: `Démarrer ${modName}`,
+    warning: null,
   };
 
   return (
     <ScreenWrapper>
       <div className="route-wrap animate-fade-up">
         <div className={`route-chip ${cfg.chip}`}>{cfg.chipLabel}</div>
-        <div className={`route-card ${cfg.type}`} style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)', marginTop: '14px' }}>
+        <div className={`route-card`} style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)', marginTop: '14px' }}>
           <h1 className="route-title" style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>
             {cfg.cardTitle}
           </h1>
@@ -631,13 +661,15 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-            <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
-              <Clock size={15} className="text-blue" />
-              <span>Durée estimée : <strong>{cfg.duration}</strong></span>
-            </div>
+            {modDuration && (
+              <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
+                <Clock size={15} className="text-blue" />
+                <span>Durée estimée : <strong>{modDuration}</strong></span>
+              </div>
+            )}
             <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
               <BarChart2 size={15} className="text-blue" />
-              <span>Vous recevrez : <strong>{cfg.output}</strong></span>
+              <span>Vous recevrez : <strong>Score, forces, fragilités, priorités d'action, orientation</strong></span>
             </div>
             <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
               <FileText size={15} className="text-blue" />
@@ -683,19 +715,42 @@ const MODULE_ICONS_MAP = {
   Award: Award,
 };
 
-const CATALOG_MODULES = [
-  { id:'PRJ-02', name:'Tester mon idée de projet',            duration:'8-12 min',  iconName:'Rocket', bg:'#EFF6FF', iconColor:'#2659F2' },
-  { id:'FLH-01', name:'Faire un diagnostic rapide',           duration:'7-10 min',  iconName:'Zap', bg:'#ECFDF5', iconColor:'#059669' },
-  { id:'DIF-03', name:'Comprendre une difficulté',            duration:'10-15 min', iconName:'AlertTriangle', bg:'#FEF2F2', iconColor:'#ef4444' },
-  { id:'OPP-04', name:'Évaluer une opportunité',              duration:'10-15 min', iconName:'Target', bg:'#FFFBEB', iconColor:'#f59e0b' },
-  { id:'PRO-05', name:'Diagnostiquer mon offre/produits',     duration:'8-15 min',  iconName:'Lightbulb', bg:'#F0FDF4', iconColor:'#10b981' },
-  { id:'COM-06', name:'Diagnostiquer mes ventes/clients',     duration:'8-15 min',  iconName:'Users', bg:'#FFF7ED', iconColor:'#ffedd5' },
-  { id:'FIN-07', name:'Diagnostiquer ma trésorerie/rentabilité', duration:'8-15 min', iconName:'TrendingUp', bg:'#EFF6FF', iconColor:'#2563eb' },
-  { id:'GOV-08', name:'Diagnostiquer mon organisation',       duration:'8-15 min',  iconName:'Building2', bg:'#FAF5FF', iconColor:'#8b5cf6' },
-  { id:'360-09', name:'Diagnostiquer toute mon entreprise',   duration:'30-45 min', iconName:'Award', bg:'#F0FDF4', iconColor:'#16a34a' },
-];
+// Couleurs et icônes par code module (UI uniquement, pas de données métier)
+const MODULE_STYLE_MAP = {
+  'PRJ-02': { iconName:'Rocket',        bg:'#EFF6FF', iconColor:'#2659F2' },
+  'FLH-01': { iconName:'Zap',           bg:'#ECFDF5', iconColor:'#059669' },
+  'DIF-03': { iconName:'AlertTriangle', bg:'#FEF2F2', iconColor:'#ef4444' },
+  'OPP-04': { iconName:'Target',        bg:'#FFFBEB', iconColor:'#f59e0b' },
+  'PRO-05': { iconName:'Lightbulb',     bg:'#F0FDF4', iconColor:'#10b981' },
+  'COM-06': { iconName:'Users',         bg:'#FFF7ED', iconColor:'#f97316' },
+  'FIN-07': { iconName:'TrendingUp',    bg:'#EFF6FF', iconColor:'#2563eb' },
+  'GOV-08': { iconName:'Building2',     bg:'#FAF5FF', iconColor:'#8b5cf6' },
+  '360-09': { iconName:'Award',         bg:'#F0FDF4', iconColor:'#16a34a' },
+};
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('../../api/config.js').then(({ apiFetch }) => {
+      apiFetch('/modules')
+        .then(res => {
+          const list = res?.data?.modules || res?.modules || [];
+          if (list.length > 0) {
+            setModules(list.filter(m => m.is_available !== false).map(m => ({
+              id: m.code,
+              name: m.name,
+              duration: m.target_duration_formatted || m.target_duration || '',
+              ...MODULE_STYLE_MAP[m.code]
+            })));
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    });
+  }, []);
+
   return (
     <ScreenWrapper>
       <div className="catalog-wrap animate-fade-up">
@@ -711,26 +766,27 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           </div>
         )}
 
-        <div className="catalog-modules-grid">
-          {CATALOG_MODULES.map((m, i) => {
-            return (
-              <button 
-                key={m.id} 
-                className={`catalog-module-card animate-fade-up delay-${Math.min(i,5)+1}00`} 
+        {loading ? (
+          <div style={{textAlign:'center', padding:'40px 0', color:'var(--slate-400)', fontSize:'0.9rem'}}>Chargement des modules…</div>
+        ) : (
+          <div className="catalog-modules-grid">
+            {modules.map((m, i) => (
+              <button
+                key={m.id}
+                className={`catalog-module-card animate-fade-up delay-${Math.min(i,5)+1}00`}
                 onClick={() => onSelect(m)}
                 style={{ borderLeft: `4px solid ${m.iconColor || 'var(--slate-300)'}` }}
               >
                 <div className="catalog-module-info">
                   <div className="catalog-module-name">{m.name}</div>
-                  <div className="catalog-module-dur">{m.duration}</div>
+                  {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
                 </div>
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
 
-
-        <div className="screen-nav" style={{justifyContent:'flex-start'}}>
+        <div className="screen-nav" style={{justifyContent:'flex-start', marginTop:'var(--space-6)'}}>
           <Button variant="outline" onClick={onBack}>← Retour</Button>
         </div>
       </div>
@@ -761,54 +817,77 @@ export const VerifModuleScreen = ({ chosenModule, warningMessage, onConfirm, onA
   </ScreenWrapper>
 );
 
-const MODULE_INTROS = {
-  'PRJ-02': { iconName:'Rocket', title:'Diagnostic Projet', duration:'8-12 min', bg:'#EFF6FF', iconColor:'#2659F2', bullets:['Pertinence et maturité de votre idée','Identification des risques','Analyse marché et concurrence','Capacité à exécuter','Prochaines étapes recommandées'] },
-  'FLH-01': { iconName:'Zap', title:'Diagnostic Flash', duration:'7-10 min', bg:'#ECFDF5', iconColor:'#059669', bullets:['Vue d\'ensemble rapide de votre activité','Points forts et fragilités principales','Orientation vers les modules approfondis'] },
-  'DIF-03': { iconName:'AlertTriangle', title:'Diagnostic Difficulté', duration:'10-15 min', bg:'#FEF2F2', iconColor:'#ef4444', bullets:['Identification des causes de la difficulté','Évaluation de la situation financière','Analyse commerciale et opérationnelle','Plan de stabilisation prioritaire','Ressources et aides disponibles'] },
-  'OPP-04': { iconName:'Target', title:'Diagnostic Opportunité', duration:'10-15 min', bg:'#FFFBEB', iconColor:'#f59e0b', bullets:['Maturité de votre entreprise','Alignement avec l\'opportunité','Risques et conditions de succès','Prochaines étapes'] },
-  'PRO-05': { iconName:'Lightbulb', title:'Diagnostic Offre/Produits', duration:'8-15 min', bg:'#F0FDF4', iconColor:'#10b981', bullets:['Clarté de votre offre','Positionnement prix','Différenciation concurrentielle','Adéquation marché'] },
-  'COM-06': { iconName:'Users', title:'Diagnostic Commercial', duration:'8-15 min', bg:'#FFF7ED', iconColor:'#ffedd5', bullets:['Performance commerciale','Base clients et fidélisation','Stratégie marketing','Pipeline et conversion'] },
-  'FIN-07': { iconName:'TrendingUp', title:'Diagnostic Finance', duration:'8-15 min', bg:'#EFF6FF', iconColor:'#2563eb', bullets:['Situation de trésorerie','Charges et rentabilité','Gestion du financement','Préparation aux demandes de fonds'] },
-  'GOV-08': { iconName:'Building2', title:'Diagnostic Organisation', duration:'8-15 min', bg:'#FAF5FF', iconColor:'#8b5cf6', bullets:['Clarté des rôles et décisions','Culture d\'entreprise','Processus et outils','Capacité de croissance'] },
-  '360-09': { iconName:'Award', title:'Diagnostic Complet 360°', duration:'30-45 min', bg:'#F0FDF4', iconColor:'#16a34a', bullets:['Analyse complète de tous les piliers','Score global et par domaine','Plan d\'action structuré sur 90 jours','Orientation vers l\'accompagnement'] },
+// MODULE_INTROS : garde uniquement les données visuelles (icône, couleur)
+// Les données textuelles (nom, durée) viennent du backend via la prop `moduleData`
+const MODULE_INTRO_STYLES = {
+  'PRJ-02': { iconName:'Rocket',        bg:'#EFF6FF', iconColor:'#2659F2' },
+  'FLH-01': { iconName:'Zap',           bg:'#ECFDF5', iconColor:'#059669' },
+  'DIF-03': { iconName:'AlertTriangle', bg:'#FEF2F2', iconColor:'#ef4444' },
+  'OPP-04': { iconName:'Target',        bg:'#FFFBEB', iconColor:'#f59e0b' },
+  'PRO-05': { iconName:'Lightbulb',     bg:'#F0FDF4', iconColor:'#10b981' },
+  'COM-06': { iconName:'Users',         bg:'#FFF7ED', iconColor:'#f97316' },
+  'FIN-07': { iconName:'TrendingUp',    bg:'#EFF6FF', iconColor:'#2563eb' },
+  'GOV-08': { iconName:'Building2',     bg:'#FAF5FF', iconColor:'#8b5cf6' },
+  '360-09': { iconName:'Award',         bg:'#F0FDF4', iconColor:'#16a34a' },
 };
 
-export const IntroModuleScreen = ({ moduleId, onStart, onCatalog }) => {
-  const cfg = MODULE_INTROS[moduleId] || MODULE_INTROS['FLH-01'];
-  const IconComp = MODULE_ICONS_MAP[cfg.iconName] || HelpCircle;
+// moduleData = { id, name, duration, description } depuis le backend (via currentModule dans DiagnosticApp)
+export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) => {
+  const [backendModule, setBackendModule] = useState(null);
+  const style = MODULE_INTRO_STYLES[moduleId] || MODULE_INTRO_STYLES['FLH-01'];
+  const IconComp = MODULE_ICONS_MAP[style.iconName] || HelpCircle;
+
+  // Charger les détails du module depuis le backend si pas encore reçus via prop
+  useEffect(() => {
+    if (moduleData?.name) {
+      setBackendModule(moduleData);
+      return;
+    }
+    if (!moduleId) return;
+    import('../../api/config.js').then(({ apiFetch }) => {
+      apiFetch(`/modules/${moduleId}`)
+        .then(res => {
+          const d = res?.data || res;
+          if (d?.code) {
+            setBackendModule({
+              id: d.code,
+              name: d.name,
+              duration: d.target_duration_formatted || d.target_duration || '',
+              description: d.description || ''
+            });
+          }
+        })
+        .catch(() => {});
+    });
+  }, [moduleId, moduleData]);
+
+  const title    = backendModule?.name     || moduleData?.name     || moduleId || '';
+  const duration = backendModule?.duration || moduleData?.duration || '';
 
   return (
     <ScreenWrapper>
       <div className="intro-wrap animate-fade-up">
         <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center' }}>
-          <div className="screen-icon" style={{ background: cfg.bg, color: cfg.iconColor, width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="screen-icon" style={{ background: style.bg, color: style.iconColor, width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconComp size={32} />
           </div>
         </div>
-        <h1 className="screen-title" style={{ textAlign: 'center' }}>{cfg.title}</h1>
+        <h1 className="screen-title" style={{ textAlign: 'center' }}>{title}</h1>
 
         <div className="intro-meta-row" style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Clock size={14} style={{ color: 'var(--slate-500)' }} />
-            {cfg.duration}
-          </span>
+          {duration && (
+            <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Clock size={14} style={{ color: 'var(--slate-500)' }} />
+              {duration}
+            </span>
+          )}
           <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <BarChart2 size={14} style={{ color: 'var(--slate-500)' }} />
             Score + Forces + Fragilités + Priorités
           </span>
         </div>
 
-        <div className="intro-bullets" style={{marginBottom:'var(--space-6)'}}>
-          <p style={{fontSize:'0.85rem',fontWeight:700,color:'var(--slate-500)',letterSpacing:'0.05em',textTransform:'uppercase',marginBottom:'var(--space-4)'}}>Ce diagnostic analyse</p>
-          {cfg.bullets.map((b, i) => (
-            <div key={i} className="intro-bullet-item">
-              <div className="intro-bullet-dot" />
-              <span className="intro-bullet-text">{b}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="alert alert-info" style={{marginBottom:'var(--space-6)', display:'flex', alignItems:'center', gap:'8px'}}>
+        <div className="alert alert-info" style={{margin:'var(--space-6) 0', display:'flex', alignItems:'center', gap:'8px'}}>
           <Lightbulb size={18} className="text-blue" />
           <span>Répondez le plus simplement possible. Si vous ne connaissez pas une information, choisissez "Je ne sais pas".</span>
         </div>
