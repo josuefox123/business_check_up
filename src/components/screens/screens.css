@@ -70,6 +70,34 @@
 }
 
 /* ============================================
+   QUIT BUTTON ROW — always at the very bottom
+   ============================================ */
+.question-quit-row {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  margin-top: 8px;
+}
+
+.question-quit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-400);
+  padding: 8px 20px;
+  border-radius: 8px;
+  transition: color 0.18s ease;
+  letter-spacing: 0.01em;
+}
+
+.question-quit-btn:hover {
+  color: var(--slate-600);
+}
+
+/* ============================================
    CHOICES LIST
    ============================================ */
 .choices-list {

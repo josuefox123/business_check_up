@@ -1533,9 +1533,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           </>
         ) : (
           <>
-            <p style={{fontWeight:700, color:'var(--slate-400)', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'var(--space-4)'}}>
-              {moduleId} · Question {current}/{total}
-            </p>
             <h1 className="question-text">{questionData.question}</h1>
             {questionData.hint && <p className="question-desc" style={{marginBottom:'var(--space-6)'}}>{questionData.hint}</p>}
 
@@ -1590,29 +1587,23 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
               </Button>
             )}
             <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <button
-                type="button"
-                style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
-                onClick={() => setShowQuitModal(true)}
-              >
-                Quitter
-              </button>
               <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
                 {showProof ? 'Valider la preuve' : 'Continuer'}
               </Button>
             </div>
           </div>
-        ) : (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-6)' }}>
-            <button
-              type="button"
-              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600, padding: '8px 16px'}}
-              onClick={() => setShowQuitModal(true)}
-            >
-              Quitter le diagnostic
-            </button>
-          </div>
-        )}
+        ) : null}
+
+        {/* Bouton Quitter — toujours en bas, discret */}
+        <div className="question-quit-row">
+          <button
+            type="button"
+            className="question-quit-btn"
+            onClick={() => setShowQuitModal(true)}
+          >
+            Quitter le diagnostic
+          </button>
+        </div>
       </div>
     </ScreenWrapper>
   );
