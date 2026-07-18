@@ -1691,6 +1691,14 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
+  const moduleNames = {
+    'PRJ-02': 'Diagnostic Projet',
+    'DIF-03': 'Diagnostic Difficulté',
+    'OPP-04': 'Diagnostic Opportunité',
+    'FLH-01': 'Diagnostic Flash',
+  };
+  const cleanModuleName = moduleNames[moduleId] || moduleId;
+
   // radarData kept for legacy (not displayed)
   const realAxeScores = calculateAxeScores(moduleId, answers);
   let radarData = Object.entries(realAxeScores).map(([axeName, data]) => ({
@@ -1718,18 +1726,10 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
   });
 
   const handleExportPDF = () => {
-    const moduleNames = {
-      'PRJ-02': 'Diagnostic Projet',
-      'DIF-03': 'Diagnostic Difficulté',
-      'OPP-04': 'Diagnostic Opportunité',
-      'FLH-01': 'Diagnostic Flash',
-    };
-    const moduleName = moduleNames[moduleId] || moduleId;
-
     generateDiagnosticPDF({
       score,
       moduleId,
-      moduleName,
+      moduleName: cleanModuleName,
       forces,
       fragilites,
       priorityText,
@@ -1747,7 +1747,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         <div className="results-header">
           <div className="results-header-info">
             <span className="badge badge-teal" style={{marginBottom:'var(--space-4)'}}>Rapport Généré</span>
-            <h1>Tableau de bord : {moduleId}</h1>
+            <h1>Tableau de bord : {cleanModuleName}</h1>
             <p>Voici la synthèse de votre maturité basée sur {Object.keys(answers).length} points de contrôle.</p>
           </div>
           <div style={{background:'rgba(255,255,255,0.1)', padding:'var(--space-5)', borderRadius:'var(--radius-xl)', textAlign:'center'}}>
