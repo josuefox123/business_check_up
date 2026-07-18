@@ -246,7 +246,7 @@ function DiagnosticApp() {
     setTriageStep(8);
   };
 
-  const submitTriageToBackend = (answers) => {
+  const submitTriageToBackend = async (answers) => {
     const sessionId = localStorage.getItem('bc_session_id');
     if (!sessionId) {
        const localRoute = getRouteFromAnswers(answers);
@@ -254,12 +254,11 @@ function DiagnosticApp() {
        return;
     }
 
-    submitTriageToBackendApi(sessionId, answers)
-    .then(res => {
+    try {
+      const res = await submitTriageToBackendApi(sessionId, answers);
       const data = res?.data || {};
       const recommended = data.recommended_module || {};
       const backendModuleId = recommended.code || 'FLH-01';
-      // Extraire directement le nom et la durée depuis la réponse backend
       const backendModuleName = recommended.name || recommended.module_name || null;
       const rawDuration = recommended.target_duration_formatted || recommended.duration || null;
       const backendDuration = typeof rawDuration === 'number' ? formatDurationSeconds(rawDuration) : rawDuration;
@@ -280,35 +279,40 @@ function DiagnosticApp() {
       };
       const backendRoute = routeMap[backendModuleId] || 'S13';
       
-      setRouteKey(backendRoute);
-      updateSessionApi(sessionId, 'in_progress', backendRoute)
-        .catch(err => console.error('Error tracking session triage stage:', err));
-      
-      // Construire le module avec les données réelles du backend
       const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
       
-      apiFetch(`/modules/${backendModuleId}`)
-        .then(modRes => {
-          const modDetail = modRes?.data || modRes || {};
-          setCurrentModule({
-            ...baseMod,
-            id: backendModuleId,
-            name: modDetail.name || backendModuleName || baseMod.name,
-            duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || backendDuration || baseMod.duration,
-            description: modDetail.description || null,
-            question_count: modDetail.question_count || null
-          });
-        })
-        .catch(err => {
-          console.error('Error fetching module details:', err);
-          setCurrentModule({
-            ...baseMod,
-            id: backendModuleId,
-            name: backendModuleName || baseMod.name,
-            duration: backendDuration || baseMod.duration,
-            question_count: null
-          });
-        });
+      // Récupérer d'abord les détails du module depuis le backend
+      let fullModuleData = {
+        ...baseMod,
+        id: backendModuleId,
+        name: backendModuleName || baseMod.name,
+        duration: backendDuration || baseMod.duration,
+        description: backendDescription,
+        question_count: null
+      };
+
+      try {
+        const modRes = await apiFetch(`/modules/${backendModuleId}`);
+        const modDetail = modRes?.data || modRes || {};
+        fullModuleData = {
+          ...baseMod,
+          id: backendModuleId,
+          name: modDetail.name || backendModuleName || baseMod.name,
+          duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || backendDuration || baseMod.duration,
+          description: modDetail.description || null,
+          question_count: modDetail.question_count || null
+        };
+      } catch (err) {
+        console.error('Error fetching module details:', err);
+      }
+
+      // Mettre à jour les states en même temps pour le rendu
+      setCurrentModule(fullModuleData);
+      setRouteKey(backendRoute);
+      
+      // Track session stage
+      await updateSessionApi(sessionId, 'in_progress', backendRoute)
+        .catch(err => console.error('Error tracking session triage stage:', err));
 
       // Confirm recommended module in backend
       if (triageId) {
@@ -321,13 +325,14 @@ function DiagnosticApp() {
         }).catch(err => console.error('Error confirming triage module:', err));
       }
 
+      // Naviguer seulement maintenant que les données réelles sont chargées
       navigate('/diagnostic/route');
-    })
-    .catch(err => {
+
+    } catch (err) {
       console.error('Error submitting triage to backend, fallback to local:', err);
       const localRoute = getRouteFromAnswers(answers);
       applyRoute(localRoute);
-    });
+    }
   };
 
   const onS08 = (val) => {
