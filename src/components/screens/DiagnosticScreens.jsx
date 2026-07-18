@@ -35,7 +35,7 @@ const TopBackLink = ({ onClick }) => (
       gap: '8px',
       background: 'none',
       border: 'none',
-      color: 'var(--color-blue)',
+      color: '#17212D',
       fontWeight: 700,
       fontSize: '0.9rem',
       cursor: 'pointer',
