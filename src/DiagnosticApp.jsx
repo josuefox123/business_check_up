@@ -6,6 +6,7 @@ import { CommentCaMarche } from './components/screens/CommentCaMarche.jsx';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { PublicContactScreen } from './components/screens/PublicContact.jsx';
 import { AlertTriangle } from 'lucide-react';
+import { useSessionPersist } from './hooks/useSessionPersist.js';
 
 /* ── Modale d'erreur stylisée du système ── */
 const ErrorModal = ({ title, message, onClose }) => (
@@ -65,6 +66,80 @@ const ErrorModal = ({ title, message, onClose }) => (
       >
         Fermer
       </button>
+    </div>
+  </div>
+);
+
+/* ── Modale stylisée de reprise de session ── */
+const ResumeDiagnosticModal = ({ onConfirm, onCancel }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '20px',
+      padding: '36px 32px 28px',
+      maxWidth: '420px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      textAlign: 'center',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+    }}>
+      <div style={{
+        width: '56px', height: '56px',
+        background: 'rgba(38, 89, 242, 0.08)',
+        borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-blue, #2659F2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M16 3h5v5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 21H3v-5"/>
+        </svg>
+      </div>
+
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#17212D', marginBottom: '10px', fontFamily: 'var(--font)' }}>
+        Reprendre le diagnostic ?
+      </h2>
+      <p style={{ fontSize: '0.88rem', color: '#64748B', lineHeight: 1.6, marginBottom: '28px', fontFamily: 'var(--font)' }}>
+        Nous avons détecté un diagnostic en cours. Souhaitez-vous le reprendre là où vous vous étiez arrêté ?
+      </p>
+
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button
+          onClick={onCancel}
+          style={{
+            flex: 1, padding: '13px 16px',
+            borderRadius: '12px', fontWeight: 600, fontSize: '0.9rem',
+            border: '1.5px solid var(--slate-200, #E2E8F0)', background: '#fff',
+            color: '#475569', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+          }}
+        >
+          Recommencer
+        </button>
+        <button
+          onClick={onConfirm}
+          style={{
+            flex: 1, padding: '13px 16px',
+            borderRadius: '12px', fontWeight: 750, fontSize: '0.9rem',
+            border: 'none', background: 'var(--color-blue, #2659F2)',
+            color: '#fff', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+            boxShadow: '0 4px 14px rgba(38,89,242,0.25)',
+          }}
+        >
+          Reprendre
+        </button>
+      </div>
     </div>
   </div>
 );
@@ -140,6 +215,12 @@ function DiagnosticApp() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Session persistence helper hook
+  const { saveState, loadState, clearState } = useSessionPersist();
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [pendingResumeState, setPendingResumeState] = useState(null);
+  const [isRestored, setIsRestored] = useState(false);
+
   // Wizard & Triage Step State (for triage flow S03-S09)
   const [triageStep, setTriageStep] = useState(3);
 
@@ -156,6 +237,87 @@ function DiagnosticApp() {
   const [restitution, setRestitution] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
 
+  // Helper function to populate state when restoring session
+  const restoreState = (state) => {
+    if (state.triageStep !== undefined) setTriageStep(state.triageStep);
+    if (state.triageAnswers !== undefined) setTriageAnswers(state.triageAnswers);
+    if (state.currentModule !== undefined) setCurrentModule(state.currentModule);
+    if (state.routeKey !== undefined) setRouteKey(state.routeKey);
+    if (state.questionIndex !== undefined) setQuestionIndex(state.questionIndex);
+    if (state.moduleAnswers !== undefined) setModuleAnswers(state.moduleAnswers);
+    if (state.score !== undefined) setScore(state.score);
+    if (state.chosenForVerif !== undefined) setChosenForVerif(state.chosenForVerif);
+    if (state.currentRunId !== undefined) setCurrentRunId(state.currentRunId);
+    if (state.restitution !== undefined) setRestitution(state.restitution);
+    if (state.sessionId) localStorage.setItem('bc_session_id', state.sessionId);
+
+    if (state.currentPath && location.pathname !== state.currentPath) {
+      navigate(state.currentPath);
+    }
+  };
+
+  // Mount effect to check if there is an active session
+  useEffect(() => {
+    const saved = loadState();
+    if (saved) {
+      // If we are currently on a diagnostic URL path, restore it immediately
+      const isDiagnosticPath =
+        location.pathname.startsWith('/triage/') ||
+        location.pathname.startsWith('/diagnostic/') ||
+        location.pathname === '/catalog';
+
+      if (isDiagnosticPath) {
+        restoreState(saved);
+        setIsRestored(true);
+      } else {
+        setPendingResumeState(saved);
+        setShowResumeModal(true);
+      }
+    } else {
+      setIsRestored(true);
+    }
+  }, []);
+
+  // Autosave state whenever a state variable changes (only after initial check/restore)
+  useEffect(() => {
+    if (!isRestored) return;
+
+    if (
+      Object.keys(triageAnswers).length > 0 ||
+      Object.keys(moduleAnswers).length > 0 ||
+      currentModule ||
+      currentRunId
+    ) {
+      saveState({
+        triageStep,
+        triageAnswers,
+        currentModule,
+        routeKey,
+        questionIndex,
+        moduleAnswers,
+        score,
+        chosenForVerif,
+        currentRunId,
+        restitution,
+        currentPath: location.pathname,
+        sessionId: localStorage.getItem('bc_session_id'),
+      });
+    }
+  }, [
+    isRestored,
+    triageStep,
+    triageAnswers,
+    currentModule,
+    routeKey,
+    questionIndex,
+    moduleAnswers,
+    score,
+    chosenForVerif,
+    currentRunId,
+    restitution,
+    location.pathname,
+  ]);
+
   // Fetch questions dynamically when currentModule changes (Backend Ready)
   useEffect(() => {
     if (currentModule) {
@@ -169,6 +331,7 @@ function DiagnosticApp() {
   }, [currentModule]);
 
   const onStartAssisted = () => {
+    clearState(); // Start fresh
     setTriageStep(3);
     setTriageAnswers({});
     setCurrentModule(null);
@@ -192,6 +355,7 @@ function DiagnosticApp() {
   const onGoToCatalog   = () => navigate('/catalog');
   const onLearnMore     = () => navigate('/a-propos');
   const onGoHome        = () => {
+    clearState(); // User explicitly chose to quit or return home
     setTriageAnswers({});
     setCurrentModule(null);
     setModuleAnswers({});
@@ -672,6 +836,20 @@ function DiagnosticApp() {
   return (
     <>
       {showNavbar && <Navbar onGoHome={onGoHome} />}
+      {showResumeModal && (
+        <ResumeDiagnosticModal
+          onConfirm={() => {
+            setShowResumeModal(false);
+            restoreState(pendingResumeState);
+            setIsRestored(true);
+          }}
+          onCancel={() => {
+            setShowResumeModal(false);
+            clearState();
+            setIsRestored(true);
+          }}
+        />
+      )}
       {errorModal && (
         <ErrorModal
           title={errorModal.title}
