@@ -357,9 +357,16 @@ function DiagnosticApp() {
 
   const applyRoute = (route) => {
     if (typeof route === 'object') {
-      setRouteKey('S13');
-      const mod = MODULE_BY_ROUTE['S13'];
-      setCurrentModule({ ...mod, id: route.moduleId || mod.id });
+      const targetRoute = route.route || 'S13';
+      const moduleId = route.moduleId || 'FLH-01';
+      
+      setRouteKey(targetRoute);
+      const baseMod = MODULE_BY_ROUTE[targetRoute] || MODULE_BY_ROUTE['S13'];
+      setCurrentModule({
+        ...baseMod,
+        id: moduleId,
+        name: route.moduleName || baseMod.name
+      });
       navigate('/diagnostic/route');
     } else {
       setRouteKey(route);
