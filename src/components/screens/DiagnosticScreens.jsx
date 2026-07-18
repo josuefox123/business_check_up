@@ -30,14 +30,13 @@ import {
 export const ConsentScreen = ({ onContinue, onBack }) => {
   const [checked, setChecked] = useState({ diag: false, stats: false, contact: false });
   const [error, setError] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const toggle = (key) => {
     setChecked(prev => {
       const nextChecked = { ...prev, [key]: !prev[key] };
       if (nextChecked.diag && nextChecked.stats) {
-        setTimeout(() => {
-          onContinue(nextChecked);
-        }, 250);
+        setShowConfirmModal(true);
       }
       return nextChecked;
     });
@@ -46,11 +45,21 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
 
   const handleSubmit = () => {
     if (!checked.diag || !checked.stats) { setError(true); return; }
-    onContinue({ ...checked });
+    setShowConfirmModal(true);
   };
 
   return (
     <ScreenWrapper>
+      {showConfirmModal && (
+        <AnswerConfirmModal
+          label="Conditions d'utilisation et politique de données"
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            onContinue({ ...checked });
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
       <div className="consent-wrap animate-fade-up">
         <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
           <div className="screen-icon" style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue)', padding: '12px', borderRadius: '50%' }}>
@@ -193,6 +202,8 @@ const PROFILE_GOOGLE_ICONS = {
 
 export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
   const [selected, setSelected] = useState(initialAnswer || null);
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const handleCb = onContinue || onSelect; // compatibilité DiagnosticApp
 
   const handleConfirm = () => {
@@ -201,6 +212,16 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
 
   return (
     <ScreenWrapper wide>
+      {showConfirmModal && (
+        <AnswerConfirmModal
+          label={selectedLabel}
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            if (handleCb) handleCb(selected);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
       <div className="animate-fade-up" style={{ maxWidth: '920px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
@@ -227,7 +248,8 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
                 className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}`}
                 onClick={() => {
                   setSelected(profile.id);
-                  if (handleCb) handleCb(profile.id);
+                  setSelectedLabel(profile.label);
+                  setShowConfirmModal(true);
                 }}
                 style={{
                   '--p-color':  profile.color,
@@ -371,6 +393,8 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
     if (initialAnswer !== null && initialAnswer !== undefined) return initialAnswer;
     return multi ? [] : null;
   });
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const toggle = (id) => {
     if (multi) {
@@ -384,7 +408,9 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
       }
     } else {
       setSelected(id);
-      onContinue(id);
+      const label = choices.find(c => c.id === id)?.label || '';
+      setSelectedLabel(label);
+      setShowConfirmModal(true);
     }
   };
 
@@ -392,6 +418,16 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
   return (
     <ScreenWrapper>
+      {showConfirmModal && (
+        <AnswerConfirmModal
+          label={selectedLabel}
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            onContinue(selected);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
       <div className="question-wrap animate-fade-up">
         {progress && (
           <div style={{marginBottom:'var(--space-6)'}}>
@@ -451,6 +487,8 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
     if (initialAnswer === 'occ_non') return 'no';
     return null;
   });
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const handleContinue = () => {
     if (!selected) return;
@@ -478,6 +516,16 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
 
   return (
     <ScreenWrapper>
+      {showConfirmModal && (
+        <AnswerConfirmModal
+          label={selectedLabel}
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            handleContinue();
+          }}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
       <div className="question-wrap animate-fade-up">
 
         <h1 className="question-heading">Votre activité vend-elle déjà des produits ou services ?</h1>
@@ -493,7 +541,8 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
                 setSelected(c.id);
                 setSubSelected(null);
                 if (c.id !== 'occ') {
-                  onContinue(c.id);
+                  setSelectedLabel(c.label);
+                  setShowConfirmModal(true);
                 }
               }}
             />
@@ -511,7 +560,8 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
                 className={`btn ${subSelected === 'yes' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => {
                   setSubSelected('yes');
-                  onContinue('occ_oui');
+                  setSelectedLabel("Oui, avec au moins un client payé");
+                  setShowConfirmModal(true);
                 }}
                 style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
               >
@@ -522,7 +572,8 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
                 className={`btn ${subSelected === 'no' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => {
                   setSubSelected('no');
-                  onContinue('occ_non');
+                  setSelectedLabel("Non, aucun client payé");
+                  setShowConfirmModal(true);
                 }}
                 style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
               >
@@ -1143,6 +1194,86 @@ const ConfidenceModal = ({ confidence, setConfidence, onConfirm, onCancel, choic
 );
 
 /* ============================================================
+   ANSWER CONFIRM MODAL — Modale de confirmation de réponse
+   ============================================================ */
+const AnswerConfirmModal = ({ label, onConfirm, onCancel }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '24px',
+      padding: '32px 24px',
+      maxWidth: '440px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px'
+    }} onClick={e => e.stopPropagation()}>
+      <div style={{ textAlign: 'center' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '8px' }}>
+          Confirmer votre choix
+        </h3>
+        <p style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: 1.5 }}>
+          Vous avez sélectionné : <br/>
+          <strong style={{ color: 'var(--color-blue)', fontSize: '1.05rem', display: 'inline-block', marginTop: '8px' }}>{label}</strong>
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '10px',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            border: '1.5px solid var(--slate-200)',
+            background: '#fff',
+            color: 'var(--slate-700)',
+            cursor: 'pointer',
+            fontFamily: 'var(--font)',
+            transition: 'all 0.15s',
+            textAlign: 'center'
+          }}
+        >
+          Retour
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '10px',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            border: 'none',
+            background: 'var(--color-blue)',
+            color: '#fff',
+            cursor: 'pointer',
+            fontFamily: 'var(--font)',
+            transition: 'all 0.15s',
+            textAlign: 'center',
+            boxShadow: '0 4px 14px rgba(38,89,242,0.25)'
+          }}
+        >
+          Continuer
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ============================================================
    S31/S32/S33 — QUESTION LOOP
    ============================================================ */
 export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
@@ -1166,6 +1297,8 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const [evidenceType, setEvidenceType] = useState('');
   const [evidenceLabel, setEvidenceLabel] = useState('');
   const [showQuitModal, setShowQuitModal] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const CONFIDENCE_CHOICES = [
     { id: 'sure', label: 'Je suis tout à fait sûr(e)' },
@@ -1210,12 +1343,23 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     }
   };
 
+  const SCALE_LABELS = ['1 — Pas du tout', '2 — Peu', '3 — Modérément', '4 — Bien', '5 — Très bien'];
+
   const handleChoiceSelect = (val) => {
     setAnswer(val);
     if (questionData.requireProof) {
       setShowConfidenceModal(true);
     } else {
-      onContinue(val, null, null, null, null);
+      let label = '';
+      if (val === 'idk') {
+        label = 'Je ne sais pas';
+      } else if (isScale) {
+        label = SCALE_LABELS[val - 1] || '';
+      } else {
+        label = questionData.choices.find(c => c.id === val)?.label || '';
+      }
+      setSelectedLabel(label);
+      setShowConfirmModal(true);
     }
   };
 
@@ -1236,8 +1380,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     onContinue(ans, resolvedLevel, confidence, evidenceType, evidenceLabel);
   };
 
-  const SCALE_LABELS = ['1 — Pas du tout', '2 — Peu', '3 — Modérément', '4 — Bien', '5 — Très bien'];
-
   return (
     <ScreenWrapper>
       {/* Modale de confirmation quitter */}
@@ -1245,6 +1387,18 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         <QuitConfirmModal
           onConfirm={() => { setShowQuitModal(false); onQuit(); }}
           onCancel={() => setShowQuitModal(false)}
+        />
+      )}
+
+      {/* Modale de confirmation de réponse */}
+      {showConfirmModal && (
+        <AnswerConfirmModal
+          label={selectedLabel}
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            onContinue(answer, null, null, null, null);
+          }}
+          onCancel={() => setShowConfirmModal(false)}
         />
       )}
 
