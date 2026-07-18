@@ -1,21 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight, Clock, ShieldCheck, Zap, BarChart2, Activity, Target,
-  Search, Users, TrendingUp, FileText
+  Search, Users, TrendingUp, FileText, Rocket, AlertTriangle, Lightbulb,
+  Building2, Award, HelpCircle
 } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import logoImg from '../../assets/logo.png';
 import './LandingPage.css';
 
-const DIAGNOSTICS = [
-  { id: 'FLH-01', name: 'Diagnostic Flash', desc: 'Tour d\'horizon complet de votre entreprise en moins de 10 minutes.', duration: '7 min', Icon: Zap, color: '#ECFDF5', iconColor: '#059669' },
-  { id: 'PRJ-02', name: 'Diagnostic Projet', desc: 'Évaluez la faisabilité et le potentiel de votre nouvelle idée.', duration: '12 min', Icon: Target, color: '#EFF6FF', iconColor: '#2659F2' },
-  { id: 'DIF-03', name: 'Diagnostic Difficulté', desc: 'Identifiez la source de vos problèmes financiers ou opérationnels.', duration: '15 min', Icon: Activity, color: '#FEF2F2', iconColor: '#ef4444' },
-  { id: 'OPP-04', name: 'Diagnostic Opportunité', desc: 'Analysez une opportunité de marché avant de vous lancer.', duration: '15 min', Icon: Search, color: '#FFFBEB', iconColor: '#f59e0b' },
-  { id: 'PRO-05', name: 'Diagnostic Produit', desc: 'Évaluez la performance et l\'adéquation de votre offre au marché.', duration: '10 min', Icon: BarChart2, color: '#F0FDF4', iconColor: '#10b981' },
-  { id: 'GOV-08', name: 'Diagnostic Organisation', desc: 'Vérifiez la solidité de votre structure organisationnelle.', duration: '10 min', Icon: Users, color: '#FAF5FF', iconColor: '#8b5cf6' },
-];
+const MODULE_ICONS_MAP = {
+  Rocket: Rocket,
+  Zap: Zap,
+  AlertTriangle: AlertTriangle,
+  Target: Target,
+  Lightbulb: Lightbulb,
+  Users: Users,
+  TrendingUp: TrendingUp,
+  Building2: Building2,
+  Award: Award,
+};
+
+const MODULE_STYLE_MAP = {
+  'PRJ-02': { iconName:'Rocket',        bg:'#EFF6FF', iconColor:'#2659F2' },
+  'FLH-01': { iconName:'Zap',           bg:'#ECFDF5', iconColor:'#059669' },
+  'DIF-03': { iconName:'AlertTriangle', bg:'#FEF2F2', iconColor:'#ef4444' },
+  'OPP-04': { iconName:'Target',        bg:'#FFFBEB', iconColor:'#f59e0b' },
+  'PRO-05': { iconName:'Lightbulb',     bg:'#F0FDF4', iconColor:'#10b981' },
+  'COM-06': { iconName:'Users',         bg:'#FFF7ED', iconColor:'#f97316' },
+  'FIN-07': { iconName:'TrendingUp',    bg:'#EFF6FF', iconColor:'#2563eb' },
+  'GOV-08': { iconName:'Building2',     bg:'#FAF5FF', iconColor:'#8b5cf6' },
+  '360-09': { iconName:'Award',         bg:'#F0FDF4', iconColor:'#16a34a' },
+};
+
+function getFallbackDesc(code) {
+  const fallbacks = {
+    'FLH-01': 'Tour d\'horizon complet de votre entreprise en moins de 10 minutes.',
+    'PRJ-02': 'Évaluez la faisabilité et le potentiel de votre nouvelle idée.',
+    'DIF-03': 'Identifiez la source de vos problèmes financiers ou opérationnels.',
+    'OPP-04': 'Analysez une opportunité de marché avant de vous lancer.',
+    'PRO-05': 'Évaluez la performance et l\'adéquation de votre offre au marché.',
+    'COM-06': 'Analysez vos ventes et le parcours d\'accès à vos clients.',
+    'FIN-07': 'Faites le point sur votre trésorerie, vos charges et votre rentabilité.',
+    'GOV-08': 'Vérifiez la solidité de votre structure organisationnelle.',
+    '360-09': 'Un audit complet de tous les aspects clés de votre entreprise.'
+  };
+  return fallbacks[code] || 'Un module d\'évaluation pour votre entreprise.';
+}
 
 const STEPS = [
   { num: '01', title: 'Choisir son profil', desc: 'Dites-nous qui vous êtes en quelques clics.', Icon: Users },
@@ -36,6 +67,39 @@ const SectionTitle = ({ tag, title, subtitle }) => (
 );
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
+  const [modules, setModules] = useState([
+    { id: 'FLH-01', name: 'Diagnostic Flash', desc: 'Tour d\'horizon complet de votre entreprise en moins de 10 minutes.', duration: '10 min', iconName: 'Zap', bg: '#ECFDF5', iconColor: '#059669' },
+    { id: 'PRJ-02', name: 'Diagnostic Projet', desc: 'Évaluez la faisabilité et le potentiel de votre nouvelle idée.', duration: '10 min', iconName: 'Target', bg: '#EFF6FF', iconColor: '#2659F2' },
+    { id: 'DIF-03', name: 'Diagnostic Difficulté', desc: 'Identifiez la source de vos problèmes financiers ou opérationnels.', duration: '13 min', iconName: 'AlertTriangle', bg: '#FEF2F2', iconColor: '#ef4444' },
+    { id: 'OPP-04', name: 'Diagnostic Opportunité', desc: 'Analysez une opportunité de marché avant de vous lancer.', duration: '13 min', iconName: 'Target', bg: '#FFFBEB', iconColor: '#f59e0b' },
+    { id: 'PRO-05', name: 'Diagnostic Produit', desc: 'Évaluez la performance et l\'adéquation de votre offre au marché.', duration: '10 min', iconName: 'Lightbulb', bg: '#F0FDF4', iconColor: '#10b981' },
+    { id: 'GOV-08', name: 'Diagnostic Organisation', desc: 'Vérifiez la solidité de votre structure organisationnelle.', duration: '10 min', iconName: 'Building2', bg: '#FAF5FF', iconColor: '#8b5cf6' },
+  ]);
+
+  useEffect(() => {
+    import('../../api/config.js').then(({ apiFetch }) => {
+      apiFetch('/modules')
+        .then(res => {
+          const list = res?.data?.modules || res?.modules || [];
+          if (list.length > 0) {
+            // Filtrer le triage initial (TRI-00) et limiter aux 6 premiers
+            const parsed = list
+              .filter(m => m.is_available !== false && m.code !== 'TRI-00')
+              .slice(0, 6)
+              .map(m => ({
+                id: m.code,
+                name: m.name,
+                desc: m.description || getFallbackDesc(m.code),
+                duration: m.target_duration_formatted || m.target_duration || '',
+                ...MODULE_STYLE_MAP[m.code]
+              }));
+            setModules(parsed);
+          }
+        })
+        .catch(err => console.error("Error loading landing page modules from backend:", err));
+    });
+  }, []);
+
   return (
     <div className="landing-page">
 
@@ -93,7 +157,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               <ShieldCheck size={48} strokeWidth={1.2} />
             </div>
             <p className="lp-hero-disclaimer-text">
-              Diagnostic indicatif, fondé sur vos réponses. Il ne remplace pas une analyse approfondie.
+              Diagnostic indicatif, fondé sur vos réponses. Il ne remplace pas une analysis approfondie.
             </p>
           </div>
         </div>
@@ -140,21 +204,24 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           />
 
           <div className="lp-diag-grid">
-            {DIAGNOSTICS.map((d, i) => (
-              <div key={d.id} className="lp-diag-card animate-fade-up" style={{ animationDelay: `${i * 80}ms`, borderLeftColor: d.iconColor }}>
-                <div className="lp-diag-icon" style={{ background: d.color, color: d.iconColor }}>
-                  <d.Icon size={20} strokeWidth={2} />
-                </div>
-                <div className="lp-diag-body">
-                  <h5 className="lp-diag-name">{d.name}</h5>
-                  <p className="lp-diag-desc">{d.desc}</p>
-                  <div className="lp-diag-footer">
-                    <span className="lp-diag-duration"><Clock size={12} /> {d.duration}</span>
-                    <Link to="/catalog" className="lp-diag-link">Voir <ArrowRight size={13} /></Link>
+            {modules.map((d, i) => {
+              const IconComponent = MODULE_ICONS_MAP[d.iconName] || HelpCircle;
+              return (
+                <div key={d.id} className="lp-diag-card animate-fade-up" style={{ animationDelay: `${i * 80}ms`, borderLeftColor: d.iconColor }}>
+                  <div className="lp-diag-icon" style={{ background: d.bg, color: d.iconColor }}>
+                    <IconComponent size={20} strokeWidth={2} />
+                  </div>
+                  <div className="lp-diag-body">
+                    <h5 className="lp-diag-name">{d.name}</h5>
+                    <p className="lp-diag-desc">{d.desc}</p>
+                    <div className="lp-diag-footer">
+                      <span className="lp-diag-duration"><Clock size={12} /> {d.duration}</span>
+                      <Link to="/catalog" className="lp-diag-link">Voir <ArrowRight size={13} /></Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '36px' }}>
