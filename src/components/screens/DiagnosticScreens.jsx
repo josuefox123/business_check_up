@@ -1106,7 +1106,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
                 {questionData.choices.map(c => (
                   <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => setAnswer(c.id)} />
                 ))}
-                {!questionData.noUnknown && (
+                {!questionData.noUnknown && !questionData.choices.some(c => c.id === 'idk' || c.label.toLowerCase().includes('ne sais pas')) && (
                   <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => setAnswer('idk')} />
                 )}
               </div>
