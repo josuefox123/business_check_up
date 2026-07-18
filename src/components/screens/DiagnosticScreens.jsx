@@ -1686,7 +1686,7 @@ const getConfidence = (a) => {
 
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack }) => {
+export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution }) => {
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
@@ -1707,6 +1707,53 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
       { subject: 'Legal', A: score, fullMark: 100 },
     ];
   }
+
+  // Calcul du plan d'action détaillé
+  const backendForces = restitution?.strengths || [];
+  const backendFragilites = restitution?.weaknesses || [];
+
+  const forces = backendForces.length > 0 ? backendForces : [
+    'Connaissance du secteur et ancrage local fort',
+    'Volonté d\'agir et engagement personnel du dirigeant',
+    score >= 60 ? 'Situation financière sous contrôle' : null,
+  ].filter(Boolean);
+
+  const fragilites = backendFragilites.length > 0 ? backendFragilites : [
+    score < 60 ? 'Trésorerie sous tension — à surveiller en priorité' : null,
+    'Manque de formalisation des processus clés',
+    'Suivi des indicateurs de performance à structurer',
+  ].filter(Boolean);
+
+  const priorityText = restitution?.summary || (score < 40
+    ? 'La stabilisation de votre situation financière est le sujet à traiter en premier, avant tout autre développement.'
+    : score < 70
+    ? 'Structurer vos processus commerciaux et formaliser votre suivi de performance sont les leviers prioritaires.'
+    : 'Préparer une stratégie de croissance en capitalisant sur vos fondations solides est votre prochain chantier.');
+
+  const backendPriorities = restitution?.priority_actions || restitution?.priorities || [];
+  
+  const priorities = backendPriorities.length > 0
+    ? backendPriorities.map((text, i) => {
+        if (typeof text === 'object') return text;
+        const labels = ['Action immédiate', 'Stabilisation à 30 jours', 'Plan de relance', 'Structuration', 'Capitalisation', 'Croissance'];
+        return {
+          label: labels[i] || 'Action recommandée',
+          text: text
+        };
+      })
+    : (score < 40 ? [
+        { label:'Action immédiate', text:'Évaluer la trésorerie disponible et contacter votre banque ou un conseiller financier sous 48h.' },
+        { label:'Stabilisation à 30 jours', text:'Identifier les charges non essentielles à réduire et les créances à recouvrer en priorité.' },
+        { label:'Plan de relance', text:'Définir un plan commercial minimal pour retrouver un flux de revenus régulier d\'ici 60 jours.' },
+      ] : score < 70 ? [
+        { label:'Action immédiate', text:'Mettre en place un suivi mensuel de trésorerie avec un tableau de bord simple.' },
+        { label:'Structuration à 30 jours', text:'Formaliser votre offre commerciale et votre processus de vente pour gagner en efficacité.' },
+        { label:'Préparation à 90 jours', text:'Explorer les opportunités de financement (aides, prêts) pour financer votre développement.' },
+      ] : [
+        { label:'Capitaliser', text:'Documenter et formaliser vos pratiques qui fonctionnent pour les reproduire à l\'échelle.' },
+        { label:'Croissance', text:'Identifier et tester un nouveau segment de marché ou canal d\'acquisition dans les 60 jours.' },
+        { label:'Préparation', text:'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
+      ]);
 
   return (
     <ScreenWrapper wide>
@@ -1772,11 +1819,79 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
           </div>
         </div>
 
+        {/* ── PLAN D'ACTION DÉTAILLÉ INLINE ── */}
+        <div style={{ marginTop: '40px', borderTop: '2px dashed var(--slate-200)', paddingTop: '40px' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '24px' }}>
+            Analyse des Forces & Points de vigilance
+          </h2>
+          
+          <div className="ff-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+            <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+              <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
+                <CheckCircle size={18} style={{ color: 'var(--color-success, #10B981)' }} />
+                Points d'appui (Forces)
+              </div>
+              <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
+                {forces.map((f, i) => (
+                  <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span className="ff-item-dot green" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success, #10B981)', marginTop: '6px', flexShrink: 0 }} />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+              <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
+                <AlertTriangle size={18} style={{ color: 'var(--color-warning, #F59E0B)' }} />
+                Points de vigilance (Fragilités)
+              </div>
+              <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
+                {fragilites.map((f, i) => (
+                  <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span className="ff-item-dot orange" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-warning, #F59E0B)', marginTop: '6px', flexShrink: 0 }} />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="ff-priority" style={{ padding: '20px', background: 'var(--slate-50)', borderRadius: '16px', border: '1px solid var(--slate-200)', marginBottom: '40px' }}>
+            <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire de l'expert</div>
+            <p className="ff-priority-text" style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: '1.6', margin: 0 }}>
+              {priorityText}
+            </p>
+          </div>
+        </div>
+
+        {/* ── PRIORITÉS D'ACTION INLINE ── */}
+        <div style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>
+            Plan d'Actions Prioritaires
+          </h2>
+          <p className="screen-desc" style={{ marginBottom: '24px' }}>Actions ordonnées recommandées par notre algorithme de scoring :</p>
+          
+          <div className="priority-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {priorities.map((p, i) => (
+              <div key={i} className={`priority-item ${i === 0 && score < 40 ? 'danger' : i === 0 && score < 70 ? 'warning' : ''}`} style={{ display: 'flex', gap: '16px', padding: '20px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+                <div className="priority-icon" style={{ color: 'var(--color-blue)', background: 'var(--color-blue-light)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Target size={22} />
+                </div>
+                <div className="priority-content">
+                  <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i+1} : {p.label}</h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.55', margin: 0 }}>{p.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Actions Footer */}
-        <div className="results-actions">
+        <div className="results-actions" style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
           <Button variant="outline" onClick={onContact}><Download size={18}/> Exporter PDF</Button>
-          <Button variant="teal" onClick={onContact}><Calendar size={18}/> Demander un suivi</Button>
-          <Button variant="primary" onClick={onDetail}>Plan d'Action Détaillé <ArrowRight size={18}/></Button>
+          <Button variant="teal" onClick={onContact}><Calendar size={18}/> Planifier un suivi</Button>
+          <Button variant="primary" onClick={onDetail}>Orientation &amp; Suite <ArrowRight size={18}/></Button>
         </div>
       </div>
     </ScreenWrapper>

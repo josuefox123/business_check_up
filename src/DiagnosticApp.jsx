@@ -739,7 +739,15 @@ function DiagnosticApp() {
   };
 
   // Results transitions
-  const onDetail = () => navigate('/diagnostic/forces-fragilites');
+  const onResultsBack = () => {
+    if (questions && questions.length > 0) {
+      setQuestionIndex(questions.length - 1);
+      navigate('/diagnostic/question');
+    } else {
+      navigate(-1);
+    }
+  };
+  const onDetail = () => navigate('/diagnostic/orientation');
   const onFFNext = () => navigate('/diagnostic/priorites');
   const onPrioNext = () => navigate('/diagnostic/orientation');
   const onContact = () => navigate('/diagnostic/contact');
@@ -974,7 +982,8 @@ function DiagnosticApp() {
             onDetail={onDetail}
             onContact={onContact}
             onRestart={onGoHome}
-            onBack={() => navigate(-1)}
+            onBack={onResultsBack}
+            restitution={restitution}
           />
         } />
         <Route path="/diagnostic/forces-fragilites" element={
