@@ -1852,7 +1852,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
 
         {/* Actions Footer */}
         <div className="results-actions" style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
-          <Button variant="outline" onClick={handleExportPDF}><Download size={18}/> Exporter PDF</Button>
+          <Button variant="outline" onClick={onContact}><Download size={18}/> Exporter PDF</Button>
           <Button variant="teal" onClick={onContact}><Calendar size={18}/> Planifier un suivi</Button>
           <Button variant="primary" onClick={onDetail}>Orientation &amp; Suite <ArrowRight size={18}/></Button>
         </div>
