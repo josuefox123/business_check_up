@@ -226,6 +226,7 @@ function DiagnosticApp() {
 
   // States
   const [triageAnswers, setTriageAnswers] = useState({});
+  const [consentAnswers, setConsentAnswers] = useState({ diag: false, stats: false, contact: false });
   const [currentModule, setCurrentModule] = useState(null); // { id, name, duration }
   const [routeKey, setRouteKey] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -241,6 +242,7 @@ function DiagnosticApp() {
   const restoreState = (state) => {
     if (state.triageStep !== undefined) setTriageStep(state.triageStep);
     if (state.triageAnswers !== undefined) setTriageAnswers(state.triageAnswers);
+    if (state.consentAnswers !== undefined) setConsentAnswers(state.consentAnswers);
     if (state.currentModule !== undefined) setCurrentModule(state.currentModule);
     if (state.routeKey !== undefined) setRouteKey(state.routeKey);
     if (state.questionIndex !== undefined) setQuestionIndex(state.questionIndex);
@@ -301,6 +303,7 @@ function DiagnosticApp() {
         chosenForVerif,
         currentRunId,
         restitution,
+        consentAnswers,
         currentPath: location.pathname,
         sessionId: localStorage.getItem('bc_session_id'),
       });
@@ -317,6 +320,7 @@ function DiagnosticApp() {
     chosenForVerif,
     currentRunId,
     restitution,
+    consentAnswers,
     location.pathname,
   ]);
 
@@ -336,6 +340,7 @@ function DiagnosticApp() {
     clearState(); // Start fresh
     setTriageStep(3);
     setTriageAnswers({});
+    setConsentAnswers({ diag: false, stats: false, contact: false });
     setCurrentModule(null);
     setRestitution(null);
     setCurrentRunId(null);
@@ -351,6 +356,7 @@ function DiagnosticApp() {
           saveState({
             triageStep: 3,
             triageAnswers: {},
+            consentAnswers: { diag: false, stats: false, contact: false },
             currentModule: null,
             routeKey: null,
             questionIndex: 0,
@@ -373,6 +379,7 @@ function DiagnosticApp() {
   const onGoHome        = () => {
     clearState(); // User explicitly chose to quit or return home
     setTriageAnswers({});
+    setConsentAnswers({ diag: false, stats: false, contact: false });
     setCurrentModule(null);
     setModuleAnswers({});
     setQuestionIndex(0);
@@ -897,7 +904,12 @@ function DiagnosticApp() {
 
         {/* Wizard Triage */}
         <Route path="/triage/consent" element={
-          <ConsentScreen onContinue={onConsent} onBack={onGoHome} />
+          <ConsentScreen
+            initialAnswers={consentAnswers}
+            onChangeConsent={setConsentAnswers}
+            onContinue={onConsent}
+            onBack={onGoHome}
+          />
         } />
         <Route path="/triage/wizard" element={
           <>

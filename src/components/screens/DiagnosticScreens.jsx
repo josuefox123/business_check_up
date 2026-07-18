@@ -56,14 +56,24 @@ const TopBackLink = ({ onClick }) => (
 /* ============================================================
    S01 — CONSENTEMENT
    ============================================================ */
-export const ConsentScreen = ({ onContinue, onBack }) => {
-  const [checked, setChecked] = useState({ diag: false, stats: false, contact: false });
+export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, contact: false }, onChangeConsent, onContinue, onBack }) => {
+  const [checked, setChecked] = useState(initialAnswers);
   const [error, setError] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Sync state if initialAnswers changes (e.g. after restoration)
+  useEffect(() => {
+    if (initialAnswers) {
+      setChecked(initialAnswers);
+    }
+  }, [initialAnswers]);
 
   const toggle = (key) => {
     setChecked(prev => {
       const nextChecked = { ...prev, [key]: !prev[key] };
+      if (onChangeConsent) {
+        onChangeConsent(nextChecked);
+      }
       if (nextChecked.diag && nextChecked.stats) {
         setShowConfirmModal(true);
       }
