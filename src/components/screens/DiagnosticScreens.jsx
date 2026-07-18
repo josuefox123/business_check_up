@@ -740,7 +740,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
         .then(res => {
           const list = res?.data?.modules || res?.modules || [];
           if (list.length > 0) {
-            setModules(list.filter(m => m.is_available !== false).map(m => ({
+            setModules(list.filter(m => m.is_available !== false && m.code !== 'TRI-00').map(m => ({
               id: m.code,
               name: m.name,
               duration: m.target_duration_formatted || m.target_duration || '',
