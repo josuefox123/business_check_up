@@ -347,7 +347,26 @@ export const PublicContactScreen = ({ onBack }) => {
                         Cotonou, Bénin<br />
                         <span style={{ fontWeight: 500, fontSize: '0.85rem', color: '#64748B' }}>
                           Quartier Ganhi, Avenue Proche CCI
-                        </span>
+                        </span><br />
+                        <a
+                          href="https://maps.app.goo.gl/zAXiCx6rSomNADwn7?g_st=aw"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#34BED5',
+                            fontSize: '0.82rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            marginTop: '6px'
+                          }}
+                          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                        >
+                          Voir sur Google Maps →
+                        </a>
                       </span>
                     ),
                   },
