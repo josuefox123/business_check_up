@@ -95,6 +95,8 @@ import {
   createSessionApi,
   submitConsentApi,
   submitTriageToBackendApi,
+  updateSessionApi,
+  abandonSessionApi,
 } from './api/index.js';
 
 // Import domain services for "Backend Ready" architecture
@@ -151,6 +153,7 @@ function DiagnosticApp() {
   const [chosenForVerif, setChosenForVerif] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentRunId, setCurrentRunId] = useState(null);
+  const [restitution, setRestitution] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
 
   // Fetch questions dynamically when currentModule changes (Backend Ready)
@@ -190,6 +193,7 @@ function DiagnosticApp() {
     setModuleAnswers({});
     setQuestionIndex(0);
     setCurrentRunId(null);
+    setRestitution(null);
     navigate('/');
   };
 
@@ -200,6 +204,10 @@ function DiagnosticApp() {
     const sessionId = localStorage.getItem('bc_session_id');
     if (sessionId) {
       submitConsentApi(sessionId, true)
+        .then(() => {
+          updateSessionApi(sessionId, 'in_progress', 'S01_consent')
+            .catch(err => console.error('Error tracking session consent stage:', err));
+        })
         .catch(err => console.error('Error submitting consent:', err));
     }
 
@@ -260,6 +268,7 @@ function DiagnosticApp() {
       if (triageId) {
         localStorage.setItem('bc_triage_id', triageId);
       }
+      localStorage.setItem('bc_recommended_module_code', backendModuleId);
 
       // Map module code to local route
       const routeMap = {
@@ -271,6 +280,8 @@ function DiagnosticApp() {
       const backendRoute = routeMap[backendModuleId] || 'S13';
       
       setRouteKey(backendRoute);
+      updateSessionApi(sessionId, 'in_progress', backendRoute)
+        .catch(err => console.error('Error tracking session triage stage:', err));
       
       // Construire le module avec les données réelles du backend
       const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
@@ -365,29 +376,37 @@ function DiagnosticApp() {
   };
 
   // Intro S30
-  const onIntroStart = () => {
+  // Intro S30
+  const onIntroStart = async () => {
     setQuestionIndex(0);
     setModuleAnswers({});
     
     const sessionId = localStorage.getItem('bc_session_id');
     const triageId = localStorage.getItem('bc_triage_id');
+    const recommendedCode = localStorage.getItem('bc_recommended_module_code');
+    const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
+    const isOverride = !isRecommended;
+
     if (sessionId && currentModule) {
-      apiFetch(`/sessions/${sessionId}/diagnostics`, {
-        method: 'POST',
-        body: JSON.stringify({
-          module_code: currentModule.id,
-          triage_id: triageId || null,
-          is_recommended: true, // simplified or matching recommended module
-          is_override: false
-        })
-      })
-      .then(res => {
-        const runId = res?.data?.diagnostic_run_id;
+      try {
+        const res = await apiFetch(`/sessions/${sessionId}/diagnostics`, {
+          method: 'POST',
+          body: JSON.stringify({
+            module_code: currentModule.id,
+            triage_id: triageId || null,
+            is_recommended: isRecommended,
+            is_override: isOverride
+          })
+        });
+        const runId = res?.data?.diagnostic_run_id || res?.diagnostic_run_id;
         if (runId) {
           setCurrentRunId(runId);
+          await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
+            .catch(err => console.error('Error tracking session intro stage:', err));
         }
-      })
-      .catch(err => console.error('Error starting diagnostic run:', err));
+      } catch (err) {
+        console.error('Error starting diagnostic run:', err);
+      }
     }
     
     navigate('/diagnostic/question');
@@ -433,6 +452,12 @@ function DiagnosticApp() {
   };
 
   const onQuit = () => {
+    const sessionId = localStorage.getItem('bc_session_id');
+    const screenCode = currentModule ? `QUESTION_${currentModule.id}_${questionIndex + 1}` : `QUESTION_${questionIndex + 1}`;
+    if (sessionId) {
+      abandonSessionApi(sessionId, screenCode)
+        .catch(err => console.error('Error marking session as abandoned:', err));
+    }
     onGoHome();
   };
 
@@ -454,17 +479,32 @@ function DiagnosticApp() {
             const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
             setScore(localScore);
           }
+          
+          // Stocker la restitution
+          const restObj = res?.data?.restitution || res?.restitution;
+          if (restObj) {
+            setRestitution(restObj);
+          }
+          
+          const sessionId = localStorage.getItem('bc_session_id');
+          if (sessionId && currentModule) {
+            updateSessionApi(sessionId, 'completed', `RESULT_${currentModule.id}`)
+              .catch(err => console.error('Error tracking session completed stage:', err));
+          }
+          
           navigate('/diagnostic/resultats');
         })
         .catch(err => {
           console.error('Error calculating score on backend, fallback to local scoring:', err);
           const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
           setScore(localScore);
+          setRestitution(null);
           navigate('/diagnostic/resultats');
         });
     } else {
       const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
       setScore(localScore);
+      setRestitution(null);
       navigate('/diagnostic/resultats');
     }
   };
@@ -506,7 +546,39 @@ function DiagnosticApp() {
         DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, user);
       }
 
-      // Si l'utilisateur demande le PDF et qu'il y a un diagnostic actif en ligne
+      // 1. Demande de suivi
+      if (action === 'suivi' && currentRunId) {
+        let needType = 'diagnostic_expert';
+        if (currentModule.id === 'OPP-04') needType = 'finance_preparation';
+        else if (currentModule.id === 'DIF-03') needType = 'business_support';
+
+        apiFetch(`/diagnostics/${currentRunId}/follow-up`, {
+          method: 'POST',
+          body: JSON.stringify({
+            full_name: name,
+            phone_number: phone,
+            whatsapp_number: phone,
+            email: email || null,
+            follow_up_need_type: needType,
+            preferred_contact_channel: 'phone'
+          })
+        })
+        .then(() => {
+          navigate('/diagnostic/fin');
+        })
+        .catch(err => {
+          console.error('Erreur lors de la demande de suivi backend:', err);
+          setErrorModal({
+            title: 'Erreur de contact',
+            message: 'Une erreur est survenue lors de l’enregistrement de votre demande. Nos conseillers feront le point avec vous.'
+          });
+          // Naviguer quand même pour ne pas bloquer l'expérience utilisateur
+          setTimeout(() => navigate('/diagnostic/fin'), 3000);
+        });
+        return;
+      }
+
+      // 2. Si l'utilisateur demande le PDF et qu'il y a un diagnostic actif en ligne
       if (action === 'pdf' && currentRunId) {
         // Appeler le backend pour générer le PDF
         apiFetch(`/diagnostics/${currentRunId}/pdf`, { method: 'POST' })
@@ -656,10 +728,10 @@ function DiagnosticApp() {
           />
         } />
         <Route path="/diagnostic/forces-fragilites" element={
-          <ForceFragilitesScreen score={score} moduleId={currentModule?.id} answers={moduleAnswers} onContinue={onFFNext} />
+          <ForceFragilitesScreen score={score} moduleId={currentModule?.id} answers={moduleAnswers} onContinue={onFFNext} restitution={restitution} />
         } />
         <Route path="/diagnostic/priorites" element={
-          <PrioritesActionScreen score={score} onContinue={onPrioNext} />
+          <PrioritesActionScreen score={score} onContinue={onPrioNext} restitution={restitution} />
         } />
         <Route path="/diagnostic/orientation" element={
           <OrientationSuivanteScreen
@@ -668,6 +740,7 @@ function DiagnosticApp() {
             onRestart={onGoHome}
             onContact={onContact}
             onCatalog={onGoToCatalog}
+            restitution={restitution}
           />
         } />
         <Route path="/diagnostic/contact" element={

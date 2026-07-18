@@ -22,7 +22,7 @@ export const questionsApi = {
           if (type === 'single_choice') type = 'single';
           else if (type === 'multi_choice') type = 'multi';
           else if (type === 'scale_1_5') type = 'scale_1_5';
-          else if (type === 'text_libre') type = 'text';
+          else if (type === 'text_libre') type = 'short_text';
 
           const choices = (q.options || []).map(opt => ({
             id: opt.value,

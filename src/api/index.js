@@ -62,4 +62,6 @@ export {
 export {
   createSessionApi,
   submitConsentApi,
+  updateSessionApi,
+  abandonSessionApi,
 } from './sessionsApi.js';

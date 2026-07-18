@@ -75,13 +75,16 @@ export async function submitTriageToBackendApi(sessionId, answers) {
   const opportunityMapping = {
     'fin': 'financing',
     'financing': 'financing',
+    'funding': 'financing',
     'market': 'new_market',
     'new_market': 'new_market',
     'tender': 'tender_large_account',
     'tender_large_account': 'tender_large_account',
     'part': 'partnership',
+    'partner': 'partnership',
     'partnership': 'partnership',
     'inv': 'capacity_investment',
+    'invest': 'capacity_investment',
     'capacity_investment': 'capacity_investment',
     'geo': 'geographic_expansion',
     'geographic_expansion': 'geographic_expansion',
@@ -107,15 +110,50 @@ export async function submitTriageToBackendApi(sessionId, answers) {
   };
   const dominant_topic = topicMapping[s09] || null;
 
+  // Region mapping
+  const regionMapping = {
+    'Alibori': 'alibori',
+    'Atacora': 'atacora',
+    'Atlantique': 'atlantique',
+    'Borgou': 'borgou',
+    'Collines': 'collines',
+    'Couffo': 'couffo',
+    'Donga': 'donga',
+    'Littoral': 'littoral',
+    'Mono': 'mono',
+    'Ouémé': 'oueme',
+    'Plateau': 'plateau',
+    'Zou': 'zou'
+  };
+  const region = regionMapping[s05.region] || 'atlantique';
+
+  // Sector mapping
+  const sectorMapping = {
+    'Agriculture': 'agriculture_livestock',
+    'Agro-transformation': 'agro_processing',
+    'Commerce': 'commerce_distribution',
+    'Services': 'services',
+    'Industrie': 'industry_manufacturing',
+    'Numérique': 'digital_technology',
+    'Artisanat': 'crafts',
+    'Transport': 'transport_logistics',
+    'Tourisme': 'tourism_hospitality',
+    'Santé': 'health',
+    'Éducation': 'education_training',
+    'BTP': 'construction_real_estate',
+    'Autre': 'other'
+  };
+  const sector = sectorMapping[s05.secteur] || 'other';
+
   const payload = {
     user_profile_type,
     full_name: answers.name || null,
     phone_number: answers.phone || null,
     email: answers.email || null,
     business_name: s05.business_name || null,
-    region: s05.region || 'Autre', // Required by backend validation
+    region,
     commune: s05.commune || null,
-    sector: s05.secteur || 'Autre', // Required by backend validation
+    sector,
     sub_sector: s05.soussecteur || null,
     activity_stage,
     entry_mode: 'assisted',

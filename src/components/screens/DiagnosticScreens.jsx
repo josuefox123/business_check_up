@@ -1279,18 +1279,27 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
 /* ============================================================
    S42 — FORCES & FRAGILITÉS
    ============================================================ */
-export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, onBack }) => {
-  const forces = [
+export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, onBack, restitution }) => {
+  const backendForces = restitution?.strengths || [];
+  const backendFragilites = restitution?.weaknesses || [];
+
+  const forces = backendForces.length > 0 ? backendForces : [
     'Connaissance du secteur et ancrage local fort',
     'Volonté d\'agir et engagement personnel du dirigeant',
     score >= 60 ? 'Situation financière sous contrôle' : null,
   ].filter(Boolean);
 
-  const fragilites = [
+  const fragilites = backendFragilites.length > 0 ? backendFragilites : [
     score < 60 ? 'Trésorerie sous tension — à surveiller en priorité' : null,
     'Manque de formalisation des processus clés',
     'Suivi des indicateurs de performance à structurer',
   ].filter(Boolean);
+
+  const priorityText = restitution?.summary || (score < 40
+    ? 'La stabilisation de votre situation financière est le sujet à traiter en premier, avant tout autre développement.'
+    : score < 70
+    ? 'Structurer vos processus commerciaux et formaliser votre suivi de performance sont les leviers prioritaires.'
+    : 'Préparer une stratégie de croissance en capitalisant sur vos fondations solides est votre prochain chantier.');
 
   return (
     <ScreenWrapper>
@@ -1331,11 +1340,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
         <div className="ff-priority" style={{ padding: '16px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)', marginBottom: '24px' }}>
           <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire</div>
           <p className="ff-priority-text" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.5' }}>
-            {score < 40
-              ? 'La stabilisation de votre situation financière est le sujet à traiter en premier, avant tout autre développement.'
-              : score < 70
-              ? 'Structurer vos processus commerciaux et formaliser votre suivi de performance sont les leviers prioritaires.'
-              : 'Préparer une stratégie de croissance en capitalisant sur vos fondations solides est votre prochain chantier.'}
+            {priorityText}
           </p>
         </div>
 
@@ -1350,20 +1355,31 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
 /* ============================================================
    S43 — PRIORITÉS D'ACTION
    ============================================================ */
-export const PrioritesActionScreen = ({ score, onContinue, onBack }) => {
-  const priorities = score < 40 ? [
-    { label:'Action immédiate', text:'Évaluer la trésorerie disponible et contacter votre banque ou un conseiller financier sous 48h.' },
-    { label:'Stabilisation à 30 jours', text:'Identifier les charges non essentielles à réduire et les créances à recouvrer en priorité.' },
-    { label:'Plan de relance', text:'Définir un plan commercial minimal pour retrouver un flux de revenus régulier d\'ici 60 jours.' },
-  ] : score < 70 ? [
-    { label:'Action immédiate', text:'Mettre en place un suivi mensuel de trésorerie avec un tableau de bord simple.' },
-    { label:'Structuration à 30 jours', text:'Formaliser votre offre commerciale et votre processus de vente pour gagner en efficacité.' },
-    { label:'Préparation à 90 jours', text:'Explorer les opportunités de financement (aides, prêts) pour financer votre développement.' },
-  ] : [
-    { label:'Capitaliser', text:'Documenter et formaliser vos pratiques qui fonctionnent pour les reproduire à l\'échelle.' },
-    { label:'Croissance', text:'Identifier et tester un nouveau segment de marché ou canal d\'acquisition dans les 60 jours.' },
-    { label:'Préparation', text:'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
-  ];
+export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }) => {
+  const backendPriorities = restitution?.priority_actions || restitution?.priorities || [];
+  
+  const priorities = backendPriorities.length > 0
+    ? backendPriorities.map((text, i) => {
+        if (typeof text === 'object') return text;
+        const labels = ['Action immédiate', 'Stabilisation à 30 jours', 'Plan de relance', 'Structuration', 'Capitalisation', 'Croissance'];
+        return {
+          label: labels[i] || 'Action recommandée',
+          text: text
+        };
+      })
+    : (score < 40 ? [
+        { label:'Action immédiate', text:'Évaluer la trésorerie disponible et contacter votre banque ou un conseiller financier sous 48h.' },
+        { label:'Stabilisation à 30 jours', text:'Identifier les charges non essentielles à réduire et les créances à recouvrer en priorité.' },
+        { label:'Plan de relance', text:'Définir un plan commercial minimal pour retrouver un flux de revenus régulier d\'ici 60 jours.' },
+      ] : score < 70 ? [
+        { label:'Action immédiate', text:'Mettre en place un suivi mensuel de trésorerie avec un tableau de bord simple.' },
+        { label:'Structuration à 30 jours', text:'Formaliser votre offre commerciale et votre processus de vente pour gagner en efficacité.' },
+        { label:'Préparation à 90 jours', text:'Explorer les opportunités de financement (aides, prêts) pour financer votre développement.' },
+      ] : [
+        { label:'Capitaliser', text:'Documenter et formaliser vos pratiques qui fonctionnent pour les reproduire à l\'échelle.' },
+        { label:'Croissance', text:'Identifier et tester un nouveau segment de marché ou canal d\'acquisition dans les 60 jours.' },
+        { label:'Préparation', text:'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
+      ]);
 
   return (
     <ScreenWrapper>
@@ -1399,10 +1415,25 @@ export const PrioritesActionScreen = ({ score, onContinue, onBack }) => {
 /* ============================================================
    S44 — ORIENTATION SUIVANTE
    ============================================================ */
-export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog }) => {
+export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog, restitution }) => {
   const isCritical = score < 40;
   const isMedium = score >= 40 && score < 70;
   const isHigh = score >= 70;
+
+  // Recommandation de module issue du backend
+  const nextModuleCode = restitution?.next_module;
+  const moduleLabels = {
+    'PRJ-02': 'Diagnostic Projet',
+    'FLH-01': 'Diagnostic Flash',
+    'DIF-03': 'Diagnostic Difficulté',
+    'OPP-04': 'Diagnostic Opportunité',
+    'PRO-05': 'Diagnostic Offre/Produits',
+    'COM-06': 'Diagnostic Commercial',
+    'FIN-07': 'Diagnostic Finance',
+    'GOV-08': 'Diagnostic Organisation',
+    '360-09': 'Diagnostic Complet 360°',
+  };
+  const nextModuleName = nextModuleCode ? moduleLabels[nextModuleCode] : null;
 
   return (
     <ScreenWrapper>
@@ -1423,38 +1454,49 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-          {/* Actions personnalisées par score */}
-          {isCritical && (
+          {/* Si le backend conseille un module précis */}
+          {nextModuleName ? (
+            <Button variant="primary" size="lg" onClick={() => onCatalog()} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+              <Compass size={18} /> Commencer le module : {nextModuleName}
+            </Button>
+          ) : (
             <>
-              <Button variant="primary" size="lg" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <Users size={18} /> Demander un suivi prioritaire
-              </Button>
-              <Button variant="outline" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <Compass size={18} /> Approfondir avec un autre diagnostic
-              </Button>
+              {/* Actions personnalisées par score */}
+              {isCritical && (
+                <Button variant="primary" size="lg" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+                  <Users size={18} /> Demander un suivi prioritaire
+                </Button>
+              )}
+
+              {isMedium && (
+                <Button variant="primary" size="lg" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+                  <Compass size={18} /> Structurer les pratiques (Voir les diagnostics)
+                </Button>
+              )}
+
+              {isHigh && (
+                <Button variant="primary" size="lg" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+                  <Target size={18} /> Évaluer une opportunité (Module Opportunité)
+                </Button>
+              )}
             </>
           )}
 
+          {/* Autres options complémentaires */}
+          {isCritical && nextModuleName && (
+            <Button variant="outline" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+              <Users size={18} /> Demander un suivi prioritaire
+            </Button>
+          )}
           {isMedium && (
-            <>
-              <Button variant="primary" size="lg" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <Compass size={18} /> Structurer les pratiques (Voir les diagnostics)
-              </Button>
-              <Button variant="outline" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <Calendar size={18} /> Refaire un check-up plus tard
-              </Button>
-            </>
+            <Button variant="outline" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+              <Calendar size={18} /> Planifier un suivi conseil
+            </Button>
           )}
-
           {isHigh && (
-            <>
-              <Button variant="primary" size="lg" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <Target size={18} /> Évaluer une opportunité (Module Opportunité)
-              </Button>
-              <Button variant="outline" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-                <TrendingUp size={18} /> Préparer une étape de croissance
-              </Button>
-            </>
+            <Button variant="outline" onClick={onContact} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+              <TrendingUp size={18} /> Préparer une étape de croissance
+            </Button>
           )}
 
           {/* Actions communes */}
@@ -1463,8 +1505,8 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
           <Button variant="teal" onClick={onDownload} style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff' }}>
             <FileText size={18} /> Télécharger mon résumé PDF
           </Button>
-          <Button variant="outline" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
-            <RefreshCw size={18} /> Recommencer un autre diagnostic
+          <Button variant="outline" onClick={onRestart} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
+            <Compass size={18} /> Recommencer un autre diagnostic
           </Button>
         </div>
 
