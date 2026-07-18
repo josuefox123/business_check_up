@@ -215,7 +215,7 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
             return (
               <button
                 key={profile.id}
-                className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}${profile.urgent ? ' urgent' : ''}`}
+                className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}`}
                 onClick={() => setSelected(profile.id)}
                 style={{
                   '--p-color':  profile.color,
@@ -223,10 +223,6 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
                   '--p-border': profile.colorBorder,
                 }}
               >
-                {/* Badge urgent */}
-                {profile.urgent && (
-                  <div className="profile-card-badge-urgent">Prioritaire</div>
-                )}
 
                 {/* Icon — Lucide professionnel */}
                 <div className="profile-card-icon" style={{

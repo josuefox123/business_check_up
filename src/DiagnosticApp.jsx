@@ -103,7 +103,7 @@ import {
 import { QuestionService } from './services/QuestionService.js';
 import { DiagnosticService } from './services/DiagnosticService.js';
 import { UtilisateurService } from './services/UtilisateurService.js';
-import { apiFetch } from './api/config.js';
+import { apiFetch, formatDurationSeconds } from './api/config.js';
 
 
 // Routing via API
@@ -261,7 +261,8 @@ function DiagnosticApp() {
       const backendModuleId = recommended.code || 'FLH-01';
       // Extraire directement le nom et la durée depuis la réponse backend
       const backendModuleName = recommended.name || recommended.module_name || null;
-      const backendDuration = recommended.target_duration_formatted || recommended.duration || null;
+      const rawDuration = recommended.target_duration_formatted || recommended.duration || null;
+      const backendDuration = typeof rawDuration === 'number' ? formatDurationSeconds(rawDuration) : rawDuration;
       const backendDescription = recommended.description || null;
       
       const triageId = data.triage_id;
