@@ -112,38 +112,38 @@ export async function submitTriageToBackendApi(sessionId, answers) {
 
   // Region mapping
   const regionMapping = {
-    'Alibori': 'alibori',
-    'Atacora': 'atacora',
-    'Atlantique': 'atlantique',
-    'Borgou': 'borgou',
-    'Collines': 'collines',
-    'Couffo': 'couffo',
-    'Donga': 'donga',
-    'Littoral': 'littoral',
-    'Mono': 'mono',
-    'Ouémé': 'oueme',
-    'Plateau': 'plateau',
-    'Zou': 'zou'
+    'Alibori': 'Alibori',
+    'Atacora': 'Atacora',
+    'Atlantique': 'Atlantique',
+    'Borgou': 'Borgou',
+    'Collines': 'Collines',
+    'Couffo': 'Couffo',
+    'Donga': 'Donga',
+    'Littoral': 'Littoral',
+    'Mono': 'Mono',
+    'Ouémé': 'Ouémé',
+    'Plateau': 'Plateau',
+    'Zou': 'Zou'
   };
-  const region = regionMapping[s05.region] || 'atlantique';
+  const region = regionMapping[s05.region] || 'Atlantique';
 
   // Sector mapping
   const sectorMapping = {
-    'Agriculture': 'agriculture_livestock',
-    'Agro-transformation': 'agro_processing',
-    'Commerce': 'commerce_distribution',
-    'Services': 'services',
-    'Industrie': 'industry_manufacturing',
-    'Numérique': 'digital_technology',
-    'Artisanat': 'crafts',
-    'Transport': 'transport_logistics',
-    'Tourisme': 'tourism_hospitality',
-    'Santé': 'health',
-    'Éducation': 'education_training',
-    'BTP': 'construction_real_estate',
-    'Autre': 'other'
+    'Agriculture': 'Agriculture / élevage',
+    'Agro-transformation': 'Agro-transformation',
+    'Commerce': 'Commerce / distribution',
+    'Services': 'Services',
+    'Industrie': 'Industrie / fabrication',
+    'Numérique': 'Numérique / technologie',
+    'Artisanat': 'Artisanat',
+    'Transport': 'Transport / logistique',
+    'Tourisme': 'Tourisme / hôtellerie / restauration',
+    'Santé': 'Santé',
+    'Éducation': 'Éducation / formation',
+    'BTP': 'BTP / immobilier',
+    'Autre': 'Autre'
   };
-  const sector = sectorMapping[s05.secteur] || 'other';
+  const sector = sectorMapping[s05.secteur] || 'Autre';
 
   // Liste des communes officielles validées par le backend
   const COMMUNE_LIST = [
@@ -253,15 +253,27 @@ export const computeRoute = (triageAnswers) => {
       com: 'COM-06',
       fin: 'FIN-07',
       gov: 'GOV-08',
-      rh: 'RH-10',
-      ops: 'OPS-11',
-      for: 'FOR-12',
-      dig: 'DIG-13',
+      rh: 'FLH-01',
+      ops: 'FLH-01',
+      for: 'FLH-01',
+      dig: 'FLH-01',
       '360': '360-09',
     };
     const moduleId = axeModuleMap[s09];
     if (moduleId) {
-      return { route: 'S13', moduleId, reason: `Axe spécifique sélectionné : ${s09}` };
+      const routeMap = {
+        'PRO-05': 'S13',
+        'COM-06': 'S13',
+        'FIN-07': 'S13',
+        'GOV-08': 'S13',
+        '360-09': 'S13',
+        'FLH-01': 'S13',
+        'PRJ-02': 'S10',
+        'DIF-03': 'S11',
+        'OPP-04': 'S12',
+      };
+      const route = routeMap[moduleId] || 'S13';
+      return { route, moduleId, reason: `Axe spécifique sélectionné : ${s09}` };
     }
   }
 
