@@ -462,6 +462,135 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
 
 
+/* ============================================================
+   S04 SUB-QUESTION MODAL — Modale question complémentaire
+   ============================================================ */
+const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
+  const [localSub, setLocalSub] = useState(null);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px',
+      background: 'rgba(7, 14, 36, 0.55)',
+      backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)',
+      animation: 'fadeIn 0.18s ease',
+    }}>
+      <div style={{
+        background: '#ffffff',
+        borderRadius: '24px',
+        padding: '32px 24px',
+        maxWidth: '440px',
+        width: '100%',
+        boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+        animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--slate-900)', marginBottom: '8px' }}>
+            Précision requise
+          </h3>
+          <p style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: 1.5 }}>
+            Avez-vous au moins un client qui a payé ?
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button
+            type="button"
+            onClick={() => setLocalSub('yes')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              width: '100%',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              border: '1.5px solid',
+              borderColor: localSub === 'yes' ? 'var(--color-blue)' : 'var(--slate-200)',
+              background: localSub === 'yes' ? 'rgba(38,89,242,0.04)' : '#ffffff',
+              color: 'var(--slate-800)',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.15s'
+            }}
+          >
+            <div style={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: localSub === 'yes' ? 'var(--color-blue)' : 'var(--slate-300)',
+              background: localSub === 'yes' ? 'var(--color-blue)' : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {localSub === 'yes' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffffff' }} />}
+            </div>
+            <span>Oui, j'ai au moins un client payant</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLocalSub('no')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              width: '100%',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              border: '1.5px solid',
+              borderColor: localSub === 'no' ? 'var(--color-blue)' : 'var(--slate-200)',
+              background: localSub === 'no' ? 'rgba(38,89,242,0.04)' : '#ffffff',
+              color: 'var(--slate-800)',
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.15s'
+            }}
+          >
+            <div style={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: localSub === 'no' ? 'var(--color-blue)' : 'var(--slate-300)',
+              background: localSub === 'no' ? 'var(--color-blue)' : 'transparent',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {localSub === 'no' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffffff' }} />}
+            </div>
+            <span>Non, aucun client payant pour l'instant</span>
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
+          <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%' }}>
+            Retour
+          </Button>
+          <Button variant="primary" disabled={localSub === null} onClick={() => onConfirm(localSub)} style={{ justifyContent: 'center', width: '100%' }}>
+            Continuer
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
   const [selected, setSelected] = useState(() => {
     if (!initialAnswer) return null;
@@ -469,26 +598,9 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
     if (initialAnswer === 'occ_oui' || initialAnswer === 'occ_non') return 'occ';
     return initialAnswer;
   });
-  const [subSelected, setSubSelected] = useState(() => {
-    if (initialAnswer === 'occ_oui') return 'yes';
-    if (initialAnswer === 'occ_non') return 'no';
-    return null;
-  });
   const [selectedLabel, setSelectedLabel] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const handleContinue = () => {
-    if (!selected) return;
-    if (selected === 'occ') {
-      if (subSelected === 'yes') {
-        onContinue('occ_oui');
-      } else if (subSelected === 'no') {
-        onContinue('occ_non');
-      }
-    } else {
-      onContinue(selected);
-    }
-  };
+  const [showSubModal, setShowSubModal] = useState(false);
 
   const choices = [
     { id: 'no',    label: 'Non, pas encore' },
@@ -498,9 +610,6 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
     { id: 'drop',  label: 'Mes ventes ont fortement baissé' },
   ];
 
-  const needsSub = selected === 'occ';
-  const canContinue = selected && (!needsSub || subSelected !== null);
-
   return (
     <ScreenWrapper>
       {showConfirmModal && (
@@ -508,11 +617,22 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
           label={selectedLabel}
           onConfirm={() => {
             setShowConfirmModal(false);
-            handleContinue();
+            onContinue(selected);
           }}
           onCancel={() => setShowConfirmModal(false)}
         />
       )}
+
+      {showSubModal && (
+        <S04SubQuestionModal
+          onConfirm={(subVal) => {
+            setShowSubModal(false);
+            onContinue(subVal === 'yes' ? 'occ_oui' : 'occ_non');
+          }}
+          onCancel={() => setShowSubModal(false)}
+        />
+      )}
+
       <div className="question-wrap animate-fade-up">
 
         <h1 className="question-heading">Votre activité vend-elle déjà des produits ou services ?</h1>
@@ -526,8 +646,9 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
               selected={selected === c.id}
               onClick={() => {
                 setSelected(c.id);
-                setSubSelected(null);
-                if (c.id !== 'occ') {
+                if (c.id === 'occ') {
+                  setShowSubModal(true);
+                } else {
                   setSelectedLabel(c.label);
                   setShowConfirmModal(true);
                 }
@@ -535,41 +656,6 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
             />
           ))}
         </div>
-
-        {needsSub && (
-          <div className="sub-question-block animate-fade-up" style={{ marginTop: '20px', padding: '16px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)' }}>
-            <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--slate-800)', marginBottom: '12px' }}>
-              Avez-vous au moins un client qui a payé ?
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
-                type="button"
-                className={`btn ${subSelected === 'yes' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => {
-                  setSubSelected('yes');
-                  setSelectedLabel("Oui, avec au moins un client payé");
-                  setShowConfirmModal(true);
-                }}
-                style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
-              >
-                Oui
-              </button>
-              <button 
-                type="button"
-                className={`btn ${subSelected === 'no' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => {
-                  setSubSelected('no');
-                  setSelectedLabel("Non, aucun client payé");
-                  setShowConfirmModal(true);
-                }}
-                style={{ flex: 1, padding: '10px', fontSize: '0.88rem' }}
-              >
-                Non
-              </button>
-            </div>
-          </div>
-        )}
-
 
       </div>
     </ScreenWrapper>
