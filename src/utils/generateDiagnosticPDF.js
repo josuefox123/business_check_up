@@ -89,6 +89,13 @@ export function generateDiagnosticPDF({
   totalQuestions,
   confidence,
   date,
+  userName,
+  userEmail,
+  userPhone,
+  companyName,
+  sector,
+  department,
+  commune,
 }) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210; // largeur A4
@@ -132,6 +139,42 @@ export function generateDiagnosticPDF({
   doc.rect(MARGIN, 50, 40, 1.5, 'F');
 
   Y = 68;
+
+  // ── Bloc Informations Client (si présentes) ──
+  const hasMeta = userName || companyName || userEmail || userPhone || sector || department || commune;
+  if (hasMeta) {
+    roundRect(doc, MARGIN, Y, CONTENT_W, 28, 5, COLORS.light);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    setTextColor(doc, COLORS.primary);
+    doc.text("Informations de l'entreprise", MARGIN + 8, Y + 8);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    setTextColor(doc, COLORS.slate600);
+    
+    // Ligne 1
+    const parts1 = [];
+    if (userName) parts1.push(`Nom : ${userName}`);
+    if (companyName) parts1.push(`Entreprise : ${companyName}`);
+    doc.text(parts1.join('   |   '), MARGIN + 8, Y + 14);
+
+    // Ligne 2
+    const parts2 = [];
+    if (userEmail) parts2.push(`E-mail : ${userEmail}`);
+    if (userPhone) parts2.push(`Tél : ${userPhone}`);
+    doc.text(parts2.join('   |   '), MARGIN + 8, Y + 19);
+
+    // Ligne 3
+    const parts3 = [];
+    if (sector) parts3.push(`Secteur : ${sector}`);
+    if (department) parts3.push(`Département : ${department}`);
+    if (commune) parts3.push(`Commune : ${commune}`);
+    doc.text(parts3.join('   |   '), MARGIN + 8, Y + 24);
+
+    Y += 36; // décale la suite vers le bas
+  }
 
   // ── Bloc Score ──
   roundRect(doc, MARGIN, Y, CONTENT_W, 38, 6, COLORS.light);

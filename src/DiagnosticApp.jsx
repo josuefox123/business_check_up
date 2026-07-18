@@ -7,6 +7,8 @@ import { Navbar } from './components/layout/Navbar.jsx';
 import { PublicContactScreen } from './components/screens/PublicContact.jsx';
 import { AlertTriangle } from 'lucide-react';
 import { useSessionPersist } from './hooks/useSessionPersist.js';
+import { generateDiagnosticPDF } from './utils/generateDiagnosticPDF.js';
+import { getRestitutionData } from './utils/restitutionHelper.js';
 
 /* ── Modale d'erreur stylisée du système ── */
 const ErrorModal = ({ title, message, onClose }) => (
@@ -760,18 +762,19 @@ function DiagnosticApp() {
     const name = data.nom || data.name || 'Anonyme';
     const email = data.email || '';
     const phone = data.tel || data.phone || '';
+    const company = data.entreprise || triageAnswers.s05?.entreprise || '';
 
-    console.log('Formulaire contact soumis:', { name, email, phone, action });
+    console.log('Formulaire contact soumis:', { name, email, phone, action, company });
     
     // Register prospect user in store
     const userData = {
       name,
       email,
       phone,
-      companyName: data.companyName || '',
-      sector: data.sector || '',
-      department: data.department || '',
-      commune: data.commune || '',
+      companyName: company,
+      sector: triageAnswers.s05?.secteur || '',
+      department: triageAnswers.s05?.region || '',
+      commune: triageAnswers.s05?.commune || '',
       profile: triageAnswers.s03 || 'active',
       contactRequested: action === 'suivi',
       pdfDownloaded: action === 'pdf'
@@ -815,29 +818,45 @@ function DiagnosticApp() {
         return;
       }
 
-      // 2. Si l'utilisateur demande le PDF et qu'il y a un diagnostic actif en ligne
-      if (action === 'pdf' && currentRunId) {
-        // Appeler le backend pour générer le PDF
-        apiFetch(`/diagnostics/${currentRunId}/pdf`, { method: 'POST' })
-          .then(res => {
-            const pdfUrl = res?.data?.pdf_url || res?.pdf_url;
-            if (pdfUrl) {
-              window.open(pdfUrl, '_blank');
-            } else {
-              console.error('Aucune URL de PDF retournée par le backend');
-              setErrorModal({
-                title: 'Rapport PDF indisponible',
-                message: 'Le serveur a validé votre demande mais n’a pas pu créer le document. Veuillez réessayer.'
-              });
-            }
-          })
-          .catch(err => {
-            console.error('Erreur lors de la génération du PDF du backend:', err);
-            setErrorModal({
-              title: 'Erreur de téléchargement',
-              message: 'Une erreur est survenue lors de la génération du rapport PDF. Veuillez vérifier votre connexion ou réessayer.'
-            });
+      // 2. Si l'utilisateur demande le PDF (Génération 100% Frontend avec coordonnées)
+      if (action === 'pdf') {
+        try {
+          const { forces, fragilites, priorityText, priorities, confidence } = getRestitutionData({
+            score,
+            answers: moduleAnswers,
+            moduleId: currentModule?.id || '',
+            restitution: restitution
           });
+
+          const moduleNames = {
+            'PRJ-02': 'Diagnostic Projet',
+            'DIF-03': 'Diagnostic Difficulté',
+            'OPP-04': 'Diagnostic Opportunité',
+            'FLH-01': 'Diagnostic Flash',
+          };
+          const moduleName = moduleNames[currentModule?.id] || currentModule?.id;
+
+          generateDiagnosticPDF({
+            score,
+            moduleId: currentModule?.id || '',
+            moduleName,
+            forces,
+            fragilites,
+            priorityText,
+            priorities,
+            totalQuestions: Object.keys(moduleAnswers || {}).length,
+            confidence,
+            userName: name,
+            userEmail: email,
+            userPhone: phone,
+            companyName: company,
+            sector: triageAnswers.s05?.secteur || '',
+            department: triageAnswers.s05?.region || '',
+            commune: triageAnswers.s05?.commune || '',
+          });
+        } catch (pdfErr) {
+          console.error('Erreur lors de la génération du PDF en local:', pdfErr);
+        }
       }
 
       navigate('/diagnostic/fin');

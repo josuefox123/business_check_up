@@ -1685,6 +1685,7 @@ const getConfidence = (a) => {
 };
 
 import { generateDiagnosticPDF } from '../../utils/generateDiagnosticPDF.js';
+import { getRestitutionData } from '../../utils/restitutionHelper.js';
 
 export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution }) => {
   const lvl = getLevel(score);
@@ -1709,51 +1710,12 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
   }
 
   // Calcul du plan d'action détaillé
-  const backendForces = restitution?.strengths || [];
-  const backendFragilites = restitution?.weaknesses || [];
-
-  const forces = backendForces.length > 0 ? backendForces : [
-    'Connaissance du secteur et ancrage local fort',
-    'Volonté d\'agir et engagement personnel du dirigeant',
-    score >= 60 ? 'Situation financière sous contrôle' : null,
-  ].filter(Boolean);
-
-  const fragilites = backendFragilites.length > 0 ? backendFragilites : [
-    score < 60 ? 'Trésorerie sous tension — à surveiller en priorité' : null,
-    'Manque de formalisation des processus clés',
-    'Suivi des indicateurs de performance à structurer',
-  ].filter(Boolean);
-
-  const priorityText = restitution?.summary || (score < 40
-    ? 'La stabilisation de votre situation financière est le sujet à traiter en premier, avant tout autre développement.'
-    : score < 70
-    ? 'Structurer vos processus commerciaux et formaliser votre suivi de performance sont les leviers prioritaires.'
-    : 'Préparer une stratégie de croissance en capitalisant sur vos fondations solides est votre prochain chantier.');
-
-  const backendPriorities = restitution?.priority_actions || restitution?.priorities || [];
-  
-  const priorities = backendPriorities.length > 0
-    ? backendPriorities.map((text, i) => {
-        if (typeof text === 'object') return text;
-        const labels = ['Action immédiate', 'Stabilisation à 30 jours', 'Plan de relance', 'Structuration', 'Capitalisation', 'Croissance'];
-        return {
-          label: labels[i] || 'Action recommandée',
-          text: text
-        };
-      })
-    : (score < 40 ? [
-        { label:'Action immédiate', text:'Évaluer la trésorerie disponible et contacter votre banque ou un conseiller financier sous 48h.' },
-        { label:'Stabilisation à 30 jours', text:'Identifier les charges non essentielles à réduire et les créances à recouvrer en priorité.' },
-        { label:'Plan de relance', text:'Définir un plan commercial minimal pour retrouver un flux de revenus régulier d\'ici 60 jours.' },
-      ] : score < 70 ? [
-        { label:'Action immédiate', text:'Mettre en place un suivi mensuel de trésorerie avec un tableau de bord simple.' },
-        { label:'Structuration à 30 jours', text:'Formaliser votre offre commerciale et votre processus de vente pour gagner en efficacité.' },
-        { label:'Préparation à 90 jours', text:'Explorer les opportunités de financement (aides, prêts) pour financer votre développement.' },
-      ] : [
-        { label:'Capitaliser', text:'Documenter et formaliser vos pratiques qui fonctionnent pour les reproduire à l\'échelle.' },
-        { label:'Croissance', text:'Identifier et tester un nouveau segment de marché ou canal d\'acquisition dans les 60 jours.' },
-        { label:'Préparation', text:'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
-      ]);
+  const { forces, fragilites, priorityText, priorities } = getRestitutionData({
+    score,
+    answers,
+    moduleId,
+    restitution
+  });
 
   const handleExportPDF = () => {
     const moduleNames = {
@@ -2150,7 +2112,7 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
    S50 — CONTACT / PDF / SUIVI
    ============================================================ */
 export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
-  const [form, setForm] = useState({ nom: '', email: '', tel: '', accept: false });
+  const [form, setForm] = useState({ nom: '', email: '', tel: '', entreprise: '', accept: false });
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleAction = (actionType) => {
@@ -2195,7 +2157,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
             <div className="form-group">
-              <label className="form-label" htmlFor="nom" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Nom &amp; Prénom</label>
+              <label className="form-label" htmlFor="nom" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Nom &amp; Prénom <span style={{color:'var(--color-danger)'}}>*</span></label>
               <input
                 type="text"
                 id="nom"
@@ -2207,7 +2169,19 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="email" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Adresse e-mail</label>
+              <label className="form-label" htmlFor="entreprise" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Nom de l'entreprise <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
+              <input
+                type="text"
+                id="entreprise"
+                className="form-input"
+                placeholder="Ex: Ets Diop &amp; Fils"
+                value={form.entreprise}
+                onChange={(e) => setForm({ ...form, entreprise: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="email" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Adresse e-mail <span style={{color:'var(--color-danger)'}}>*</span></label>
               <input
                 type="email"
                 id="email"
