@@ -136,10 +136,7 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
           </div>
         )}
 
-        <div className="screen-nav">
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-          <Button variant="primary" disabled={!checked.diag || !checked.stats} onClick={handleSubmit}>Continuer</Button>
-        </div>
+
       </div>
     </ScreenWrapper>
   );
@@ -292,19 +289,7 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
           })}
         </div>
 
-        {/* Navigation */}
-        <div className="screen-nav" style={{ marginTop: 'var(--space-8)' }}>
-          {onBack && (
-            <Button variant="outline" onClick={onBack}>
-              Retour
-            </Button>
-          )}
-          <div className="screen-nav-right">
-            <Button variant="primary" disabled={!selected} onClick={handleConfirm}>
-              Continuer
-            </Button>
-          </div>
-        </div>
+
 
         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: 'var(--space-5)', fontWeight: 500 }}>
           Pas sûr ? Sélectionnez le profil le plus proche — vous pourrez préciser ensuite.
@@ -459,14 +444,16 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
           ))}
         </div>
 
-        <div className="screen-nav">
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-          <div className="screen-nav-right">
-            <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(selected)}>
-              Continuer
-            </Button>
+        {multi && (
+          <div className="screen-nav">
+            <Button variant="outline" onClick={onBack}>Retour</Button>
+            <div className="screen-nav-right">
+              <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(selected)}>
+                Continuer
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
       </div>
     </ScreenWrapper>
@@ -583,10 +570,7 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
           </div>
         )}
 
-        <div className="screen-nav" style={{ marginTop: '28px' }}>
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-          <Button variant="primary" disabled={!canContinue} onClick={handleContinue}>Continuer</Button>
-        </div>
+
       </div>
     </ScreenWrapper>
   );
@@ -1148,46 +1132,12 @@ const ConfidenceModal = ({ confidence, setConfidence, onConfirm, onCancel, choic
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            padding: '12px 16px',
-            borderRadius: '10px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            border: '1.5px solid var(--slate-200)',
-            background: '#fff',
-            color: 'var(--slate-700)',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-            transition: 'all 0.15s',
-            textAlign: 'center'
-          }}
-        >
+        <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%' }}>
           Retour
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          disabled={!confidence}
-          style={{
-            padding: '12px 16px',
-            borderRadius: '10px',
-            fontWeight: 700,
-            fontSize: '0.9rem',
-            border: 'none',
-            background: confidence ? 'var(--color-blue)' : 'var(--slate-200)',
-            color: '#fff',
-            cursor: confidence ? 'pointer' : 'not-allowed',
-            fontFamily: 'var(--font)',
-            transition: 'all 0.15s',
-            textAlign: 'center',
-            boxShadow: confidence ? '0 4px 14px rgba(38,89,242,0.25)' : 'none'
-          }}
-        >
+        </Button>
+        <Button variant="primary" disabled={!confidence} onClick={onConfirm} style={{ justifyContent: 'center', width: '100%' }}>
           Confirmer
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -1229,45 +1179,12 @@ const AnswerConfirmModal = ({ label, onConfirm, onCancel }) => (
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            padding: '12px 16px',
-            borderRadius: '10px',
-            fontWeight: 600,
-            fontSize: '0.9rem',
-            border: '1.5px solid var(--slate-200)',
-            background: '#fff',
-            color: 'var(--slate-700)',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-            transition: 'all 0.15s',
-            textAlign: 'center'
-          }}
-        >
+        <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%' }}>
           Retour
-        </button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          style={{
-            padding: '12px 16px',
-            borderRadius: '10px',
-            fontWeight: 700,
-            fontSize: '0.9rem',
-            border: 'none',
-            background: 'var(--color-blue)',
-            color: '#fff',
-            cursor: 'pointer',
-            fontFamily: 'var(--font)',
-            transition: 'all 0.15s',
-            textAlign: 'center',
-            boxShadow: '0 4px 14px rgba(38,89,242,0.25)'
-          }}
-        >
+        </Button>
+        <Button variant="primary" onClick={onConfirm} style={{ justifyContent: 'center', width: '100%' }}>
           Continuer
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -1527,22 +1444,35 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           </>
         )}
 
-        <div className="screen-nav">
-          <Button variant="outline" onClick={showProof ? () => { setShowProof(false); setShowConfidenceModal(true); } : onBack}>
-            Retour
-          </Button>
-          <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {(isMulti || isText || showProof) ? (
+          <div className="screen-nav">
+            <Button variant="outline" onClick={showProof ? () => { setShowProof(false); setShowConfidenceModal(true); } : onBack}>
+              Retour
+            </Button>
+            <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <button
+                type="button"
+                style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
+                onClick={() => setShowQuitModal(true)}
+              >
+                Quitter
+              </button>
+              <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
+                {showProof ? 'Valider la preuve' : 'Continuer'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-6)' }}>
             <button
-              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
+              type="button"
+              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600, padding: '8px 16px'}}
               onClick={() => setShowQuitModal(true)}
             >
-              Quitter
+              Quitter le diagnostic
             </button>
-            <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
-              {showProof ? 'Valider la preuve' : 'Continuer'}
-            </Button>
           </div>
-        </div>
+        )}
       </div>
     </ScreenWrapper>
   );
