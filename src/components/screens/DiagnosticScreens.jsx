@@ -430,7 +430,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
   return (
     <ScreenWrapper>
-      {!multi && onBack && <TopBackLink onClick={onBack} />}
+      {onBack && <TopBackLink onClick={onBack} />}
       {showConfirmModal && (
         <AnswerConfirmModal
           label={selectedLabel}
@@ -473,13 +473,10 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
         </div>
 
         {multi && (
-          <div className="screen-nav">
-            <Button variant="outline" onClick={onBack}>Retour</Button>
-            <div className="screen-nav-right">
-              <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(selected)}>
-                Continuer
-              </Button>
-            </div>
+          <div className="screen-nav" style={{ justifyContent: 'flex-end' }}>
+            <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(selected)}>
+              Continuer
+            </Button>
           </div>
         )}
 
@@ -1585,10 +1582,12 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         )}
 
         {(isMulti || isText || showProof) ? (
-          <div className="screen-nav">
-            <Button variant="outline" onClick={showProof ? () => { setShowProof(false); setShowConfidenceModal(true); } : onBack}>
-              Retour
-            </Button>
+          <div className="screen-nav" style={{ justifyContent: showProof ? 'space-between' : 'flex-end' }}>
+            {showProof && (
+              <Button variant="outline" onClick={() => { setShowProof(false); setShowConfidenceModal(true); }}>
+                Retour
+              </Button>
+            )}
             <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <button
                 type="button"
