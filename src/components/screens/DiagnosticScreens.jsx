@@ -2162,7 +2162,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 type="text"
                 id="nom"
                 className="form-input"
-                placeholder="Ex: Amadou Diop"
+                placeholder="Ex: Koffi SOGLO"
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
               />
@@ -2174,7 +2174,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 type="text"
                 id="entreprise"
                 className="form-input"
-                placeholder="Ex: Ets Diop &amp; Fils"
+                placeholder="Ex: Ets Soglo &amp; Associés"
                 value={form.entreprise}
                 onChange={(e) => setForm({ ...form, entreprise: e.target.value })}
               />
@@ -2186,7 +2186,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 type="email"
                 id="email"
                 className="form-input"
-                placeholder="Ex: amadou@diop.sn"
+                placeholder="Ex: koffi@soglo.bj"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -2198,7 +2198,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 type="tel"
                 id="tel"
                 className="form-input"
-                placeholder="Ex: +221 77 000 00 00"
+                placeholder="Ex: +229 01 90 90 90 90"
                 value={form.tel}
                 onChange={(e) => setForm({ ...form, tel: e.target.value })}
               />
