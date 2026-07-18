@@ -167,6 +167,7 @@
   color: var(--slate-800);
   line-height: 1.45;
   flex: 1;
+  margin-right: 32px; /* Evite la collision avec le cercle de coche absolute */
 }
 
 .choice-card.selected .choice-card-label {
