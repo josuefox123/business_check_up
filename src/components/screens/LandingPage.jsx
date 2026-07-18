@@ -272,7 +272,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             <div className="footer-col">
               <h6>À propos</h6>
               <Link to="/a-propos">Notre mission</Link>
-              <Link to="/a-propos">Nos partenaires</Link>
               <Link to="/contact">Contact</Link>
             </div>
             <div className="footer-col">

@@ -1770,22 +1770,7 @@ export const InstitutionnelleScreen = ({ onBack, onContact }) => (
       </div>
     </section>
 
-    {/* Partners Section */}
-    <section className="section" style={{ background: 'var(--color-white)' }}>
-      <div className="container">
-        <div className="section-header">
-          <h3>Nos partenaires</h3>
-          <p className="text-subtitle">Ils font confiance au Business Check-up pour dynamiser l'écosystème local.</p>
-        </div>
-        <div className="partner-grid">
-          <div className="partner-card"><span>Dakar Tech Hub</span></div>
-          <div className="partner-card"><span>Afrique Capital</span></div>
-          <div className="partner-card"><span>BPI Sahel</span></div>
-          <div className="partner-card"><span>Finanz Venture</span></div>
-          <div className="partner-card"><span>Sénégal Digital Agency</span></div>
-        </div>
-      </div>
-    </section>
+
 
     {/* Actions Section */}
     <section className="section bg-light text-center">
@@ -1815,7 +1800,6 @@ export const InstitutionnelleScreen = ({ onBack, onContact }) => (
             <div className="footer-col">
               <h6>L'entreprise</h6>
               <Link to="/a-propos">À Propos</Link>
-              <a href="#">Nos Partenaires</a>
               <Link to="/contact">Contact</Link>
             </div>
             <div className="footer-col">
