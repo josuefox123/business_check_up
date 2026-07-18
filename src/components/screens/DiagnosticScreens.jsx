@@ -120,7 +120,7 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
 
         <div className="screen-nav">
           <Button variant="outline" onClick={onBack}>Retour</Button>
-          <Button variant="primary" onClick={handleSubmit}>Continuer</Button>
+          <Button variant="primary" disabled={!checked.diag || !checked.stats} onClick={handleSubmit}>Continuer</Button>
         </div>
       </div>
     </ScreenWrapper>
