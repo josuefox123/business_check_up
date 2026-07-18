@@ -9,6 +9,7 @@ import logoImg from '../../assets/logo.png';
 import './screens.css';
 import aboutIllustration from '../../assets/about_illustration.png';
 import { calculateAxeScores } from '../../api/scoring.js';
+import { COMMUNE_LIST } from '../../api/triage.js';
 
 
 const CheckIcon = () => (
@@ -710,7 +711,10 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
           </div>
           <div className="form-group">
             <label className="form-label">Commune <span style={{color:'var(--slate-400)',fontWeight:400}}>(recommandé)</span></label>
-            <input className="form-input" placeholder="Ex: Cotonou, Porto-Novo, Parakou..." value={data.commune} onChange={e=>setData({...data,commune:e.target.value})} />
+            <select className="form-select" value={data.commune} onChange={e=>setData({...data,commune:e.target.value})}>
+              <option value="">Sélectionnez votre commune</option>
+              {COMMUNE_LIST.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div className="form-group">
             <label className="form-label">Secteur d'activité <span style={{color:'var(--color-danger)'}}>*</span></label>

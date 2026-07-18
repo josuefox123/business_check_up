@@ -10,6 +10,21 @@ import { apiFetch } from './config.js';
 const CRITICAL_SIGNALS = ['charges', 'dettes', 'treso'];
 const HIGH_SIGNALS = ['ventes', 'client', 'livraison'];
 
+// Liste des communes officielles validées par le backend
+export const COMMUNE_LIST = [
+  'Abomey', 'Abomey-Calavi', 'Adja-Ouèrè', 'Adjarra', 'Adjohoun', 'Aguégués', 'Agbangnizoun', 'Akpro-Missérété',
+  'Alibori', 'Allada', 'Aplahoué', 'Atacora', 'Athiémé', 'Atlantique', 'Avrankou', 'Banikoara',
+  'Bantè', 'Bassila', 'Bembéréké', 'Bohicon', 'Bonou', 'Bopa', 'Borgou', 'Boukoumbé',
+  'Cobly', 'Collines', 'Comè', 'Copargo', 'Cotonou', 'Couffo', 'Covè', 'Dangbo',
+  'Dassa-Zoumé', 'Djidja', 'Djakotomey', 'Djougou', 'Dogbo', 'Donga', 'Glazoué', 'Gogounou',
+  'Grand-Popo', 'Houéyogbé', 'Ifangni', 'Kalalé', 'Kandi', 'Karimama', 'Kétou', 'Kérou',
+  'Klouékanmè', 'Kouandé', 'Kpomassè', 'Lalo', 'Littoral', 'Lokossa', 'Malanville', 'Matéri',
+  'Mono', "N'Dali", 'Natitingou', 'Nikki', 'Ouaké', 'Ouèssè', 'Ouémé', 'Ouidah',
+  'Ouinhi', 'Parakou', 'Péhunco', 'Pèrèrè', 'Plateau', 'Pobè', 'Porto-Novo', 'Sakété',
+  'Savalou', 'Savè', 'Segbana', 'Sèmè-Kpodji', 'Sinendé', 'Sô-Ava', 'Tanguiéta', 'Tchaourou',
+  'Toffo', 'Tori-Bossito', 'Toucountouna', 'Toviklin', 'Za-Kpota', 'Zagnanado', 'Zè', 'Zogbodomey', 'Zou'
+];
+
 /**
  * Soumettre les réponses de triage au backend
  * POST /sessions/{sessionId}/triage
@@ -144,22 +159,6 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     'Autre': 'Autre'
   };
   const sector = sectorMapping[s05.secteur] || 'Autre';
-
-  // Liste des communes officielles validées par le backend
-  const COMMUNE_LIST = [
-    'Banikoara', 'Gogounou', 'Kandi', 'Karimama', 'Malanville', 'Segbana',
-    'Boukoumbé', 'Cobly', 'Kérou', 'Kouandé', 'Matéri', 'Natitingou', 'Péhunco', 'Tanguiéta', 'Toucountouna',
-    'Abomey-Calavi', 'Allada', 'Kpomassè', 'Ouidah', 'Sô-Ava', 'Toffo', 'Tori-Bossito', 'Zè',
-    'Bembéréké', 'Kalalé', "N'Dali", 'Nikki', 'Parakou', 'Pèrèrè', 'Sinendé', 'Tchaourou',
-    'Bantè', 'Dassa-Zoumé', 'Glazoué', 'Ouèssè', 'Savalou', 'Savè',
-    'Aplahoué', 'Djakotomey', 'Dogbo', 'Klouékanmè', 'Lalo', 'Toviklin',
-    'Bassila', 'Copargo', 'Djougou', 'Ouaké',
-    'Cotonou',
-    'Athiémé', 'Bopa', 'Comè', 'Grand-Popo', 'Houéyogbé', 'Lokossa',
-    'Adjarra', 'Adjohoun', 'Aguégués', 'Akpro-Missérété', 'Avrankou', 'Bonou', 'Dangbo', 'Porto-Novo', 'Sèmè-Kpodji',
-    'Adja-Ouèrè', 'Ifangni', 'Kétou', 'Pobè', 'Sakété',
-    'Abomey', 'Agbangnizoun', 'Bohicon', 'Covè', 'Djidja', 'Ouinhi', 'Za-Kpota', 'Zagnanado', 'Zogbodomey'
-  ];
 
   let normalizedCommune = null;
   if (s05.commune) {
