@@ -174,7 +174,7 @@ import { PROFILES_LIST } from '../../api/index.js';
 
 // Icônes professionnelles Google Fonts (Material Symbols Outlined) par profil
 const PROFILE_GOOGLE_ICONS = {
-  project: 'rocket_launch',
+  project: 'lightbulb',
   active:  'storefront',
   pme:     'corporate_fare',
   diffic:  'warning',
