@@ -385,14 +385,13 @@
 
 .route-actions-secondary {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .route-actions-secondary .btn,
 .route-actions-secondary button {
-  flex: 1;
-  min-width: 140px;
+  width: 100%;
   justify-content: center;
   text-align: center;
 }

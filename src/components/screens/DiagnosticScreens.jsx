@@ -845,8 +845,7 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="route-wrap animate-fade-up">
-        <div className={`route-chip ${cfg.chip}`}>{cfg.chipLabel}</div>
-        <div className={`route-card`} style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)', marginTop: '14px' }}>
+        <div className={`route-card`} style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)', marginTop: '0' }}>
           <h1 className="route-title" style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>
             {cfg.cardTitle}
           </h1>
@@ -889,10 +888,10 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
               {cfg.cta}
             </Button>
             <div className="route-actions-secondary">
-              <Button variant="outline" onClick={onCatalog} style={{ flex: 1, justifyContent: 'center', fontSize: '0.82rem' }}>
+              <Button variant="outline" onClick={onCatalog} style={{ width: '100%', justifyContent: 'center' }}>
                 Voir les autres diagnostics
               </Button>
-              <Button variant="outline" onClick={onBack} style={{ flex: 1, justifyContent: 'center', fontSize: '0.82rem' }}>
+              <Button variant="outline" onClick={onBack} style={{ width: '100%', justifyContent: 'center' }}>
                 Modifier mes réponses
               </Button>
             </div>
