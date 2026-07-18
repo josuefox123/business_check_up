@@ -10,20 +10,23 @@ import { apiFetch } from './config.js';
 const CRITICAL_SIGNALS = ['charges', 'dettes', 'treso'];
 const HIGH_SIGNALS = ['ventes', 'client', 'livraison'];
 
-// Liste des communes officielles validées par le backend
-export const COMMUNE_LIST = [
-  'Abomey', 'Abomey-Calavi', 'Adja-Ouèrè', 'Adjarra', 'Adjohoun', 'Aguégués', 'Agbangnizoun', 'Akpro-Missérété',
-  'Alibori', 'Allada', 'Aplahoué', 'Atacora', 'Athiémé', 'Atlantique', 'Avrankou', 'Banikoara',
-  'Bantè', 'Bassila', 'Bembéréké', 'Bohicon', 'Bonou', 'Bopa', 'Borgou', 'Boukoumbé',
-  'Cobly', 'Collines', 'Comè', 'Copargo', 'Cotonou', 'Couffo', 'Covè', 'Dangbo',
-  'Dassa-Zoumé', 'Djidja', 'Djakotomey', 'Djougou', 'Dogbo', 'Donga', 'Glazoué', 'Gogounou',
-  'Grand-Popo', 'Houéyogbé', 'Ifangni', 'Kalalé', 'Kandi', 'Karimama', 'Kétou', 'Kérou',
-  'Klouékanmè', 'Kouandé', 'Kpomassè', 'Lalo', 'Littoral', 'Lokossa', 'Malanville', 'Matéri',
-  'Mono', "N'Dali", 'Natitingou', 'Nikki', 'Ouaké', 'Ouèssè', 'Ouémé', 'Ouidah',
-  'Ouinhi', 'Parakou', 'Péhunco', 'Pèrèrè', 'Plateau', 'Pobè', 'Porto-Novo', 'Sakété',
-  'Savalou', 'Savè', 'Segbana', 'Sèmè-Kpodji', 'Sinendé', 'Sô-Ava', 'Tanguiéta', 'Tchaourou',
-  'Toffo', 'Tori-Bossito', 'Toucountouna', 'Toviklin', 'Za-Kpota', 'Zagnanado', 'Zè', 'Zogbodomey', 'Zou'
-];
+// Cartographie officielle des départements et communes du Bénin
+export const DEPARTMENT_COMMUNES = {
+  'Alibori': ['Banikoara', 'Gogounou', 'Kandi', 'Karimama', 'Malanville', 'Segbana'],
+  'Atacora': ['Boukoumbé', 'Cobly', 'Kérou', 'Kouandé', 'Matéri', 'Natitingou', 'Péhunco', 'Tanguiéta', 'Toucountouna'],
+  'Atlantique': ['Abomey-Calavi', 'Allada', 'Kpomassè', 'Ouidah', 'Sô-Ava', 'Toffo', 'Tori-Bossito', 'Zè'],
+  'Borgou': ['Bembéréké', 'Kalalé', "N'Dali", 'Nikki', 'Parakou', 'Pèrèrè', 'Sinendé', 'Tchaourou'],
+  'Collines': ['Bantè', 'Dassa-Zoumé', 'Glazoué', 'Ouèssè', 'Savalou', 'Savè'],
+  'Couffo': ['Aplahoué', 'Djakotomey', 'Dogbo', 'Klouékanmè', 'Lalo', 'Toviklin'],
+  'Donga': ['Bassila', 'Copargo', 'Djougou', 'Ouaké'],
+  'Littoral': ['Cotonou'],
+  'Mono': ['Athiémé', 'Bopa', 'Comè', 'Grand-Popo', 'Houéyogbé', 'Lokossa'],
+  'Ouémé': ['Adjarra', 'Adjohoun', 'Aguégués', 'Akpro-Missérété', 'Avrankou', 'Bonou', 'Dangbo', 'Porto-Novo', 'Sèmè-Kpodji'],
+  'Plateau': ['Adja-Ouèrè', 'Ifangni', 'Kétou', 'Pobè', 'Sakété'],
+  'Zou': ['Abomey', 'Agbangnizoun', 'Bohicon', 'Covè', 'Djidja', 'Ouinhi', 'Za-Kpota', 'Zagnanado', 'Zogbodomey']
+};
+
+export const COMMUNE_LIST = Object.values(DEPARTMENT_COMMUNES).flat().sort();
 
 /**
  * Soumettre les réponses de triage au backend
