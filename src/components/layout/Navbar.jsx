@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Zap, Home, Compass, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
@@ -75,10 +75,16 @@ export const Navbar = ({ onGoHome }) => {
   );
 };
 
-export const ScreenWrapper = ({ children, wide = false }) => (
-  <div className={`screen-wrapper${wide ? ' wide' : ''}`}>
-    <div className={wide ? 'screen-inner-wide' : 'screen-inner'}>
-      {children}
+export const ScreenWrapper = ({ children, wide = false }) => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  return (
+    <div className={`screen-wrapper${wide ? ' wide' : ''}`}>
+      <div className={wide ? 'screen-inner-wide' : 'screen-inner'}>
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
+};

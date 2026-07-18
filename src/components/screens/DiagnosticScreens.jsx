@@ -136,7 +136,9 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
           </div>
         )}
 
-
+        <div className="screen-nav">
+          <Button variant="outline" onClick={onBack}>Retour</Button>
+        </div>
       </div>
     </ScreenWrapper>
   );
@@ -289,7 +291,11 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
           })}
         </div>
 
-
+        {onBack && (
+          <div className="screen-nav" style={{ marginTop: 'var(--space-8)' }}>
+            <Button variant="outline" onClick={onBack}>Retour</Button>
+          </div>
+        )}
 
         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: 'var(--space-5)', fontWeight: 500 }}>
           Pas sûr ? Sélectionnez le profil le plus proche — vous pourrez préciser ensuite.
@@ -444,7 +450,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
           ))}
         </div>
 
-        {multi && (
+        {multi ? (
           <div className="screen-nav">
             <Button variant="outline" onClick={onBack}>Retour</Button>
             <div className="screen-nav-right">
@@ -452,6 +458,10 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
                 Continuer
               </Button>
             </div>
+          </div>
+        ) : (
+          <div className="screen-nav">
+            <Button variant="outline" onClick={onBack}>Retour</Button>
           </div>
         )}
 
@@ -656,7 +666,9 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
             />
           ))}
         </div>
-
+        <div className="screen-nav" style={{ marginTop: '28px' }}>
+          <Button variant="outline" onClick={onBack}>Retour</Button>
+        </div>
       </div>
     </ScreenWrapper>
   );
@@ -1549,14 +1561,19 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'var(--space-6)' }}>
-            <button
-              type="button"
-              style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600, padding: '8px 16px'}}
-              onClick={() => setShowQuitModal(true)}
-            >
-              Quitter le diagnostic
-            </button>
+          <div className="screen-nav">
+            <Button variant="outline" onClick={onBack}>
+              Retour
+            </Button>
+            <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <button
+                type="button"
+                style={{fontSize:'0.8rem',color:'var(--slate-400)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font)', fontWeight: 600}}
+                onClick={() => setShowQuitModal(true)}
+              >
+                Quitter
+              </button>
+            </div>
           </div>
         )}
       </div>
