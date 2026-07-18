@@ -172,14 +172,14 @@ import { PROFILES_LIST } from '../../api/index.js';
 
 
 
-// Icônes professionnelles Lucide par profil (remplace les emojis)
-const PROFILE_ICONS = {
-  project: Rocket,
-  active:  Store,
-  pme:     Building2,
-  diffic:  AlertTriangle,
-  opport:  Target,
-  curious: Lightbulb,
+// Icônes professionnelles Google Fonts (Material Symbols Outlined) par profil
+const PROFILE_GOOGLE_ICONS = {
+  project: 'rocket_launch',
+  active:  'storefront',
+  pme:     'corporate_fare',
+  diffic:  'warning',
+  opport:  'track_changes',
+  curious: 'info',
 };
 
 export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
@@ -210,7 +210,7 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
         <div className="profile-select-grid">
           {PROFILES_LIST.map((profile, i) => {
             const isSelected = selected === profile.id;
-            const IconComponent = PROFILE_ICONS[profile.id] || Target;
+            const googleIcon = PROFILE_GOOGLE_ICONS[profile.id] || 'help';
 
             return (
               <button
@@ -224,15 +224,20 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
                 }}
               >
 
-                {/* Icon — Lucide professionnel */}
+                {/* Icon — Google Fonts Material Symbols */}
                 <div className="profile-card-icon" style={{
                   background: isSelected ? profile.color : profile.colorLight,
                 }}>
-                  <IconComponent
-                    size={22}
-                    strokeWidth={2.5}
-                    style={{ color: isSelected ? '#fff' : profile.color }}
-                  />
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      color: isSelected ? '#fff' : profile.color,
+                      fontSize: '24px',
+                      userSelect: 'none'
+                    }}
+                  >
+                    {googleIcon}
+                  </span>
                 </div>
 
                 {/* Content */}
