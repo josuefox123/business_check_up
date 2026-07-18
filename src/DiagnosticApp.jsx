@@ -859,6 +859,14 @@ function DiagnosticApp() {
         }
       }
 
+      clearState();
+      setTriageAnswers({});
+      setConsentAnswers({ diag: false, stats: false, contact: false });
+      setCurrentModule(null);
+      setModuleAnswers({});
+      setQuestionIndex(0);
+      setCurrentRunId(null);
+      setRestitution(null);
       navigate('/diagnostic/fin');
     });
   };
@@ -868,6 +876,14 @@ function DiagnosticApp() {
     if (currentModule) {
       DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null);
     }
+    clearState();
+    setTriageAnswers({});
+    setConsentAnswers({ diag: false, stats: false, contact: false });
+    setCurrentModule(null);
+    setModuleAnswers({});
+    setQuestionIndex(0);
+    setCurrentRunId(null);
+    setRestitution(null);
     navigate('/diagnostic/fin');
   };
 
