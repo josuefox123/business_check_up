@@ -1343,3 +1343,78 @@
   .profile-card-icon { width: 44px; height: 44px; flex-shrink: 0; }
   .profile-card-check { align-self: center; margin-left: auto; }
 }
+
+/* ============================================
+   RESULTS / ORIENTATION — Responsive buttons
+   ============================================ */
+
+/* result-wrap max-width and padding */
+.result-wrap {
+  max-width: 620px;
+  width: 100%;
+}
+
+/* Orientation buttons stacked layout */
+.orientation-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* All .btn inside result pages that use inline width:100% */
+@media (max-width: 640px) {
+  /* Fix inline-style buttons on result/orientation screens */
+  .result-wrap .btn {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 48px;
+    font-size: 0.9rem;
+  }
+
+  /* Fix intro-wrap buttons */
+  .intro-wrap .btn {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  /* Route card full-width buttons */
+  .route-wrap .btn {
+    width: 100% !important;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  /* Fix priority items on small screens */
+  .priority-item {
+    flex-direction: row !important;
+    gap: 12px !important;
+  }
+  .priority-icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0;
+  }
+
+  /* FF grid stack */
+  .ff-grid { display: flex !important; flex-direction: column !important; gap: 12px; }
+
+  /* result-wrap padding */
+  .result-wrap { max-width: 100%; }
+
+  /* Results header score block center */
+  .results-header > div:last-child { width: 100%; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  /* Force Catalogue module card single column */
+  .catalog-modules-grid { grid-template-columns: 1fr !important; }
+
+  /* Screen nav buttons smaller */
+  .result-wrap .btn { font-size: 0.85rem; padding: 12px 14px; }
+
+  /* Route card padding */
+  .route-wrap { padding: 0; }
+}

@@ -729,17 +729,18 @@ function DiagnosticApp() {
         } />
         <Route path="/diagnostic/verif" element={
           chosenForVerif && (
-            <VerifModuleScreen
+          <VerifModuleScreen
               chosenModule={chosenForVerif}
               warningMessage={getVerifWarning(chosenForVerif, triageAnswers)}
               onConfirm={onVerifConfirm}
               onAcceptReco={onVerifReco}
               recoModule={MODULE_BY_ROUTE['S11']}
+              onBack={() => navigate(-1)}
             />
           )
         } />
         <Route path="/diagnostic/intro" element={
-          currentModule && <IntroModuleScreen moduleId={currentModule.id} moduleData={currentModule} onStart={onIntroStart} onCatalog={onGoToCatalog} />
+          currentModule && <IntroModuleScreen moduleId={currentModule.id} moduleData={currentModule} onStart={onIntroStart} onCatalog={onGoToCatalog} onBack={() => navigate(-1)} />
         } />
         <Route path="/diagnostic/question" element={
           currentModule && questions.length > 0 && (
@@ -767,13 +768,14 @@ function DiagnosticApp() {
             onDetail={onDetail}
             onContact={onContact}
             onRestart={onGoHome}
+            onBack={() => navigate(-1)}
           />
         } />
         <Route path="/diagnostic/forces-fragilites" element={
-          <ForceFragilitesScreen score={score} moduleId={currentModule?.id} answers={moduleAnswers} onContinue={onFFNext} restitution={restitution} />
+          <ForceFragilitesScreen score={score} moduleId={currentModule?.id} answers={moduleAnswers} onContinue={onFFNext} restitution={restitution} onBack={() => navigate('/diagnostic/resultats')} />
         } />
         <Route path="/diagnostic/priorites" element={
-          <PrioritesActionScreen score={score} onContinue={onPrioNext} restitution={restitution} />
+          <PrioritesActionScreen score={score} onContinue={onPrioNext} restitution={restitution} onBack={() => navigate('/diagnostic/forces-fragilites')} />
         } />
         <Route path="/diagnostic/orientation" element={
           <OrientationSuivanteScreen
@@ -783,6 +785,7 @@ function DiagnosticApp() {
             onContact={onContact}
             onCatalog={onGoToCatalog}
             restitution={restitution}
+            onBack={() => navigate('/diagnostic/priorites')}
           />
         } />
         <Route path="/diagnostic/contact" element={

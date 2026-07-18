@@ -843,6 +843,7 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="route-wrap animate-fade-up">
         <div className={`route-chip ${cfg.chip}`}>{cfg.chipLabel}</div>
         <div className={`route-card`} style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)', marginTop: '14px' }}>
@@ -954,6 +955,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="catalog-wrap animate-fade-up">
         <h1 className="screen-title">Les diagnostics disponibles</h1>
         <p className="screen-subtitle" style={{marginBottom:'var(--space-8)'}}>
@@ -994,9 +996,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           </div>
         )}
 
-        <div className="screen-nav" style={{justifyContent:'flex-start', marginTop:'var(--space-6)'}}>
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-        </div>
+
       </div>
     </ScreenWrapper>
   );
@@ -1005,8 +1005,9 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
 /* ============================================================
    S21 — VÉRIFICATION AVANT MODULE
    ============================================================ */
-export const VerifModuleScreen = ({ chosenModule, warningMessage, onConfirm, onAcceptReco, recoModule }) => (
+export const VerifModuleScreen = ({ chosenModule, warningMessage, onConfirm, onAcceptReco, recoModule, onBack }) => (
   <ScreenWrapper>
+    {onBack && <TopBackLink onClick={onBack} />}
     <div className="route-wrap animate-fade-up">
       <div className="alert alert-warning" style={{marginBottom:'var(--space-6)', display:'flex', alignItems:'center', gap:'8px'}}>
         <AlertTriangle size={18} className="text-warning" />
@@ -1040,7 +1041,7 @@ const MODULE_INTRO_STYLES = {
 };
 
 // moduleData = { id, name, duration, description } depuis le backend (via currentModule dans DiagnosticApp)
-export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) => {
+export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, onBack }) => {
   const [backendModule, setBackendModule] = useState(null);
   const style = MODULE_INTRO_STYLES[moduleId] || MODULE_INTRO_STYLES['FLH-01'];
   const IconComp = MODULE_ICONS_MAP[style.iconName] || HelpCircle;
@@ -1076,6 +1077,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog }) 
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="intro-wrap animate-fade-up">
         <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center' }}>
           <div className="screen-icon" style={{ background: style.bg, color: style.iconColor, width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1684,7 +1686,7 @@ const getConfidence = (a) => {
 
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart }) => {
+export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack }) => {
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
@@ -1709,6 +1711,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
   return (
     <ScreenWrapper wide>
       <div className="animate-fade-up">
+        {onBack && <TopBackLink onClick={onBack} />}
         {/* Dashboard Header */}
         <div className="results-header">
           <div className="results-header-info">
@@ -1807,6 +1810,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="result-wrap animate-fade-up">
         <h1 className="screen-title">Vos forces & fragilités</h1>
 
@@ -1849,7 +1853,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
         </div>
 
         <div className="screen-nav" style={{justifyContent:'flex-end'}}>
-          <Button variant="primary" onClick={onContinue}>Continuer</Button>
+          <Button variant="primary" onClick={onContinue}>Continuer →</Button>
         </div>
       </div>
     </ScreenWrapper>
@@ -1887,6 +1891,7 @@ export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="animate-fade-up">
         <div className="screen-header" style={{ marginBottom: '24px' }}>
           <h1 className="screen-title">Vos priorités d'action</h1>
@@ -1907,9 +1912,8 @@ export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }
           ))}
         </div>
 
-        <div className="screen-nav" style={{justifyContent:'space-between', marginTop: '32px'}}>
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-          <Button variant="primary" onClick={onContinue}>Continuer</Button>
+        <div className="screen-nav" style={{justifyContent:'flex-end', marginTop: '32px'}}>
+          <Button variant="primary" onClick={onContinue}>Continuer →</Button>
         </div>
       </div>
     </ScreenWrapper>
@@ -1919,7 +1923,7 @@ export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }
 /* ============================================================
    S44 — ORIENTATION SUIVANTE
    ============================================================ */
-export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog, restitution }) => {
+export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog, restitution, onBack }) => {
   const isCritical = score < 40;
   const isMedium = score >= 40 && score < 70;
   const isHigh = score >= 70;
@@ -1941,6 +1945,7 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
 
   return (
     <ScreenWrapper>
+      {onBack && <TopBackLink onClick={onBack} />}
       <div className="result-wrap animate-fade-up">
         <h1 className="screen-title" style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>Quelle est la suite ?</h1>
         <p style={{ color: 'var(--slate-500)', fontSize: '0.92rem', marginBottom: '24px', lineHeight: '1.5' }}>
