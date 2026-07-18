@@ -36,7 +36,7 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
   };
 
   const handleSubmit = () => {
-    if (!checked.diag) { setError(true); return; }
+    if (!checked.diag || !checked.stats) { setError(true); return; }
     onContinue({ ...checked });
   };
 
@@ -114,7 +114,7 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
         {error && (
           <div className="consent-error" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', background: 'var(--color-danger-bg)', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.88rem', fontWeight: 600 }}>
             <AlertOctagon size={16} />
-            <span>Sans consentement, le diagnostic ne peut pas démarrer.</span>
+            <span>Vous devez accepter l'utilisation des réponses ET l'usage agrégé pour commencer.</span>
           </div>
         )}
 
