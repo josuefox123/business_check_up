@@ -5,8 +5,8 @@ import {
   Search, Users, TrendingUp, FileText, Rocket, AlertTriangle, Lightbulb,
   Building2, Award, HelpCircle
 } from 'lucide-react';
-import { Button } from '../ui/index.jsx';
-import logoImg from '../../assets/logo.png';
+import { Button } from '../../ui/index.jsx';
+import logoImg from '../../../assets/logo.png';
 import './LandingPage.css';
 
 const MODULE_ICONS_MAP = {
@@ -77,7 +77,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
   ]);
 
   useEffect(() => {
-    import('../../api/config.js').then(({ apiFetch }) => {
+    import('../../../api/config.js').then(({ apiFetch }) => {
       apiFetch('/modules')
         .then(res => {
           const list = res?.data?.modules || res?.modules || [];

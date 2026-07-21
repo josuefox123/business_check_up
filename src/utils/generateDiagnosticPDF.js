@@ -265,7 +265,7 @@ export function generateDiagnosticPDF({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   setTextColor(doc, COLORS.warning);
-  doc.text('⚠  Points de vigilance (Fragilités)', rightX + 4, rightY + 4.2);
+  doc.text('Points de vigilance (Fragilités)', rightX + 4, rightY + 4.2);
 
   rightY += 8;
   doc.setFont('helvetica', 'normal');

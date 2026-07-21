@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button } from '../ui/Button';
-import { ProgressBar } from '../ui/ProgressBar';
+import { Button } from '../../ui/Button';
+import { ProgressBar } from '../../ui/ProgressBar';
 import './ContactForm.css';
 
 export const ContactForm = ({ progress, onSubmit, onBack }) => {
