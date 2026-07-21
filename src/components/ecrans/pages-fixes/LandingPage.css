@@ -1,4 +1,4 @@
-/* LandingPage — Plain White Background, Brand Colors (#17212D & #34BED5), No Overlaps */
+/* LandingPage — Left-Aligned, Single-Line Pills, Brand Colors (#17212D & #34BED5), No Overlaps */
 
 .lp-full-page {
   min-height: 100vh;
@@ -27,7 +27,7 @@
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 40px 0 60px;
   width: 100%;
 }
@@ -40,11 +40,12 @@
   box-sizing: border-box;
 }
 
+/* Hero Content — Totalement Aligné à Gauche */
 .lp-hero-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
 }
 
 /* Tag in Dark Turquoise (#34BED5) */
@@ -59,6 +60,7 @@
   letter-spacing: 0.06em;
   margin-bottom: 24px;
   border: 1px solid rgba(52, 190, 213, 0.25);
+  align-self: flex-start;
 }
 
 /* Hero Title with Bleu Crépuscule (#17212D) & Dark Turquoise (#34BED5) */
@@ -70,6 +72,7 @@
   letter-spacing: -0.035em;
   margin: 0 0 20px 0;
   max-width: 800px;
+  text-align: left;
 }
 
 .lp-title-accent {
@@ -84,32 +87,43 @@
   margin: 0 0 32px 0;
   max-width: 620px;
   font-weight: 500;
+  text-align: left;
 }
 
-/* Pills without icons */
+/* Pills Row — Strictement sur la MÊME LIGNE */
 .lp-pills-row {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-wrap: nowrap; /* Maintient les mots sur la MÊME ligne */
+  align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   margin-bottom: 40px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.lp-pills-row::-webkit-scrollbar {
+  display: none;
 }
 
 .lp-pill {
   background: #F1F5F9;
   color: #17212D; /* Bleu crépuscule */
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 99px;
-  font-size: 0.86rem;
+  font-size: clamp(0.75rem, 2.5vw, 0.86rem);
   font-weight: 700;
   border: 1px solid #E2E8F0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* Buttons without icons */
+/* Buttons — Alignés à Gauche */
 .lp-hero-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 16px;
   width: 100%;
@@ -172,7 +186,7 @@
   text-decoration: underline;
 }
 
-/* Footer Banner in Bleu Crépuscule (#17212D) & Dark Turquoise (#34BED5) */
+/* Footer Banner in Bleu Crépuscule (#17212D) & Dark Turquoise (#34BED5) — Aligné à Gauche */
 .lp-disclaimer-footer {
   background: #17212D; /* Bleu crépuscule */
   width: 100%;
@@ -183,8 +197,8 @@
 .lp-disclaimer-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
   gap: 8px;
 }
 
@@ -236,6 +250,6 @@
 
   .lp-pill {
     padding: 7px 14px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 }
