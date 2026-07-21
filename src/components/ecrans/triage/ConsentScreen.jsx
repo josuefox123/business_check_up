@@ -109,11 +109,12 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
           </div>
         )}
 
-        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
-        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
-          {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
-          <Button variant="primary" disabled={!checked.diag || !checked.stats} onClick={handleSubmit}>Continuer</Button>
-        </div>
+      </div>
+
+      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+        <Button variant="primary" disabled={!checked.diag || !checked.stats} onClick={handleSubmit}>Continuer</Button>
       </div>
     </ScreenWrapper>
   );

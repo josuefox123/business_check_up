@@ -64,10 +64,11 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
             <input className="form-input" placeholder="Ex: Restauration, E-commerce, Logistique..." value={data.soussecteur} onChange={e=>setData({...data,soussecteur:e.target.value})} />
           </div>
         </div>
-        <div className="screen-nav">
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-          <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(data)}>Continuer</Button>
-        </div>
+      </div>
+
+      <div className="screen-nav">
+        <Button variant="outline" onClick={onBack}>Retour</Button>
+        <Button variant="primary" disabled={!canContinue} onClick={() => onContinue(data)}>Continuer</Button>
       </div>
     </ScreenWrapper>
   );

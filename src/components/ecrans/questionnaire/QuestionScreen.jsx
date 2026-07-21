@@ -378,18 +378,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           </>
         )}
 
-        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
-        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
-          {onBack && (
-            <Button variant="outline" onClick={showProof ? () => setShowProof(false) : onBack}>
-              Retour
-            </Button>
-          )}
-          <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
-            {showProof ? 'Valider la preuve' : 'Continuer'}
-          </Button>
-        </div>
-
         <div className="question-quit-row">
           <button
             type="button"
@@ -399,6 +387,18 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             Quitter le diagnostic
           </button>
         </div>
+      </div>
+
+      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+        {onBack && (
+          <Button variant="outline" onClick={showProof ? () => setShowProof(false) : onBack}>
+            Retour
+          </Button>
+        )}
+        <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
+          {showProof ? 'Valider la preuve' : 'Continuer'}
+        </Button>
       </div>
     </ScreenWrapper>
   );
