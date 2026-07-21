@@ -64,24 +64,32 @@ const SCORE_LEVEL = (score) => {
 export const ScoreGauge = ({ score, size = 180 }) => {
   const r = 40;
   const circumference = 2 * Math.PI * r;
-  const { label, color } = SCORE_LEVEL(score);
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="score-gauge-wrap" style={{ width: size, height: size }}>
-      <svg className="score-gauge-svg" width={size} height={size} viewBox="0 0 100 100">
-        <circle className="score-gauge-track" cx="50" cy="50" r={r} />
+    <div className="score-gauge-wrap" style={{ width: size, height: size, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <svg className="score-gauge-svg" width={size} height={size} viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
+        <circle 
+          cx="50" cy="50" r={r} 
+          fill="none" 
+          stroke="#E2E8F0" 
+          strokeWidth="8" 
+        />
         <circle
-          className="score-gauge-fill"
           cx="50" cy="50" r={r}
-          stroke={color}
-          strokeDasharray={`${circumference - offset} ${offset}`}
+          fill="none"
+          stroke="#17212D" 
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
         />
       </svg>
-      <div className="score-gauge-inner">
-        <span className="score-number">{score}</span>
-        <span className="score-max">/100</span>
-        <span className="score-level" style={{ color: 'var(--white)' }}>{label}</span>
+      <div className="score-gauge-inner" style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+        <span className="score-number" style={{ fontSize: '2.4rem', fontWeight: 900, color: '#17212D', lineHeight: 1 }}>{score}</span>
+        <span className="score-max" style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>/ 100</span>
+        <span className="score-label-sub" style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#8892AA', fontWeight: 700, marginTop: '2px' }}>Score global</span>
       </div>
     </div>
   );

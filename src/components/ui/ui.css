@@ -337,15 +337,15 @@
 
 .score-gauge-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.15);
+  stroke: #E2E8F0;
   stroke-width: 8;
 }
 
 .score-gauge-fill {
   fill: none;
+  stroke: #17212D;
   stroke-width: 8;
   stroke-linecap: round;
-  transition: stroke-dasharray 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
 }
 
 .score-gauge-inner {
@@ -359,10 +359,10 @@
 }
 
 .score-number {
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 900;
   line-height: 1;
-  color: #fff;
+  color: #17212D;
   letter-spacing: -0.03em;
 }
 

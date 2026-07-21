@@ -56,7 +56,6 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
           <div className="results-header-info">
             <span className="badge badge-teal" style={{ marginBottom: 'var(--space-4)' }}>Rapport Généré</span>
             <h1>Tableau de bord : {cleanModuleName}</h1>
-            <p>Voici la synthèse de votre maturité basée sur {Object.keys(answers).length} points de contrôle.</p>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.1)', padding: 'var(--space-5)', borderRadius: 'var(--radius-xl)', textAlign: 'center' }}>
             <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1 }}>{score}</div>
@@ -65,29 +64,8 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         </div>
 
         {/* KPI Card */}
-        <div className="dash-card" style={{ marginBottom: '16px' }}>
-          <div className="dash-card-header">
-            <ShieldCheck size={20} color="var(--brand-blue)" />
-            <div className="dash-card-title">Diagnostic de Maturité</div>
-          </div>
-          <div className="results-kpi-row">
-            <ScoreGauge score={score} size={140} />
-            <div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--slate-900)', marginBottom: 'var(--space-1)' }}>
-                Niveau : <span style={{ color: lvl.color }}>{lvl.label}</span>
-              </div>
-              <div style={{ fontSize: '0.9rem', color: 'var(--slate-500)' }}>
-                Fiabilité de l'évaluation : <strong>{conf}</strong>
-              </div>
-            </div>
-          </div>
-          <p style={{ fontSize: '0.95rem', color: 'var(--slate-600)', lineHeight: 1.6, marginTop: 'var(--space-4)' }}>
-            {score < 40
-              ? 'Situation nécessitant une attention immédiate sur les fondamentaux.'
-              : score < 70
-                ? 'Base saine mais des optimisations sont nécessaires pour passer un cap.'
-                : 'Structure solide, prête pour la croissance ou la mise à l\'échelle.'}
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px 0', marginBottom: '24px' }}>
+          <ScoreGauge score={score} size={160} />
         </div>
 
         {/* Forces & Vigilances */}
