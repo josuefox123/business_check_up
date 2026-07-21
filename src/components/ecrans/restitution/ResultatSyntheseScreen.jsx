@@ -113,7 +113,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
 
             {priorityText && (
               <div className="ff-priority" style={{ padding: '20px', background: 'var(--slate-50)', borderRadius: '16px', border: '1px solid var(--slate-200)', marginBottom: '40px' }}>
-                <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire de l'expert</div>
+                <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire</div>
                 <p className="ff-priority-text" style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: '1.6', margin: 0 }}>
                   {priorityText}
                 </p>
