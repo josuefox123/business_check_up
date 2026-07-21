@@ -89,7 +89,7 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
                 {checked[item.key] && <Check size={14} strokeWidth={3} />}
               </div>
               <div className="consent-text" style={{ flex: 1 }}>
-                <span className="consent-label" style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--slate-800)' }}>
+                <span className="consent-label" style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--slate-800)' }}>
                   {item.label}
                 </span>
                 {item.optional && (

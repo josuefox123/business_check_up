@@ -161,7 +161,7 @@
 
 .choice-card-label {
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 700 !important;
   color: var(--slate-800);
   line-height: 1.45;
   flex: 1;
@@ -262,7 +262,7 @@
 
 .checkbox-label {
   font-size: 0.9375rem;
-  font-weight: 500;
+  font-weight: 700 !important;
   color: var(--slate-800);
   line-height: 1.45;
   flex: 1;
