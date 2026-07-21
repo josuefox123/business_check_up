@@ -179,23 +179,11 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
     if (initialAnswer === 'occ_oui' || initialAnswer === 'occ_non') return 'occ';
     return initialAnswer;
   });
-  const [selectedLabel, setSelectedLabel] = useState('');
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSubModal, setShowSubModal] = useState(false);
 
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
-      {showConfirmModal && (
-        <AnswerConfirmModal
-          label={selectedLabel}
-          onConfirm={() => {
-            setShowConfirmModal(false);
-            onContinue(selected);
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
 
       {showSubModal && (
         <S04SubQuestionModal
@@ -221,13 +209,16 @@ export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
                 setSelected(c.id);
                 if (c.id === 'occ') {
                   setShowSubModal(true);
-                } else {
-                  setSelectedLabel(c.label);
-                  setShowConfirmModal(true);
                 }
               }}
             />
           ))}
+        </div>
+
+        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+          {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+          <Button variant="primary" disabled={!selected} onClick={() => onContinue(selected)}>Continuer</Button>
         </div>
       </div>
     </ScreenWrapper>

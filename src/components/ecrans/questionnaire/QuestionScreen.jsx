@@ -230,20 +230,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
   const handleChoiceSelect = (val) => {
     setAnswer(val);
-    if (questionData.requireProof) {
-      setShowConfidenceModal(true);
-    } else {
-      let label = '';
-      if (val === 'idk') {
-        label = 'Je ne sais pas';
-      } else if (isScale) {
-        label = SCALE_LABELS[val - 1] || '';
-      } else {
-        label = questionData.choices.find(c => c.id === val)?.label || '';
-      }
-      setSelectedLabel(label);
-      setShowConfirmModal(true);
-    }
   };
 
   const handleConfirmConfidence = () => {
@@ -273,17 +259,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         />
       )}
 
-      {showConfirmModal && (
-        <AnswerConfirmModal
-          label={selectedLabel}
-          onConfirm={() => {
-            setShowConfirmModal(false);
-            onContinue(answer, null, null, null, null);
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
-
       {showConfidenceModal && (
         <ConfidenceModal
           confidence={confidence}
@@ -303,7 +278,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           <>
             <p className="question-meta-label" style={{ marginBottom: 'var(--space-3)' }}>Justification de la réponse</p>
             <h1 className="question-heading">Sur quel justificatif vous basez-vous ?</h1>
-            <p className="proof-intro" style={{ marginBottom: '24px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information permet de valider la certitude de vos réponses pour l\'analyse.</p>
+            <p className="proof-intro" style={{ marginBottom: '24px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>Cette information permet de valider la certitude de vos réponses pour l'analyse.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -404,20 +379,17 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           </>
         )}
 
-        {(isMulti || isText || showProof) ? (
-          <div className="screen-nav" style={{ justifyContent: showProof ? 'space-between' : 'flex-end' }}>
-            {showProof && (
-              <Button variant="outline" onClick={() => { setShowProof(false); setShowConfidenceModal(true); }}>
-                Retour
-              </Button>
-            )}
-            <div className="screen-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
-                {showProof ? 'Valider la preuve' : 'Continuer'}
-              </Button>
-            </div>
-          </div>
-        ) : null}
+        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+          {onBack && (
+            <Button variant="outline" onClick={showProof ? () => setShowProof(false) : onBack}>
+              Retour
+            </Button>
+          )}
+          <Button variant="primary" disabled={!canContinue} onClick={showProof ? handleConfirmProof : handleContinue}>
+            {showProof ? 'Valider la preuve' : 'Continuer'}
+          </Button>
+        </div>
 
         <div className="question-quit-row">
           <button

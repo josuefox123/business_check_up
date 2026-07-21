@@ -12,23 +12,11 @@ const CheckIcon = () => (
 
 export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
   const [selected, setSelected] = useState(initialAnswer || null);
-  const [selectedLabel, setSelectedLabel] = useState('');
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const handleCb = onContinue || onSelect;
 
   return (
     <ScreenWrapper wide>
       {onBack && <TopBackLink onClick={onBack} />}
-      {showConfirmModal && (
-        <AnswerConfirmModal
-          label={selectedLabel}
-          onConfirm={() => {
-            setShowConfirmModal(false);
-            if (handleCb) handleCb(selected);
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
       <div className="animate-fade-up" style={{ maxWidth: '920px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
           <span className="section-tag" style={{ marginBottom: '14px', display: 'inline-flex' }}>
@@ -53,8 +41,6 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
                 className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}`}
                 onClick={() => {
                   setSelected(profile.id);
-                  setSelectedLabel(profile.label);
-                  setShowConfirmModal(true);
                 }}
                 style={{
                   '--p-color':  profile.color,
@@ -96,6 +82,12 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
         <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--slate-400)', marginTop: 'var(--space-5)', fontWeight: 500 }}>
           Pas sûr ? Sélectionnez le profil le plus proche — vous pourrez préciser ensuite.
         </p>
+
+        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+          {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+          <Button variant="primary" disabled={!selected} onClick={() => { if (handleCb) handleCb(selected); }}>Continuer</Button>
+        </div>
       </div>
     </ScreenWrapper>
   );
