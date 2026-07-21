@@ -3,7 +3,6 @@ import { AlertTriangle, MessageSquare } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { AnswerConfirmModal } from '../triage/S04Screen.jsx';
 
 export const ConfidenceModal = ({ confidence, setConfidence, onConfirm, onCancel, choices }) => (
   <div style={{

@@ -3,12 +3,10 @@ import { Lock, AlertOctagon, Check } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { TopBackLink, CheckIcon } from '../partage/sharedUI.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { AnswerConfirmModal } from './S04Screen.jsx';
 
 export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, contact: false }, onChangeConsent, onContinue, onBack }) => {
   const [checked, setChecked] = useState(initialAnswers);
   const [error, setError] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   useEffect(() => {
     if (initialAnswers) {
@@ -22,9 +20,6 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
       if (onChangeConsent) {
         onChangeConsent(nextChecked);
       }
-      if (nextChecked.diag && nextChecked.stats) {
-        setShowConfirmModal(true);
-      }
       return nextChecked;
     });
     setError(false);
@@ -32,22 +27,12 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
 
   const handleSubmit = () => {
     if (!checked.diag || !checked.stats) { setError(true); return; }
-    setShowConfirmModal(true);
+    onContinue({ ...checked });
   };
 
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
-      {showConfirmModal && (
-        <AnswerConfirmModal
-          label="Conditions d'utilisation et politique de données"
-          onConfirm={() => {
-            setShowConfirmModal(false);
-            onContinue({ ...checked });
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
       <div className="consent-wrap animate-fade-up">
         <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
           <div className="screen-icon" style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue)', padding: '12px', borderRadius: '50%' }}>
@@ -123,6 +108,12 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
             <span>Vous devez accepter l'utilisation des réponses ET l'usage agrégé pour commencer.</span>
           </div>
         )}
+
+        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+          {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+          <Button variant="primary" disabled={!checked.diag || !checked.stats} onClick={handleSubmit}>Continuer</Button>
+        </div>
       </div>
     </ScreenWrapper>
   );

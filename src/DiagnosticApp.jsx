@@ -1,6 +1,10 @@
 import React from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
+import './components/ecrans/partage/screens.css';
+import './components/ecrans/partage/QuestionScreen.css';
+import './components/ecrans/partage/ContactForm.css';
+import './components/ecrans/partage/Report.css';
 import { LandingPage } from './components/ecrans/pages-fixes/LandingPage.jsx';
 import { CommentCaMarche } from './components/ecrans/pages-fixes/CommentCaMarche.jsx';
 import { Navbar } from './components/layout/Navbar.jsx';

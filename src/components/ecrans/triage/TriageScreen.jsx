@@ -2,15 +2,12 @@ import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { AnswerConfirmModal } from './S04Screen.jsx';
 
 export const TriageScreen = ({ step, question, hint, choices, multi = false, onContinue, onBack, progress, initialAnswer }) => {
   const [selected, setSelected] = useState(() => {
     if (initialAnswer !== null && initialAnswer !== undefined) return initialAnswer;
     return multi ? [] : null;
   });
-  const [selectedLabel, setSelectedLabel] = useState('');
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const toggle = (id) => {
     if (multi) {
@@ -24,9 +21,6 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
       }
     } else {
       setSelected(id);
-      const label = choices.find(c => c.id === id)?.label || '';
-      setSelectedLabel(label);
-      setShowConfirmModal(true);
     }
   };
 
@@ -39,16 +33,6 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
-      {showConfirmModal && (
-        <AnswerConfirmModal
-          label={selectedLabel}
-          onConfirm={() => {
-            setShowConfirmModal(false);
-            onContinue(selected);
-          }}
-          onCancel={() => setShowConfirmModal(false)}
-        />
-      )}
       <div className="question-wrap animate-fade-up">
         {progress && (
           <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -80,14 +64,13 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
           ))}
         </div>
 
-        {multi && (
-          <div className="screen-nav" style={{ justifyContent: 'flex-end' }}>
-            <Button variant="primary" disabled={!canContinue} onClick={handleContinueSubmit}>
-              Continuer
-            </Button>
-          </div>
-        )}
-
+        {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+        <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+          {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+          <Button variant="primary" disabled={!canContinue} onClick={handleContinueSubmit}>
+            Continuer
+          </Button>
+        </div>
       </div>
     </ScreenWrapper>
   );
