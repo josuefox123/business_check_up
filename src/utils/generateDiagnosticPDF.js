@@ -1,32 +1,23 @@
 /**
  * generateDiagnosticPDF — Générateur PDF côté frontend
  * Utilise jsPDF pour produire un rapport professionnel et stylisé
- * aux couleurs du Business Check-up (FUND.lab)
+ * aux couleurs strictes du Business Check-up (FUND.lab)
  */
 
 import { jsPDF } from 'jspdf';
 
-// ── Couleurs système ────────────────────────────────────────────
+// ── Couleurs système strictes (2 couleurs de marque + neutres) ──
 const COLORS = {
-  primary:   [23, 33, 45],      // #17212D
-  teal:      [52, 190, 213],    // #34BED5
-  blue:      [38, 89, 242],     // #2659F2
+  primary:   [23, 33, 45],      // #17212D (Bleu crépuscule)
+  teal:      [52, 190, 213],    // #34BED5 (Dark Turquoise)
   white:     [255, 255, 255],
-  light:     [241, 245, 249],   // #F1F5F9
-  slate600:  [100, 116, 139],   // #64748B
-  slate400:  [148, 163, 184],   // #94A3B8
-  slate200:  [226, 232, 240],   // #E2E8F0
-  success:   [16, 185, 129],    // #10B981
-  warning:   [245, 158, 11],    // #F59E0B
-  danger:    [239, 68, 68],     // #EF4444
+  light:     [245, 247, 250],   // Gris très clair pour les cartes
+  slate600:  [71, 85, 105],     // Couleur du texte secondaire
+  slate400:  [148, 163, 184],
+  slate200:  [226, 232, 240],
 };
 
-// ── Helpers ─────────────────────────────────────────────────────
-const hex = (rgb) => `#${rgb.map(v => v.toString(16).padStart(2, '0')).join('')}`;
-const rgbToHex = (r, g, b) => hex([r, g, b]);
-
 function setFill(doc, rgb) { doc.setFillColor(...rgb); }
-function setStroke(doc, rgb) { doc.setDrawColor(...rgb); }
 function setTextColor(doc, rgb) { doc.setTextColor(...rgb); }
 
 /**
@@ -39,9 +30,8 @@ function roundRect(doc, x, y, w, h, r, fillRgb) {
 
 /**
  * Ajoute du texte avec wrap automatique
- * Retourne la nouvelle position Y
  */
-function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 6) {
+function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 5) {
   const lines = doc.splitTextToSize(text, maxWidth);
   doc.text(lines, x, y);
   return y + lines.length * lineHeight;
@@ -51,17 +41,17 @@ function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 6) {
  * Dessine la barre de score horizontale
  */
 function drawScoreBar(doc, x, y, w, score) {
-  const barH = 8;
+  const barH = 5;
   // Fond
   setFill(doc, COLORS.slate200);
-  doc.roundedRect(x, y, w, barH, 4, 4, 'F');
-  // Barre remplie
-  const fillColor = score < 40 ? COLORS.danger : score < 70 ? COLORS.warning : COLORS.success;
-  setFill(doc, fillColor);
-  doc.roundedRect(x, y, (w * score) / 100, barH, 4, 4, 'F');
+  doc.roundedRect(x, y, w, barH, 2.5, 2.5, 'F');
+  // Barre remplie (Strictement Teal)
+  setFill(doc, COLORS.teal);
+  doc.roundedRect(x, y, (w * score) / 100, barH, 2.5, 2.5, 'F');
+  
   // Label %
   doc.setFontSize(8);
-  setTextColor(doc, fillColor);
+  setTextColor(doc, COLORS.primary);
   doc.setFont('helvetica', 'bold');
   doc.text(`${score} / 100`, x + w + 4, y + barH - 1);
 }
@@ -70,11 +60,9 @@ function drawScoreBar(doc, x, y, w, score) {
  * Niveau de score
  */
 function getLevel(score) {
-  if (score < 40) return { label: 'Critique', color: COLORS.danger };
-  if (score < 55) return { label: 'Fragile', color: COLORS.warning };
-  if (score < 70) return { label: 'En développement', color: [251, 191, 36] };
-  if (score < 85) return { label: 'Solide', color: COLORS.teal };
-  return { label: 'Excellent', color: COLORS.success };
+  if (score < 40) return { label: 'Critique', color: COLORS.primary };
+  if (score < 70) return { label: 'En développement', color: COLORS.primary };
+  return { label: 'Excellent', color: COLORS.primary };
 }
 
 // ── Exportation principale ──────────────────────────────────────
@@ -90,271 +78,252 @@ export function generateDiagnosticPDF({
   confidence,
   date,
   userName,
+  companyName,
   userEmail,
   userPhone,
-  companyName,
   sector,
   department,
   commune,
 }) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W = 210; // largeur A4
-  const MARGIN = 18;
+  const MARGIN = 15;
   const CONTENT_W = W - MARGIN * 2;
   let Y = 0;
 
   // ────────────────────────────────────────────────────────────
-  // PAGE 1 — EN-TÊTE + SCORE + RÉSUMÉ
+  // PAGE 1 — EN-TÊTE ULTRA-COMPACT (30mm au lieu de 60mm)
   // ────────────────────────────────────────────────────────────
-
-  // Bloc hero
-  roundRect(doc, 0, 0, W, 60, 0, COLORS.primary);
+  roundRect(doc, 0, 0, W, 32, 0, COLORS.primary);
 
   // Logo / Titre app
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   setTextColor(doc, COLORS.teal);
-  doc.text('FUND.lab', MARGIN, 16);
-  doc.setFontSize(7);
+  doc.text('FUND.lab', MARGIN, 12);
+  doc.setFontSize(7.5);
   setTextColor(doc, COLORS.slate400);
-  doc.text('Business Check-up', MARGIN, 21);
+  doc.text('Business Check-up', MARGIN, 16);
 
   // Date
   const dateStr = date || new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   doc.setFontSize(8);
   setTextColor(doc, COLORS.slate400);
-  doc.text(dateStr, W - MARGIN, 16, { align: 'right' });
+  doc.text(dateStr, W - MARGIN, 12, { align: 'right' });
 
   // Titre du rapport
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
+  doc.setFontSize(15);
   setTextColor(doc, COLORS.white);
-  doc.text('Rapport de Diagnostic', MARGIN, 36);
-  doc.setFontSize(11);
+  doc.text('Rapport de Diagnostic', MARGIN, 26);
+  
+  doc.setFontSize(9.5);
   setTextColor(doc, COLORS.teal);
-  doc.text(moduleName || moduleId, MARGIN, 44);
+  doc.text(moduleName || moduleId, W - MARGIN, 26, { align: 'right' });
 
-  // Trait décoratif
-  setFill(doc, COLORS.teal);
-  doc.rect(MARGIN, 50, 40, 1.5, 'F');
+  Y = 38;
 
-  Y = 68;
-
-  // ── Bloc Informations Client (si présentes) ──
+  // ── Bloc Informations Client (si présentes - Hauteur réduite à 16mm) ──
   const hasMeta = userName || companyName || userEmail || userPhone || sector || department || commune;
   if (hasMeta) {
-    roundRect(doc, MARGIN, Y, CONTENT_W, 28, 5, COLORS.light);
+    roundRect(doc, MARGIN, Y, CONTENT_W, 18, 4, COLORS.light);
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     setTextColor(doc, COLORS.primary);
-    doc.text("Informations de l'entreprise", MARGIN + 8, Y + 8);
+    doc.text("Informations Entreprise", MARGIN + 6, Y + 6);
     
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     setTextColor(doc, COLORS.slate600);
     
-    // Ligne 1
-    const parts1 = [];
-    if (userName) parts1.push(`Nom : ${userName}`);
-    if (companyName) parts1.push(`Entreprise : ${companyName}`);
-    doc.text(parts1.join('   |   '), MARGIN + 8, Y + 14);
+    const metaParts = [];
+    if (userName) metaParts.push(`Nom : ${userName}`);
+    if (companyName) metaParts.push(`Structure : ${companyName}`);
+    if (sector) metaParts.push(`Secteur : ${sector}`);
+    if (commune) metaParts.push(`Commune : ${commune}`);
+    doc.text(metaParts.join('  |  '), MARGIN + 6, Y + 12);
 
-    // Ligne 2
-    const parts2 = [];
-    if (userEmail) parts2.push(`E-mail : ${userEmail}`);
-    if (userPhone) parts2.push(`Tél : ${userPhone}`);
-    doc.text(parts2.join('   |   '), MARGIN + 8, Y + 19);
-
-    // Ligne 3
-    const parts3 = [];
-    if (sector) parts3.push(`Secteur : ${sector}`);
-    if (department) parts3.push(`Département : ${department}`);
-    if (commune) parts3.push(`Commune : ${commune}`);
-    doc.text(parts3.join('   |   '), MARGIN + 8, Y + 24);
-
-    Y += 36; // décale la suite vers le bas
+    Y += 23;
   }
 
-  // ── Bloc Score ──
-  roundRect(doc, MARGIN, Y, CONTENT_W, 38, 6, COLORS.light);
+  // ── Bloc Score Compact (Hauteur réduite à 20mm) ──
+  roundRect(doc, MARGIN, Y, CONTENT_W, 20, 4, COLORS.light);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  setTextColor(doc, COLORS.slate400);
-  doc.text('SCORE GLOBAL', MARGIN + 8, Y + 10);
-
-  const lvl = getLevel(score);
-  doc.setFontSize(36);
-  setTextColor(doc, lvl.color);
-  doc.text(`${score}`, MARGIN + 8, Y + 28);
-
-  doc.setFontSize(11);
-  setTextColor(doc, COLORS.primary);
-  doc.setFont('helvetica', 'bold');
-  doc.text(lvl.label, MARGIN + 32, Y + 21);
-
   doc.setFontSize(8);
   setTextColor(doc, COLORS.slate600);
+  doc.text('SCORE GLOBAL', MARGIN + 6, Y + 6);
+
+  doc.setFontSize(16);
+  setTextColor(doc, COLORS.primary);
+  doc.text(`${score} / 100`, MARGIN + 6, Y + 14);
+
+  doc.setFontSize(7.5);
+  setTextColor(doc, COLORS.slate600);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Fiabilité : ${confidence || 'Déclaratif'} — ${totalQuestions || 0} questions`, MARGIN + 32, Y + 28);
+  doc.text(`Fiabilité : ${confidence || 'Déclaratif'}  |  ${totalQuestions || 0} questions`, W - MARGIN - 6, Y + 6, { align: 'right' });
 
   // Barre de score
-  drawScoreBar(doc, MARGIN + 8, Y + 32, CONTENT_W - 60, score);
+  drawScoreBar(doc, MARGIN + 36, Y + 10, CONTENT_W - 74, score);
 
-  Y += 46;
+  Y += 25;
 
   // ── Interprétation ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   setTextColor(doc, COLORS.primary);
-  doc.text('Interprétation', MARGIN, Y + 8);
+  doc.text('Synthèse de la situation', MARGIN, Y);
 
   const interp = score < 40
-    ? 'Votre situation nécessite une attention immédiate sur les fondamentaux. Des actions correctives urgentes sont recommandées.'
+    ? 'Votre situation nécessite une attention immédiate sur les fondamentaux de votre structure.'
     : score < 70
-    ? 'Base saine mais des optimisations sont nécessaires pour passer au cap suivant. Un accompagnement ciblé peut accélérer votre progression.'
-    : 'Structure solide et prête pour la croissance ou la mise à l\'échelle. Capitalisez sur vos atouts.';
+    ? 'Une base saine est présente mais des ajustements et structurations sont requis pour consolider vos acquis.'
+    : 'Votre structure dispose de fondations solides. Prête pour le développement commercial ou la croissance.';
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  setTextColor(doc, COLORS.slate600);
-  Y = addWrappedText(doc, interp, MARGIN, Y + 14, CONTENT_W, 5.5);
-
-  Y += 8;
-
-  // ────────────────────────────────────────────────────────────
-  // SECTION — FORCES & FRAGILITÉS
-  // ────────────────────────────────────────────────────────────
-
-  // Titre section
-  roundRect(doc, MARGIN, Y, CONTENT_W, 9, 3, COLORS.primary);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  setTextColor(doc, COLORS.white);
-  doc.text('ANALYSE DES FORCES & POINTS DE VIGILANCE', MARGIN + 6, Y + 6.2);
-
-  Y += 13;
-
-  const colW = (CONTENT_W - 6) / 2;
-
-  // Colonne gauche — Forces
-  roundRect(doc, MARGIN, Y, colW, 6, 2, [220, 252, 231]); // vert clair
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  setTextColor(doc, COLORS.success);
-  doc.text('✓  Points d\'appui (Forces)', MARGIN + 4, Y + 4.2);
-
-  Y += 8;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   setTextColor(doc, COLORS.slate600);
-
-  const forcesStartY = Y;
-  let leftY = Y;
-  (forces || []).forEach((f) => {
-    setFill(doc, COLORS.success);
-    doc.circle(MARGIN + 2.5, leftY + 1.8, 1, 'F');
-    leftY = addWrappedText(doc, f, MARGIN + 6, leftY + 1.5, colW - 8, 5) + 2;
-  });
-
-  // Colonne droite — Fragilités
-  const rightX = MARGIN + colW + 6;
-  let rightY = forcesStartY - 8;
-  roundRect(doc, rightX, rightY, colW, 6, 2, [254, 243, 199]); // jaune clair
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  setTextColor(doc, COLORS.warning);
-  doc.text('Points de vigilance (Fragilités)', rightX + 4, rightY + 4.2);
-
-  rightY += 8;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  setTextColor(doc, COLORS.slate600);
-
-  (fragilites || []).forEach((f) => {
-    setFill(doc, COLORS.warning);
-    doc.circle(rightX + 2.5, rightY + 1.8, 1, 'F');
-    rightY = addWrappedText(doc, f, rightX + 6, rightY + 1.5, colW - 8, 5) + 2;
-  });
-
-  Y = Math.max(leftY, rightY) + 6;
-
-  // Point prioritaire
-  roundRect(doc, MARGIN, Y, CONTENT_W, 6, 2, [239, 246, 255]); // bleu clair
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  setTextColor(doc, COLORS.blue);
-  doc.text('POINT PRIORITAIRE', MARGIN + 4, Y + 4.2);
-  Y += 8;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  setTextColor(doc, COLORS.slate600);
-  Y = addWrappedText(doc, priorityText || '', MARGIN, Y, CONTENT_W, 5.5);
-  Y += 8;
+  Y = addWrappedText(doc, interp, MARGIN, Y + 5, CONTENT_W, 4.5) + 6;
 
   // ────────────────────────────────────────────────────────────
-  // SECTION — PLAN D'ACTIONS PRIORITAIRES
+  // SECTION — FORCES & FRAGILITÉS (Hauteur et Espacement réduits)
   // ────────────────────────────────────────────────────────────
-
-  // Vérifier si on a besoin d'une nouvelle page
-  if (Y > 220) {
-    doc.addPage();
-    Y = 20;
-  }
-
-  roundRect(doc, MARGIN, Y, CONTENT_W, 9, 3, COLORS.primary);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  setTextColor(doc, COLORS.white);
-  doc.text('PLAN D\'ACTIONS PRIORITAIRES', MARGIN + 6, Y + 6.2);
-  Y += 13;
-
-  (priorities || []).forEach((p, i) => {
-    const priorityLabel = typeof p === 'string' ? `Priorité ${i + 1}` : p.label;
-    const priorityText2 = typeof p === 'string' ? p : p.text;
-
-    // Fond de la carte
-    const cardColor = i === 0 && score < 40 ? [254, 226, 226] : i === 0 ? [254, 243, 199] : COLORS.light;
-    const badgeColor = i === 0 && score < 40 ? COLORS.danger : i === 0 ? COLORS.warning : COLORS.teal;
-
-    roundRect(doc, MARGIN, Y, CONTENT_W, 6, 2, badgeColor);
+  if ((forces && forces.length > 0) || (fragilites && fragilites.length > 0)) {
+    roundRect(doc, MARGIN, Y, CONTENT_W, 7, 2, COLORS.primary);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     setTextColor(doc, COLORS.white);
-    doc.text(`${i + 1}  ${priorityLabel}`, MARGIN + 4, Y + 4.2);
+    doc.text('ANALYSE DES FORCES & POINTS DE VIGILANCE', MARGIN + 4, Y + 4.8);
+
+    Y += 10;
+    const colW = (CONTENT_W - 6) / 2;
+
+    // Colonne gauche — Forces
+    let leftY = Y;
+    if (forces && forces.length > 0) {
+      roundRect(doc, MARGIN, Y, colW, 5, 1.5, COLORS.light);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setTextColor(doc, COLORS.primary);
+      doc.text('✓ Points d\'appui (Forces)', MARGIN + 4, Y + 3.8);
+
+      leftY += 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      setTextColor(doc, COLORS.slate600);
+
+      forces.forEach((f) => {
+        setFill(doc, COLORS.teal);
+        doc.circle(MARGIN + 2.5, leftY + 1.5, 0.8, 'F');
+        leftY = addWrappedText(doc, f, MARGIN + 6, leftY + 1.2, colW - 8, 4) + 1.5;
+      });
+    }
+
+    // Colonne droite — Fragilités
+    let rightY = Y;
+    if (fragilites && fragilites.length > 0) {
+      const rightX = MARGIN + colW + 6;
+      roundRect(doc, rightX, Y, colW, 5, 1.5, COLORS.light);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setTextColor(doc, COLORS.primary);
+      doc.text('Points de vigilance (Fragilités)', rightX + 4, Y + 3.8);
+
+      rightY += 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      setTextColor(doc, COLORS.slate600);
+
+      fragilites.forEach((f) => {
+        setFill(doc, COLORS.primary);
+        doc.circle(rightX + 2.5, rightY + 1.5, 0.8, 'F');
+        rightY = addWrappedText(doc, f, rightX + 6, rightY + 1.2, colW - 8, 4) + 1.5;
+      });
+    }
+
+    Y = Math.max(leftY, rightY) + 6;
+  }
+
+  // Point prioritaire
+  if (priorityText) {
+    roundRect(doc, MARGIN, Y, CONTENT_W, 5, 1.5, COLORS.light);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    setTextColor(doc, COLORS.primary);
+    doc.text('POINT PRIORITAIRE', MARGIN + 4, Y + 3.8);
     Y += 8;
 
-    roundRect(doc, MARGIN, Y, CONTENT_W, 4, 0, cardColor);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     setTextColor(doc, COLORS.slate600);
-    Y = addWrappedText(doc, priorityText2 || '', MARGIN + 4, Y + 4, CONTENT_W - 8, 5.5);
-    Y += 6;
+    Y = addWrappedText(doc, priorityText, MARGIN, Y, CONTENT_W, 4.5) + 6;
+  }
 
-    if (Y > 265) {
+  // ────────────────────────────────────────────────────────────
+  // SECTION — PLAN D'ACTIONS PRIORITAIRES (Intégration compacte)
+  // ────────────────────────────────────────────────────────────
+  if (priorities && priorities.length > 0) {
+    // Vérifier si le plan d'actions tient sur la page
+    if (Y + priorities.length * 16 > 275) {
       doc.addPage();
-      Y = 20;
+      Y = 15;
     }
-  });
+
+    roundRect(doc, MARGIN, Y, CONTENT_W, 7, 2, COLORS.primary);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    setTextColor(doc, COLORS.white);
+    doc.text('PLAN D\'ACTIONS PRIORITAIRES', MARGIN + 4, Y + 4.8);
+    Y += 10;
+
+    priorities.forEach((p, i) => {
+      const priorityLabel = typeof p === 'string' ? `Priorité ${i + 1}` : p.label;
+      const priorityText2 = typeof p === 'string' ? p : p.text;
+
+      // Un seul rectangle arrondi ultra-compact de 13mm de haut
+      roundRect(doc, MARGIN, Y, CONTENT_W, 13, 2.5, COLORS.light);
+      
+      // Badge numérique Teal à gauche
+      roundRect(doc, MARGIN + 3, Y + 2, 9, 9, 2, COLORS.teal);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setTextColor(doc, COLORS.white);
+      doc.text(`${i + 1}`, MARGIN + 7.5, Y + 8.2, { align: 'center' });
+      
+      // Libellé de priorité
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      setTextColor(doc, COLORS.primary);
+      doc.text(priorityLabel, MARGIN + 15, Y + 5.5);
+      
+      // Texte de recommandation
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      setTextColor(doc, COLORS.slate600);
+      addWrappedText(doc, priorityText2 || '', MARGIN + 15, Y + 9.5, CONTENT_W - 20, 4);
+      
+      Y += 15.5; // Espacement compact entre les priorités
+    });
+  }
 
   // ────────────────────────────────────────────────────────────
-  // PIED DE PAGE
+  // PIED DE PAGE STRICT (Bleu crépuscule & Teal)
   // ────────────────────────────────────────────────────────────
-
   const totalPages = doc.getNumberOfPages();
   for (let pg = 1; pg <= totalPages; pg++) {
     doc.setPage(pg);
 
-    roundRect(doc, 0, 285, W, 12, 0, COLORS.primary);
+    roundRect(doc, 0, 287, W, 10, 0, COLORS.primary);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     setTextColor(doc, COLORS.slate400);
-    doc.text('© FUND.lab — Business Check-up — Confidentiel', MARGIN, 292);
-    doc.text(`Page ${pg} / ${totalPages}`, W - MARGIN, 292, { align: 'right' });
+    doc.text('© FUND.lab — Business Check-up — Document Confidentiel', MARGIN, 293);
+    doc.text(`Page ${pg} / ${totalPages}`, W - MARGIN, 293, { align: 'right' });
+    
+    // Ligne décorative Teal à gauche
     setFill(doc, COLORS.teal);
-    doc.rect(0, 284, 4, 13, 'F');
+    doc.rect(0, 286.5, 4, 11, 'F');
   }
 
   // ── Téléchargement ──
