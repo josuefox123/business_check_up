@@ -137,7 +137,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
                     <Target size={22} />
                   </div>
                   <div className="priority-content">
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i + 1} : {p.label}</h4>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i + 1}</h4>
                     <p style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.55', margin: 0 }}>{p.text}</p>
                   </div>
                 </div>
