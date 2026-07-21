@@ -91,72 +91,82 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         </div>
 
         {/* Forces & Vigilances */}
-        <div style={{ marginTop: '40px', borderTop: '2px dashed var(--slate-200)', paddingTop: '40px' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '24px' }}>
-            Analyse des Forces & Points de vigilance
-          </h2>
+        {(forces.length > 0 || fragilites.length > 0) && (
+          <div style={{ marginTop: '40px', borderTop: '2px dashed var(--slate-200)', paddingTop: '40px' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '24px' }}>
+              Analyse des Forces & Points de vigilance
+            </h2>
 
-          <div className="ff-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-            <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
-              <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
-                <CheckCircle size={18} style={{ color: 'var(--color-success, #10B981)' }} />
-                Points d'appui (Forces)
-              </div>
-              <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
-                {forces.map((f, i) => (
-                  <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <span className="ff-item-dot green" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success, #10B981)', marginTop: '6px', flexShrink: 0 }} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="ff-grid" style={{ display: 'grid', gridTemplateColumns: forces.length > 0 && fragilites.length > 0 ? '1fr 1fr' : '1fr', gap: '24px', marginBottom: '24px' }}>
+              {forces.length > 0 && (
+                <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+                  <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
+                    <CheckCircle size={18} style={{ color: 'var(--color-success, #10B981)' }} />
+                    Points d'appui (Forces)
+                  </div>
+                  <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
+                    {forces.map((f, i) => (
+                      <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <span className="ff-item-dot green" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success, #10B981)', marginTop: '6px', flexShrink: 0 }} />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {fragilites.length > 0 && (
+                <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+                  <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
+                    <AlertTriangle size={18} style={{ color: 'var(--color-warning, #F59E0B)' }} />
+                    Points de vigilance (Fragilités)
+                  </div>
+                  <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
+                    {fragilites.map((f, i) => (
+                      <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <span className="ff-item-dot orange" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-warning, #F59E0B)', marginTop: '6px', flexShrink: 0 }} />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
-            <div className="ff-card" style={{ padding: '24px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
-              <div className="ff-card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.05rem', marginBottom: '16px' }}>
-                <AlertTriangle size={18} style={{ color: 'var(--color-warning, #F59E0B)' }} />
-                Points de vigilance (Fragilités)
+            {priorityText && (
+              <div className="ff-priority" style={{ padding: '20px', background: 'var(--slate-50)', borderRadius: '16px', border: '1px solid var(--slate-200)', marginBottom: '40px' }}>
+                <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire de l'expert</div>
+                <p className="ff-priority-text" style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: '1.6', margin: 0 }}>
+                  {priorityText}
+                </p>
               </div>
-              <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', padding: 0, margin: 0 }}>
-                {fragilites.map((f, i) => (
-                  <li key={i} className="ff-item" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                    <span className="ff-item-dot orange" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-warning, #F59E0B)', marginTop: '6px', flexShrink: 0 }} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
           </div>
-
-          <div className="ff-priority" style={{ padding: '20px', background: 'var(--slate-50)', borderRadius: '16px', border: '1px solid var(--slate-200)', marginBottom: '40px' }}>
-            <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire de l'expert</div>
-            <p className="ff-priority-text" style={{ fontSize: '0.92rem', color: 'var(--slate-600)', lineHeight: '1.6', margin: 0 }}>
-              {priorityText}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Priorités d'Action */}
-        <div style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>
-            Plan d'Actions Prioritaires
-          </h2>
-          <p className="screen-desc" style={{ marginBottom: '24px' }}>Actions ordonnées recommandées par notre algorithme de scoring :</p>
+        {priorities.length > 0 && (
+          <div style={{ marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>
+              Plan d'Actions Prioritaires
+            </h2>
+            <p className="screen-desc" style={{ marginBottom: '24px' }}>Actions ordonnées recommandées par notre algorithme de scoring :</p>
 
-          <div className="priority-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {priorities.map((p, i) => (
-              <div key={i} className={`priority-item ${i === 0 && score < 40 ? 'danger' : i === 0 && score < 70 ? 'warning' : ''}`} style={{ display: 'flex', gap: '16px', padding: '20px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
-                <div className="priority-icon" style={{ color: 'var(--color-blue)', background: 'var(--color-blue-light)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Target size={22} />
+            <div className="priority-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {priorities.map((p, i) => (
+                <div key={i} className={`priority-item ${i === 0 && score < 40 ? 'danger' : i === 0 && score < 70 ? 'warning' : ''}`} style={{ display: 'flex', gap: '16px', padding: '20px', border: '1px solid var(--slate-200)', borderRadius: '16px', background: 'var(--bg-white)' }}>
+                  <div className="priority-icon" style={{ color: 'var(--color-blue)', background: 'var(--color-blue-light)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Target size={22} />
+                  </div>
+                  <div className="priority-content">
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i + 1} : {p.label}</h4>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.55', margin: 0 }}>{p.text}</p>
+                  </div>
                 </div>
-                <div className="priority-content">
-                  <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i + 1} : {p.label}</h4>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.55', margin: 0 }}>{p.text}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Actions Footer */}
         <div className="results-actions" style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
