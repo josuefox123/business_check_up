@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
+import { Button } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { AnswerConfirmModal } from './S04Screen.jsx';
 import { PROFILES_LIST, PROFILE_GOOGLE_ICONS } from '../../../constants/triageChoices.js';
