@@ -106,27 +106,6 @@
 }
 
 /* ============================================
-   SCREEN NAV (Back / Continue)
-   ============================================ */
-.screen-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--slate-200);
-  flex-wrap: wrap;
-}
-
-.screen-nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
-
-/* ============================================
    QUIT BUTTON ROW — always at the very bottom
    ============================================ */
 .question-quit-row {
@@ -1519,4 +1498,14 @@
 
   /* Route card padding */
   .route-wrap { padding: 0; }
+}
+
+/* Ensure scrollable area is large enough to scroll content fully above the fixed bottom bar */
+@media (max-width: 768px) {
+  .question-wrap,
+  .consent-wrap,
+  .catalog-wrap {
+    padding-bottom: 110px !important;
+    box-sizing: border-box;
+  }
 }

@@ -273,10 +273,11 @@
   /* Screen content: add bottom padding to prevent content overlap with bottom tab bar */
   .screen-wrapper { 
     padding-top: 56px; 
-    padding-bottom: calc(56px + env(safe-area-inset-bottom, 12px)); 
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 16px)) !important; 
+    box-sizing: border-box;
   }
   .screen-inner, .screen-inner-wide {
-    padding: 20px 16px 32px;
+    padding: 20px 16px 48px;
   }
 
   /* Bottom Tab Navigation Layout (Standard App Tab Bar Style) */
