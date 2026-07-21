@@ -10,8 +10,7 @@ export const Navbar = ({ onGoHome }) => {
   const location = useLocation();
 
   const handleLogoClick = () => {
-    if (onGoHome) onGoHome();
-    else navigate('/');
+    window.location.href = 'https://fund-lab.org/';
   };
 
   const handleStartClick = () => {
