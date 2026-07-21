@@ -49,43 +49,37 @@
 }
 
 /* ============================================
-   SCREEN NAVIGATION BAR (Retour / Continuer)
+   SCREEN NAVIGATION BAR (Retour / Continuer - MÊME LIGNE)
    ============================================ */
 .screen-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  margin-top: 32px;
-  padding-top: 20px;
-  border-top: 1px solid var(--slate-200, #E2E8F0);
-  width: 100%;
-  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 32px !important;
+  padding-top: 20px !important;
+  border-top: 1px solid var(--slate-200, #E2E8F0) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
 .screen-nav .btn,
 .screen-nav button {
-  min-height: 48px;
-  padding: 12px 24px;
+  flex: 1;
+  max-width: 220px;
+  min-height: 46px;
+  padding: 12px 20px;
   font-weight: 700;
+  font-size: 0.92rem;
   border-radius: 12px;
-}
-
-@media (max-width: 768px) {
-  .screen-nav {
-    position: fixed;
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-    left: 0;
-    right: 0;
-    z-index: 990;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--slate-200, #E2E8F0);
-    padding: 12px 20px;
-    margin: 0;
-    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
-  }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 /* ============================================
@@ -1122,27 +1116,30 @@
 
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
-  /* Screen nav buttons */
+  /* Screen nav buttons — Strictly on the SAME single horizontal line */
   .screen-nav {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 10px;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+    margin-top: 24px !important;
   }
-  .screen-nav .btn {
-    width: 100%;
-    justify-content: center;
-    min-height: 48px;
+  .screen-nav .btn,
+  .screen-nav button {
+    flex: 1 !important;
+    max-width: 48% !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+    font-size: 0.88rem !important;
+    padding: 10px 12px !important;
+    white-space: nowrap !important;
   }
   .screen-nav-right {
-    flex-direction: column;
-    width: 100%;
-    margin-left: 0;
-    gap: 8px;
-  }
-  .screen-nav-right .btn {
-    width: 100%;
-    justify-content: center;
-    min-height: 48px;
+    flex-direction: row !important;
+    gap: 8px !important;
   }
 
   /* Consent items — larger tap target */
