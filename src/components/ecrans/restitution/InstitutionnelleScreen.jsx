@@ -78,42 +78,5 @@ export const InstitutionnelleScreen = ({ onBack, onContact }) => (
         <Button variant="outline" onClick={onBack}>Revenir à l'accueil</Button>
       </div>
     </section>
-
-    {/* FOOTER */}
-    <footer className="footer no-print">
-      <div className="container">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
-              <img src={logoImg} alt="FUND.lab Logo" style={{ height: '36px', width: 'auto', display: 'block', filter: 'brightness(0) invert(1)' }} />
-            </Link>
-            <p>Le diagnostic intelligent au service de la croissance des entrepreneurs et des entreprises en Afrique.</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-col">
-              <h6>Nos Diagnostics</h6>
-              <Link to="/catalog">Diagnostic Projet</Link>
-              <Link to="/catalog">Diagnostic Flash</Link>
-              <Link to="/catalog">Diagnostic Complet 360°</Link>
-            </div>
-            <div className="footer-col">
-              <h6>L'entreprise</h6>
-              <Link to="/a-propos">À Propos</Link>
-              <Link to="/contact">Contact</Link>
-            </div>
-            <div className="footer-col">
-              <h6>Légal</h6>
-              <a href="#">Mentions Légales</a>
-              <a href="#">Confidentialité</a>
-              <a href="#">CGU</a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-divider"></div>
-        <div className="footer-bottom">
-          <span>© 2026 FUND.lab. Tous droits réservés.</span>
-        </div>
-      </div>
-    </footer>
   </div>
 );

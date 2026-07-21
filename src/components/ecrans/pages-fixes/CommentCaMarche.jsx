@@ -127,41 +127,6 @@ export const CommentCaMarche = ({ onStart }) => {
           </button>
         </div>
       </section>
-
-      {/* ── FOOTER ── */}
-      <footer className="footer no-print">
-        <div className="footer-content container">
-          <div className="footer-brand">
-            <Link to="/" style={{ display: 'inline-block', marginBottom: '16px' }}>
-              <img src={logoImg} alt="FUND.lab Logo" style={{ height: '36px', width: 'auto', display: 'block', filter: 'brightness(0) invert(1)' }} />
-            </Link>
-            <p>Le diagnostic intelligent au service de la croissance des entrepreneurs et des entreprises en Afrique.</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-col">
-              <h6>Diagnostics</h6>
-              <Link to="/catalog">Diagnostic Projet</Link>
-              <Link to="/catalog">Diagnostic Flash</Link>
-              <Link to="/catalog">Diagnostic 360°</Link>
-            </div>
-            <div className="footer-col">
-              <h6>À propos</h6>
-              <Link to="/a-propos">Notre mission</Link>
-              <Link to="/contact">Contact</Link>
-            </div>
-            <div className="footer-col">
-              <h6>Légal</h6>
-              <a href="#">Mentions légales</a>
-              <a href="#">Confidentialité</a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-divider" style={{ maxWidth: '1280px', margin: '0 auto' }} />
-        <div className="footer-bottom container">
-          <span>© 2026 FUND.lab. Tous droits réservés.</span>
-          <span>Les résultats sont indicatifs et ne constituent pas un conseil professionnel.</span>
-        </div>
-      </footer>
     </div>
   );
 };
