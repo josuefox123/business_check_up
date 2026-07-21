@@ -3,49 +3,49 @@ export const PROFILES_LIST = [
     id: 'creator',
     label: 'Porteur de projet',
     sublabel: 'Idée en cours de validation ou étude de marché',
-    color: '#2659F2', // brand-blue
-    colorLight: 'rgba(38, 89, 242, 0.04)',
-    colorBorder: 'rgba(38, 89, 242, 0.15)'
+    color: '#17212D', // brand-blue-crepuscule
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   },
   {
     id: 'active',
     label: 'Entrepreneur en activité',
     sublabel: 'Ventes régulières ou structure déjà lancée',
-    color: '#00B8A3', // brand-teal
-    colorLight: 'rgba(0, 184, 163, 0.04)',
-    colorBorder: 'rgba(0, 184, 163, 0.15)'
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   },
   {
     id: 'pme',
     label: 'Dirigeant de PME',
     sublabel: 'Activité structurée avec équipe en place',
-    color: '#0F172A', // dark slate
-    colorLight: 'rgba(15, 23, 42, 0.03)',
-    colorBorder: 'rgba(15, 23, 42, 0.12)'
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   },
   {
     id: 'diffic',
     label: 'Entreprise en difficulté',
     sublabel: 'Baisse de ventes ou tension financière critique',
-    color: '#EF4444', // red danger
-    colorLight: 'rgba(239, 68, 68, 0.04)',
-    colorBorder: 'rgba(239, 68, 68, 0.15)'
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   },
   {
     id: 'opport',
     label: 'Recherche d\'opportunité',
     sublabel: 'Projet de développement ou nouveau marché',
-    color: '#F59E0B', // amber warning
-    colorLight: 'rgba(245, 158, 11, 0.04)',
-    colorBorder: 'rgba(245, 158, 11, 0.15)'
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   },
   {
     id: 'curious',
     label: 'Curieux ou Institutionnel',
     sublabel: 'Découvrir la plateforme et ses modules',
-    color: '#64748B', // slate gray
-    colorLight: 'rgba(100, 116, 139, 0.04)',
-    colorBorder: 'rgba(100, 116, 139, 0.15)'
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
   }
 ];
 

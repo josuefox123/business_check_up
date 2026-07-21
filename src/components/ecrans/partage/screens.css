@@ -192,15 +192,13 @@
 }
 
 .consent-item:hover {
-  border-color: rgba(38, 89, 242, 0.3);
+  border-color: var(--slate-200);
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px var(--color-blue-ring);
 }
 
 .consent-item.checked {
-  border-color: var(--color-blue);
+  border-color: var(--slate-200);
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px var(--color-blue-ring), var(--shadow-sm);
 }
 
 .consent-check {
@@ -1329,15 +1327,15 @@
 }
 
 .profile-select-card:hover {
-  border-color: var(--p-color, var(--color-blue));
-  box-shadow: 0 8px 30px var(--p-light, rgba(38,89,242,0.12));
+  border-color: var(--p-border, var(--slate-200));
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
   transform: translateY(-3px);
 }
 
 .profile-select-card.selected {
-  border-color: var(--p-color, var(--color-blue));
-  background: var(--p-light, rgba(38,89,242,0.05));
-  box-shadow: 0 8px 32px var(--p-light, rgba(38,89,242,0.15));
+  border-color: var(--p-border, var(--slate-200));
+  background: var(--p-light, rgba(38,89,242,0.03));
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
   transform: translateY(-2px);
 }
 

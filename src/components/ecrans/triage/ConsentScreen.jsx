@@ -64,7 +64,7 @@ export const ConsentScreen = ({ initialAnswers = { diag: false, stats: false, co
                 borderRadius: '12px',
                 border: '1px solid var(--slate-200)',
                 background: checked[item.key] ? 'rgba(38,89,242,0.04)' : 'var(--bg-white)',
-                borderColor: checked[item.key] ? 'var(--color-blue)' : 'var(--slate-200)',
+                borderColor: 'var(--slate-200)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 transition: 'all 0.2s'

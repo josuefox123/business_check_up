@@ -132,16 +132,14 @@
 }
 
 .choice-card:hover {
-  border-color: rgba(38, 89, 242, 0.35);
-  box-shadow: 0 0 0 3px var(--color-blue-ring), var(--shadow-sm);
+  border-color: var(--slate-200);
   transform: translateY(-1px);
   background: var(--color-blue-light);
 }
 
 .choice-card.selected {
-  border-color: var(--color-blue);
+  border-color: var(--slate-200);
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px var(--color-blue-ring), var(--shadow-sm);
 }
 
 .choice-card-icon {
@@ -218,16 +216,14 @@
 }
 
 .checkbox-card:hover {
-  border-color: rgba(38, 89, 242, 0.35);
+  border-color: var(--slate-200);
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px var(--color-blue-ring);
   transform: translateY(-1px);
 }
 
 .checkbox-card.checked {
-  border-color: var(--color-blue);
+  border-color: var(--slate-200);
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px var(--color-blue-ring), var(--shadow-sm);
 }
 
 .checkbox-card.critical {

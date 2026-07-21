@@ -39,10 +39,10 @@ img { max-width: 100%; height: auto; display: block; }
   --color-accent-dark:   #1A9DB8;   /* dark teal hover */
   --color-accent-light:  rgba(52, 190, 213, 0.10);
   --color-dusk:          #17212D;   /* Bleu crépuscule — boutons sur fond blanc */
-  --color-blue:          #34BED5;   /* Dark Turquoise */
-  --color-blue-mid:      #1A9DB8;   /* dark teal hover */
-  --color-blue-light:    rgba(52, 190, 213, 0.07);
-  --color-blue-ring:     rgba(52, 190, 213, 0.18);
+  --color-blue:          #17212D;   /* Bleu crépuscule */
+  --color-blue-mid:      #0F1820;   
+  --color-blue-light:    rgba(23, 33, 45, 0.04);
+  --color-blue-ring:     rgba(23, 33, 45, 0.15);
 
   /* ── Neutrals — slightly warmer than pure slate ── */
   --slate-50:  #f9f9fb;

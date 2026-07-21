@@ -374,7 +374,7 @@ export function useDiagnosticFlow() {
   const onRouteStart = () => navigate('/diagnostic/intro');
   const onRouteCatalog = () => navigate('/catalog');
   const onRouteBack = () => {
-    setTriageStep(9);
+    setTriageStep(3);
     navigate('/triage/wizard');
   };
 
