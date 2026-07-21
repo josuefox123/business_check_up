@@ -218,7 +218,7 @@
 
 /* ── CTA SECTION ── */
 .hiw-cta-section {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, #17212D 0%, #0F172A 100%);
   padding: 80px 40px;
   position: relative;
   overflow: hidden;
@@ -230,9 +230,38 @@
   position: absolute;
   top: -80px; right: -80px;
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(52, 190, 213,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213, 0.15) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
+}
+
+.hiw-btn-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #34BED5; /* Dark Turquoise */
+  color: #17212D; /* Bleu crépuscule */
+  font-family: var(--font, 'Inter', sans-serif);
+  font-size: 1rem;
+  font-weight: 800;
+  padding: 16px 34px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(52, 190, 213, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.hiw-btn-cta:hover {
+  background: #2cb2c9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(52, 190, 213, 0.45);
+}
+
+.hiw-btn-cta:active {
+  transform: translateY(0);
 }
 
 /* ═══════════════════════════════════════════════
