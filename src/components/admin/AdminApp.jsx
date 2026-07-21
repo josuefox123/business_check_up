@@ -3,7 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardList, Activity, Settings, Users, 
   FileText, ChevronRight, Bell, Search, Menu, X, Filter, Trash2, 
-  Eye, Edit, Plus, Check, Download, AlertTriangle, Info, Calendar, RefreshCw,
+  Eye, EyeOff, Edit, Plus, Check, Download, AlertTriangle, Info, Calendar, RefreshCw,
   User, Lock, Mail
 } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
@@ -1266,6 +1266,7 @@ const AdminLogin = ({ onLogin }) => {
   const [passwordError, setPasswordError] = useState('');
   const [mode, setMode] = useState('login'); // 'login' or 'forgot'
   const [successMessage, setSuccessMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateEmailFormat = (val) => {
     if (!val) {
@@ -1503,14 +1504,39 @@ const AdminLogin = ({ onLogin }) => {
             <div className="admin-login-input-container" style={{ border: passwordError ? '1px solid #ef4444' : '' }}>
               <Lock size={18} className="admin-login-field-icon" style={{ color: passwordError ? '#ef4444' : '' }} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 placeholder="••••••••" 
                 value={password} 
                 onChange={handlePasswordChange} 
                 onBlur={() => validatePasswordFormat(password)}
                 className="admin-login-input"
+                style={{ paddingRight: '44px' }}
                 required 
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  color: showPassword ? 'var(--color-accent, #34BED5)' : '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'color 0.2s ease',
+                  borderRadius: '6px'
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
             {passwordError && (
               <span style={{ color: '#ef4444', fontSize: '0.74rem', marginTop: '4px', display: 'block', fontWeight: 500 }}>
