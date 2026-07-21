@@ -6,7 +6,7 @@ import logoImg from '../../../assets/logo.png';
 import aboutIllustration from '../../../assets/about_illustration.png';
 
 export const InstitutionnelleScreen = ({ onBack, onContact }) => (
-  <div className="about-page animate-fade-up" style={{ paddingTop: '72px' }}>
+  <div className="about-page animate-fade-up" style={{ paddingTop: '72px', paddingBottom: '96px' }}>
     {/* Hero Section */}
     <section className="section" style={{ background: 'var(--color-white)' }}>
       <div className="container" style={{ display: 'flex', gap: 'var(--spacing-2xl)', alignItems: 'flex-start', flexWrap: 'wrap' }}>

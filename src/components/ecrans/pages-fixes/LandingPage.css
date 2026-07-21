@@ -90,29 +90,23 @@
   text-align: left;
 }
 
-/* Pills Row — Strictement sur la MÊME LIGNE */
+/* Pills Row — Tightened to strictly fit all 3 words on ONE SINGLE LINE */
 .lp-pills-row {
   display: flex;
   flex-wrap: nowrap; /* Maintient les mots sur la MÊME ligne */
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  margin-bottom: 40px;
+  gap: 6px;
+  margin-bottom: 36px;
   max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.lp-pills-row::-webkit-scrollbar {
-  display: none;
 }
 
 .lp-pill {
   background: #F1F5F9;
   color: #17212D; /* Bleu crépuscule */
-  padding: 8px 18px;
+  padding: 6px 12px;
   border-radius: 99px;
-  font-size: clamp(0.75rem, 2.5vw, 0.86rem);
+  font-size: clamp(0.68rem, 2.6vw, 0.82rem);
   font-weight: 700;
   border: 1px solid #E2E8F0;
   white-space: nowrap;

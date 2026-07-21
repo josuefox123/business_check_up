@@ -403,6 +403,11 @@ export const PublicContactScreen = ({ onBack }) => {
             gap: 30px !important;
           }
         }
+        @media (max-width: 768px) {
+          section:last-of-type {
+            padding-bottom: 120px !important;
+          }
+        }
         @media (max-width: 640px) {
           .form-two-col {
             grid-template-columns: 1fr !important;

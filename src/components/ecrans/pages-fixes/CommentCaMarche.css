@@ -248,6 +248,7 @@
 
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
+  .how-it-works-page { padding-bottom: 80px; }
   .hiw-hero { padding: 110px 20px 48px; }
   .hiw-hero-title { font-size: 1.875rem; }
   .hiw-hero p { font-size: 0.95rem; }
@@ -264,7 +265,7 @@
   .hiw-step-card h3 { font-size: 1rem; }
   .hiw-step-card p { font-size: 0.875rem; }
   .hiw-features-grid { grid-template-columns: 1fr !important; gap: 14px; }
-  .hiw-cta-section { padding: 56px 20px; }
+  .hiw-cta-section { padding: 56px 20px 96px; }
   .hiw-cta-section h2 { font-size: 1.5rem; }
 }
 

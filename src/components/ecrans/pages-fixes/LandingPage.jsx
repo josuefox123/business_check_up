@@ -29,7 +29,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             {/* Action Buttons (Sans icônes devant) */}
             <div className="lp-hero-actions">
               <button className="lp-btn-primary" onClick={onStart}>
-                Commencer mon diagnostic &rarr;
+                Commencer mon diagnostic
               </button>
               
               <button className="lp-btn-secondary" onClick={onGoToCatalog}>
