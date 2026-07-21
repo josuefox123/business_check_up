@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Zap, Home, Compass, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
 import logoImg from '../../assets/logo.png';
@@ -7,6 +7,7 @@ import '../layout/layout.css';
 
 export const Navbar = ({ onGoHome }) => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogoClick = () => {
     if (onGoHome) onGoHome();
@@ -23,6 +24,8 @@ export const Navbar = ({ onGoHome }) => {
     { to: '/a-propos', label: 'À propos', icon: HelpCircle },
     { to: '/contact', label: 'Contact', icon: Mail },
   ];
+
+  const isDiagnosticFlow = location.pathname.startsWith('/triage') || location.pathname.startsWith('/diagnostic') || location.pathname === '/catalog';
 
   return (
     <>
@@ -57,20 +60,22 @@ export const Navbar = ({ onGoHome }) => {
         </div>
       </nav>
 
-      {/* Mobile bottom tab navigation */}
-      <nav className="bottom-nav no-print">
-        {links.map(({ to, label, end, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
-          >
-            <Icon size={22} className="bottom-nav-icon" />
-            <span className="bottom-nav-label">{label}</span>
-          </NavLink>
-        ))}
-      </nav>
+      {/* Mobile bottom tab navigation — Hidden during diagnostic flow so the action menu bar takes its place */}
+      {!isDiagnosticFlow && (
+        <nav className="bottom-nav no-print">
+          {links.map(({ to, label, end, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
+            >
+              <Icon size={22} className="bottom-nav-icon" />
+              <span className="bottom-nav-label">{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </>
   );
 };
