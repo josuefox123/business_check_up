@@ -1,0 +1,9 @@
+{
+  "name": "fund-lab-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd fundLab_front && npm install",
+    "build": "cd fundLab_front && npm run build"
+  }
+}
