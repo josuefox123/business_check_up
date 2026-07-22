@@ -173,7 +173,7 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
   );
 };
 
-export const S04Screen = ({ question, onContinue, onBack, initialAnswer }) => {
+export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBack, initialAnswer }) => {
   const { references } = useReferences();
   const rawStages = references?.activity_stage || [];
 
@@ -193,6 +193,9 @@ export const S04Screen = ({ question, onContinue, onBack, initialAnswer }) => {
       {onBack && <TopBackLink onClick={onBack} />}
 
       <div className="question-wrap animate-fade-up">
+        <span className="section-tag" style={{ marginBottom: '14px', display: 'inline-flex' }}>
+          Question {currentStep || 2} sur {totalSteps || 6}
+        </span>
         <h1 className="question-heading">{titleText}</h1>
         <p className="question-hint" style={{ marginBottom: 'var(--space-6)', fontSize: '0.82rem', opacity: 0.9 }}>
           {subtitleText}

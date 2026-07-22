@@ -19,7 +19,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-export const S03Screen = ({ question, onContinue, onSelect, onBack, initialAnswer }) => {
+export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSelect, onBack, initialAnswer }) => {
   const { references } = useReferences();
   const rawProfiles = references?.user_profile_type || [];
 
@@ -59,7 +59,7 @@ export const S03Screen = ({ question, onContinue, onSelect, onBack, initialAnswe
       <div className="animate-fade-up" style={{ maxWidth: '920px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
           <span className="section-tag" style={{ marginBottom: '14px', display: 'inline-flex' }}>
-            Étape 1 sur 5
+            Question {currentStep || 1} sur {totalSteps || 6}
           </span>
           <h1 className="screen-title" style={{ textAlign: 'center' }}>
             {titleText}
