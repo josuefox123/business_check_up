@@ -265,13 +265,13 @@ export function useDiagnosticFlow() {
     if (val === 'curious') {
       navigate('/a-propos');
     } else {
-      setTriageStep(5);
+      setTriageStep(6);
     }
   };
 
   const onS04 = (val) => {
     setTA('s04', val);
-    setTriageStep(6);
+    setTriageStep(7);
   };
 
   const onS05 = (val) => {
@@ -281,12 +281,12 @@ export function useDiagnosticFlow() {
 
   const onS06 = (val) => {
     setTA('s06', val);
-    setTriageStep(7);
+    setTriageStep(8);
   };
 
   const onS07 = (val) => {
     setTA('s07', val);
-    setTriageStep(8);
+    setTriageStep(9);
   };
 
 
@@ -368,7 +368,7 @@ export function useDiagnosticFlow() {
     setTA('s08', val);
     const answersWithS08 = { ...triageAnswers, s08: val };
     if (val === 'no' || val === 'idk') {
-      setTriageStep(9);
+      setTriageStep(10);
     } else {
       submitTriageToBackend(answersWithS08);
     }
@@ -383,7 +383,7 @@ export function useDiagnosticFlow() {
   const onRouteStart = () => navigate('/diagnostic/intro');
   const onRouteCatalog = () => navigate('/catalog');
   const onRouteBack = () => {
-    setTriageStep(3);
+    setTriageStep(5);
     navigate('/triage/wizard');
   };
 

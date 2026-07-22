@@ -14,6 +14,7 @@ import { useDiagnosticFlow } from './hooks/useDiagnosticFlow.js';
 
 import {
   ConsentScreen,
+  ChoixEntreeScreen,
   S03Screen, S04Screen, S05Screen,
   TriageScreen,
   RouteScreen,
@@ -153,7 +154,7 @@ function DiagnosticApp() {
   const flow = useDiagnosticFlow();
 
   const getTriageQuestion = (role) => flow.triageQuestions?.find(q => q.axe === role) || null;
-  const totalTriageSteps = flow.triageQuestions?.filter(q => ['profile', 'stage', 'intention', 'risk', 'opportunity', 'topic'].includes(q.axe)).length || 6;
+  const totalTriageSteps = 6;
 
   const showNavbar = location.pathname !== '/diagnostic/fin';
 
@@ -240,20 +241,28 @@ function DiagnosticApp() {
         <Route path="/triage/wizard" element={
           <>
             {flow.triageStep === 3 && <S05Screen onContinue={flow.onS05} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s05 ?? null} />}
-            {flow.triageStep === 4 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
-            {flow.triageStep === 5 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
-            {flow.triageStep === 6 && (
+            {flow.triageStep === 4 && (
+              <ChoixEntreeScreen
+                onAssisted={() => flow.setTriageStep(5)}
+                onCatalog={flow.onGoToCatalog}
+                onLearnMore={flow.onLearnMore}
+                onBack={() => flow.setTriageStep(3)}
+              />
+            )}
+            {flow.triageStep === 5 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
+            {flow.triageStep === 6 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(5)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
+            {flow.triageStep === 7 && (
               <TriageScreen
                 step="S06"
                 question={getTriageQuestion('intention')}
                 progress={{ current: 2, total: totalTriageSteps }}
                 choices={flow.references?.primary_need || []}
                 onContinue={flow.onS06}
-                onBack={() => flow.setTriageStep(5)}
+                onBack={() => flow.setTriageStep(6)}
                 initialAnswer={flow.triageAnswers.s06 ?? null}
               />
             )}
-            {flow.triageStep === 7 && (
+            {flow.triageStep === 8 && (
               <TriageScreen
                 step="S07"
                 question={getTriageQuestion('risk')}
@@ -261,29 +270,29 @@ function DiagnosticApp() {
                 multi
                 choices={flow.references?.risk_flag || []}
                 onContinue={flow.onS07}
-                onBack={() => flow.setTriageStep(6)}
+                onBack={() => flow.setTriageStep(7)}
                 initialAnswer={flow.triageAnswers.s07 ?? null}
               />
             )}
-            {flow.triageStep === 8 && (
+            {flow.triageStep === 9 && (
               <TriageScreen
                 step="S08"
                 question={getTriageQuestion('opportunity')}
                 progress={{ current: 4, total: totalTriageSteps }}
                 choices={flow.references?.opporttunity_type || flow.references?.opportunity_type || []}
                 onContinue={flow.onS08}
-                onBack={() => flow.setTriageStep(7)}
+                onBack={() => flow.setTriageStep(8)}
                 initialAnswer={flow.triageAnswers.s08 ?? null}
               />
             )}
-            {flow.triageStep === 9 && (
+            {flow.triageStep === 10 && (
               <TriageScreen
                 step="S09"
                 question={getTriageQuestion('topic')}
                 progress={{ current: 5, total: totalTriageSteps }}
                 choices={flow.references?.dominant_topic || []}
                 onContinue={flow.onS09}
-                onBack={() => flow.setTriageStep(8)}
+                onBack={() => flow.setTriageStep(9)}
                 initialAnswer={flow.triageAnswers.s09 ?? null}
               />
             )}
