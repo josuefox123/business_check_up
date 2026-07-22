@@ -15,12 +15,7 @@ import { DiagnosticService } from '../services/DiagnosticService.js';
 import { UtilisateurService } from '../services/UtilisateurService.js';
 import { apiFetch, formatDurationSeconds } from '../api/config.js';
 
-const MODULE_BY_ROUTE = {
-  'S10': { id: 'PRJ-02', name: 'Diagnostic Projet',     duration: '8-12 min' },
-  'S11': { id: 'DIF-03', name: 'Diagnostic Difficulté',  duration: '10-15 min' },
-  'S12': { id: 'OPP-04', name: 'Diagnostic Opportunité', duration: '10-15 min' },
-  'S13': { id: 'FLH-01', name: 'Diagnostic Flash',       duration: '7-10 min' },
-};
+
 
 const CRITICAL_SIGNALS = ['charges', 'dettes', 'treso'];
 
@@ -276,24 +271,7 @@ export function useDiagnosticFlow() {
     setTriageStep(8);
   };
 
-  const applyRoute = (route) => {
-    if (typeof route === 'object') {
-      const targetRoute = route.route || 'S13';
-      const moduleId = route.moduleId || 'FLH-01';
-      setRouteKey(targetRoute);
-      const baseMod = MODULE_BY_ROUTE[targetRoute] || MODULE_BY_ROUTE['S13'];
-      setCurrentModule({
-        ...baseMod,
-        id: moduleId,
-        name: route.moduleName || baseMod.name
-      });
-      navigate('/diagnostic/route');
-    } else {
-      setRouteKey(route);
-      setCurrentModule(MODULE_BY_ROUTE[route] || MODULE_BY_ROUTE['S13']);
-      navigate('/diagnostic/route');
-    }
-  };
+
 
   const submitTriageToBackend = async (answers) => {
     const sessionId = localStorage.getItem('bc_session_id');
@@ -321,21 +299,13 @@ export function useDiagnosticFlow() {
       }
       localStorage.setItem('bc_recommended_module_code', backendModuleId);
 
-      const routeMap = {
-        'PRJ-02': 'S10',
-        'DIF-03': 'S11',
-        'OPP-04': 'S12',
-        'FLH-01': 'S13'
-      };
-      const backendRoute = routeMap[backendModuleId] || 'S13';
-      const baseMod = MODULE_BY_ROUTE[backendRoute] || MODULE_BY_ROUTE['S13'];
+      const backendRoute = data.route || data.recommended_route || 'S13';
       
       let fullModuleData = {
-        ...baseMod,
         id: backendModuleId,
-        name: backendModuleName || baseMod.name,
-        duration: backendDuration || baseMod.duration,
-        description: backendDescription,
+        name: backendModuleName || 'Diagnostic',
+        duration: backendDuration || '',
+        description: backendDescription || '',
         question_count: null
       };
 
@@ -343,11 +313,10 @@ export function useDiagnosticFlow() {
         const modRes = await apiFetch(`/modules/${backendModuleId}`);
         const modDetail = modRes?.data || modRes || {};
         fullModuleData = {
-          ...baseMod,
           id: backendModuleId,
-          name: modDetail.name || backendModuleName || baseMod.name,
-          duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || backendDuration || baseMod.duration,
-          description: modDetail.description || null,
+          name: modDetail.name || backendModuleName || 'Diagnostic',
+          duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || backendDuration || '',
+          description: modDetail.description || backendDescription || '',
           question_count: modDetail.question_count || null
         };
       } catch (err) {
@@ -416,11 +385,23 @@ export function useDiagnosticFlow() {
     navigate('/diagnostic/intro');
   };
 
-  const onVerifReco = () => {
-    const s07 = triageAnswers.s07 || [];
-    const hasCrit = Array.isArray(s07) && s07.some(s => CRITICAL_SIGNALS.includes(s));
-    setCurrentModule(hasCrit ? MODULE_BY_ROUTE['S11'] : MODULE_BY_ROUTE['S13']);
-    navigate('/diagnostic/intro');
+  const onVerifReco = async () => {
+    const recommendedModuleId = localStorage.getItem('bc_recommended_module_code') || 'FLH-01';
+    try {
+      const res = await apiFetch(`/modules/${recommendedModuleId}`);
+      const modDetail = res?.data || res || {};
+      setCurrentModule({
+        id: recommendedModuleId,
+        name: modDetail.name || 'Diagnostic',
+        duration: modDetail.target_duration_formatted || formatDurationSeconds(modDetail.target_duration) || '',
+        description: modDetail.description || '',
+        question_count: modDetail.question_count || null
+      });
+      navigate('/diagnostic/intro');
+    } catch (err) {
+      console.error('Error fetching verification recommended module:', err);
+      navigate('/catalog');
+    }
   };
 
   const onIntroStart = async () => {
