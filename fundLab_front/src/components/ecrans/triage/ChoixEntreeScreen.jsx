@@ -5,6 +5,8 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
 export const ChoixEntreeScreen = ({ question, onSelect, onBack }) => {
+  if (!question) return null;
+
   const getIconForId = (id) => {
     switch (id) {
       case 'assisted':
@@ -22,33 +24,22 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack }) => {
     }
   };
 
-  const fallbackChoices = [
-    { id: 'assisted', label: 'Aidez-moi à choisir le bon diagnostic', icon: getIconForId('assisted') },
-    { id: 'direct', label: 'Je sais déjà ce que je veux diagnostiquer', icon: getIconForId('direct') },
-    { id: 'learn', label: 'Je veux comprendre ce que fait Business Check-up', icon: getIconForId('learn') },
-    { id: 'institutional', label: 'Je représente une institution / un partenaire', icon: getIconForId('institutional') }
-  ];
-
-  const resolvedChoices = question?.choices || [];
-  const choicesToRender = resolvedChoices.length > 0
-    ? resolvedChoices.map(c => ({
-        id: c.id,
-        label: c.label,
-        icon: getIconForId(c.id)
-      }))
-    : fallbackChoices;
-
-  const titleText = question?.question || 'Que souhaitez-vous faire ?';
-  const subtitleText = question?.hint || "Sélectionnez l'option qui correspond le mieux à votre besoin actuel.";
+  const choicesToRender = (question.choices || []).map(c => ({
+    id: c.id,
+    label: c.label,
+    icon: getIconForId(c.id)
+  }));
 
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="question-wrap animate-fade-up">
-        <h1 className="screen-title">{titleText}</h1>
-        <p className="screen-subtitle" style={{ marginBottom: 'var(--space-8)' }}>
-          {subtitleText}
-        </p>
+        <h1 className="screen-title">{question.question}</h1>
+        {question.hint && (
+          <p className="screen-subtitle" style={{ marginBottom: 'var(--space-8)' }}>
+            {question.hint}
+          </p>
+        )}
         <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {choicesToRender.map(choice => (
             <ChoiceCard
