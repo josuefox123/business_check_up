@@ -274,6 +274,19 @@ export function useDiagnosticFlow() {
     setTriageStep(7);
   };
 
+  const onS00 = (val) => {
+    setTA('s00', val);
+    if (val === 'assisted') {
+      setTriageStep(5);
+    } else if (val === 'direct' || val === 'direct_catalog') {
+      onGoToCatalog();
+    } else if (val === 'learn' || val === 'learn_more') {
+      onLearnMore();
+    } else if (val === 'institutional') {
+      navigate('/a-propos');
+    }
+  };
+
   const onS05 = (val) => {
     setTA('s05', val);
     setTriageStep(4);
@@ -731,6 +744,7 @@ export function useDiagnosticFlow() {
     onLearnMore,
     onGoHome,
     onConsent,
+    onS00,
     onS03,
     onS04,
     onS05,

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Compass, Target, HelpCircle, Building } from 'lucide-react';
-import { ChoiceCard } from '../../ui/index.jsx';
+import { ChoiceCard, Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-export const ChoixEntreeScreen = ({ question, onSelect, onBack }) => {
+export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer }) => {
+  const [selected, setSelected] = useState(initialAnswer || null);
+
   if (!question) return null;
 
   const getIconForId = (id) => {
@@ -41,16 +43,30 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack }) => {
           </p>
         )}
         <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {choicesToRender.map(choice => (
-            <ChoiceCard
-              key={choice.id}
-              label={choice.label}
-              icon={choice.icon}
-              selected={false}
-              onClick={() => onSelect(choice.id)}
-            />
-          ))}
+          {choicesToRender.map(choice => {
+            const isSelected = selected === choice.id;
+            return (
+              <ChoiceCard
+                key={choice.id}
+                label={choice.label}
+                icon={choice.icon}
+                selected={isSelected}
+                onClick={() => setSelected(choice.id)}
+              />
+            );
+          })}
         </div>
+      </div>
+
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+        <Button 
+          variant="primary" 
+          disabled={!selected} 
+          onClick={() => { if (onSelect) onSelect(selected); }}
+        >
+          Continuer
+        </Button>
       </div>
     </ScreenWrapper>
   );

@@ -244,18 +244,9 @@ function DiagnosticApp() {
             {flow.triageStep === 4 && (
               <ChoixEntreeScreen
                 question={getTriageQuestion('entry_choice')}
-                onSelect={(choiceId) => {
-                  if (choiceId === 'assisted') {
-                    flow.setTriageStep(5);
-                  } else if (choiceId === 'direct' || choiceId === 'direct_catalog') {
-                    flow.onGoToCatalog();
-                  } else if (choiceId === 'learn' || choiceId === 'learn_more') {
-                    flow.onLearnMore();
-                  } else if (choiceId === 'institutional') {
-                    navigate('/a-propos');
-                  }
-                }}
+                onSelect={flow.onS00}
                 onBack={() => flow.setTriageStep(3)}
+                initialAnswer={flow.triageAnswers.s00 ?? null}
               />
             )}
             {flow.triageStep === 5 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
