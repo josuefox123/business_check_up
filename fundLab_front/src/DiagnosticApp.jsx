@@ -155,7 +155,12 @@ function DiagnosticApp() {
 
   const getTriageQuestion = (role) => {
     if (role === 'main_offer_type') {
-      const q = flow.triageQuestions?.find(item => item.axe === 'main_offer_type' || item.axe === 'offer_type' || item.axe === 'main_offer');
+      const q = flow.triageQuestions?.find(item => 
+        item.axe === 'main_offer_type' || 
+        item.axe === 'offer_type' || 
+        item.id === 'TRI-00-Q07' || 
+        item.question?.toLowerCase().includes('phare')
+      );
       if (q) return q;
       return {
         question: "Quel est le produit ou le service phare de votre entreprise ?",
