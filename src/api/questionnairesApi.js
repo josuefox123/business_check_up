@@ -18,14 +18,8 @@ export const questionnairesApi = {
         }));
       })
       .catch(err => {
-        console.error('Error listing modules from backend, using fallback:', err);
-        const qData = LocalStoreRepository.getQuestionnaires();
-        return Object.keys(qData.modules).map(moduleId => ({
-          id: moduleId,
-          name: qData.catalog[moduleId]?.name || moduleId,
-          questionsCount: qData.modules[moduleId]?.questions?.length || 0,
-          axes: qData.modules[moduleId]?.axes || []
-        }));
+        console.error('Error listing modules from backend:', err);
+        throw err;
       });
   },
   
@@ -65,18 +59,8 @@ export const questionnairesApi = {
       };
     })
     .catch(err => {
-      console.error(`Error loading module detail for ${moduleId} from backend, using fallback:`, err);
-      const qData = LocalStoreRepository.getQuestionnaires();
-      if (qData.modules[moduleId]) {
-        return {
-          id: moduleId,
-          name: qData.catalog[moduleId]?.name || moduleId,
-          estimatedTime: qData.modules[moduleId].estimatedTime || '',
-          axes: qData.modules[moduleId].axes || [],
-          questions: qData.modules[moduleId].questions || []
-        };
-      }
-      return null;
+      console.error(`Error loading module detail for ${moduleId} from backend:`, err);
+      throw err;
     });
   }
 };

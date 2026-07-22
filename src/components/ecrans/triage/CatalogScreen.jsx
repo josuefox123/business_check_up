@@ -35,27 +35,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
             })));
           }
         })
-        .catch(() => {
-          import('../../../repositories/LocalStoreRepository.js').then(({ LocalStoreRepository }) => {
-            const qData = LocalStoreRepository.getQuestionnaires();
-            const localCatalog = qData.catalog || {};
-            const list = Object.keys(localCatalog).map(code => ({
-              code,
-              name: localCatalog[code].name,
-              target_duration_formatted: localCatalog[code].estimatedTime || localCatalog[code].duration || '',
-              question_count: qData.modules[code]?.questions?.length || null,
-              description: localCatalog[code].description || null
-            }));
-            setModules(list.map(m => ({
-              id: m.code,
-              name: m.name,
-              duration: m.target_duration_formatted || '',
-              question_count: m.question_count,
-              description: m.description,
-              ...MODULE_STYLE_MAP[m.code]
-            })));
-          });
-        })
+        .catch(() => { })
         .finally(() => setLoading(false));
     });
   }, []);

@@ -45,12 +45,8 @@ export const questionsApi = {
         });
       })
       .catch(err => {
-        console.error(`Error loading questions for ${moduleId} from backend, loading fallback:`, err);
-        const qData = LocalStoreRepository.getQuestionnaires();
-        if (qData.modules[moduleId]) {
-          return qData.modules[moduleId].questions || [];
-        }
-        return [];
+        console.error(`Error loading questions for ${moduleId} from backend:`, err);
+        throw err;
       });
   },
   

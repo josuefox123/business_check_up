@@ -5,16 +5,16 @@ export const REGIONS = [
 export const SECTORS = [
   'Agriculture',
   'Agro-transformation',
-  'Commerce',
+  'Commerce / Distribution',
   'Services',
-  'Industrie',
-  'Numérique',
+  'Industrie / Fabrication',
+  'Numérique / technologie',
   'Artisanat',
-  'Transport',
-  'Tourisme',
+  'Transport / logistique',
+  'Tourisme / hôtellerie /restauration',
   'Santé',
-  'Éducation',
-  'BTP',
+  'Éducation / formation',
+  'BTP / immobilier',
   'Autre'
 ];
 

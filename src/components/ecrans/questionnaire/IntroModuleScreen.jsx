@@ -56,21 +56,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
             });
           }
         })
-        .catch(() => {
-          import('../../../repositories/LocalStoreRepository.js').then(({ LocalStoreRepository }) => {
-            const qData = LocalStoreRepository.getQuestionnaires();
-            const localModule = qData.catalog[moduleId];
-            if (localModule) {
-              setBackendModule({
-                id: moduleId,
-                name: localModule.name,
-                duration: localModule.estimatedTime || localModule.duration || '',
-                description: localModule.description || '',
-                question_count: qData.modules[moduleId]?.questions?.length || null
-              });
-            }
-          });
-        });
+        .catch(() => { });
     });
   }, [moduleId, moduleData]);
 

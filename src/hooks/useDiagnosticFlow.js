@@ -178,7 +178,7 @@ export function useDiagnosticFlow() {
     }
   }, [currentModule]);
 
-  const onStartAssisted = () => {
+  const onStartAssisted = async () => {
     clearState();
     setTriageStep(3);
     setTriageAnswers({});
@@ -189,31 +189,39 @@ export function useDiagnosticFlow() {
     setQuestions([]);
     setScore(0);
     
-    createSessionApi()
-      .then(res => {
-        const sessionId = res?.data?.session_id;
-        if (sessionId) {
-          localStorage.setItem('bc_session_id', sessionId);
-          saveState({
-            triageStep: 3,
-            triageAnswers: {},
-            consentAnswers: { diag: false, stats: false, contact: false },
-            currentModule: null,
-            routeKey: null,
-            questionIndex: 0,
-            moduleAnswers: {},
-            score: 0,
-            chosenForVerif: null,
-            currentRunId: null,
-            restitution: null,
-            currentPath: '/triage/consent',
-            sessionId: sessionId
-          });
-        }
-      })
-      .catch(err => console.error('Error creating session:', err));
-
-    navigate('/triage/consent');
+    try {
+      const res = await createSessionApi();
+      const sessionId = res?.data?.session_id || res?.session_id;
+      if (sessionId) {
+        localStorage.setItem('bc_session_id', sessionId);
+        saveState({
+          triageStep: 3,
+          triageAnswers: {},
+          consentAnswers: { diag: false, stats: false, contact: false },
+          currentModule: null,
+          routeKey: null,
+          questionIndex: 0,
+          moduleAnswers: {},
+          score: 0,
+          chosenForVerif: null,
+          currentRunId: null,
+          restitution: null,
+          currentPath: '/triage/consent',
+          sessionId: sessionId
+        });
+        setIsOffline(false);
+        navigate('/triage/consent');
+      } else {
+        throw new Error('Aucun identifiant de session n\'a été renvoyé par le serveur.');
+      }
+    } catch (err) {
+      console.error('Error creating session:', err);
+      setIsOffline(true);
+      setErrorModal({
+        title: 'Serveur temporairement indisponible',
+        message: 'Impossible de démarrer le diagnostic sans connexion avec le serveur. Veuillez vérifier votre connexion internet ou réessayer plus tard.'
+      });
+    }
   };
 
   const onGoToCatalog   = () => navigate('/catalog');

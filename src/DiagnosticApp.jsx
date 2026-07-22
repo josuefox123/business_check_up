@@ -154,6 +154,31 @@ function DiagnosticApp() {
 
   const showNavbar = location.pathname !== '/diagnostic/fin';
 
+  const isDiagnosticPath = 
+    location.pathname.startsWith('/triage/') ||
+    location.pathname.startsWith('/diagnostic/') ||
+    location.pathname === '/catalog';
+
+  if (flow.isOffline && isDiagnosticPath) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '480px', background: '#FFFFFF', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️</div>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#17212D', marginBottom: '16px' }}>Service temporairement indisponible</h1>
+          <p style={{ fontSize: '0.92rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
+            L'accès aux diagnostics et au triage nécessite une connexion active avec le serveur de l'application. Veuillez réessayer plus tard.
+          </p>
+          <button 
+            onClick={() => window.location.href = '/'}
+            style={{ background: '#17212D', color: '#FFFFFF', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
+          >
+            Retour à l'accueil
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {showNavbar && <Navbar onGoHome={flow.onGoHome} />}
