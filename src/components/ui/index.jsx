@@ -37,13 +37,12 @@ export const CheckboxCard = ({ label, checked, onChange }) => {
 };
 
 /* ================== PROGRESS BAR ================== */
-export const ProgressBar = ({ current, total, label }) => {
+export const ProgressBar = ({ current, total }) => {
   const pct = Math.round((current / total) * 100);
   return (
     <div className="progress-wrap">
       <div className="progress-meta">
-        <span className="progress-label">{label || `Question ${current}/${total}`}</span>
-        <span className="progress-pct">{pct}%</span>
+        <span className="progress-pct" style={{ marginLeft: 'auto' }}>{pct}%</span>
       </div>
       <div className="progress-track">
         <div className="progress-fill" style={{ width: `${pct}%` }} />
