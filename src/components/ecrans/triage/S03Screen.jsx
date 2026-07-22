@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { PROFILES_LIST, PROFILE_GOOGLE_ICONS } from '../../../constants/triageChoices.js';
+import { useReferences } from '../../../contexts/ReferencesContext.jsx';
+
+const PROFILE_GOOGLE_ICONS = {
+  project_holder: 'lightbulb',
+  active_entrepreneur: 'store',
+  structured_sme: 'corporate_fare',
+  distressed_business: 'warning',
+  opportunity_seeker: 'trending_up',
+  institutional_curious: 'visibility'
+};
 
 const CheckIcon = () => (
   <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
@@ -11,6 +20,27 @@ const CheckIcon = () => (
 );
 
 export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
+  const { references } = useReferences();
+  const rawProfiles = references?.user_profile_type || [];
+
+  const sublabelMapping = {
+    'project_holder': 'Idée en cours de validation ou étude de marché',
+    'active_entrepreneur': 'Ventes régulières ou structure déjà lancée',
+    'structured_sme': 'Activité structurée avec équipe en place',
+    'distressed_business': 'Baisse de ventes ou tension financière critique',
+    'opportunity_seeker': 'Projet de développement ou nouveau marché',
+    'institutional_curious': 'Découvrir la plateforme et ses modules'
+  };
+
+  const profilesList = rawProfiles.map(p => ({
+    id: p.value,
+    label: p.label,
+    sublabel: sublabelMapping[p.value] || '',
+    color: '#17212D',
+    colorLight: 'rgba(23, 33, 45, 0.04)',
+    colorBorder: 'rgba(23, 33, 45, 0.15)'
+  }));
+
   const [selected, setSelected] = useState(initialAnswer || null);
   const handleCb = onContinue || onSelect;
 
@@ -31,7 +61,7 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
         </div>
 
         <div className="profile-select-grid">
-          {PROFILES_LIST.map((profile, i) => {
+          {profilesList.map((profile, i) => {
             const isSelected = selected === profile.id;
             const googleIcon = PROFILE_GOOGLE_ICONS[profile.id] || 'help';
 

@@ -31,7 +31,7 @@ import {
   InstitutionnelleScreen,
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
 
-import { S06_CHOICES, S07_CHOICES, S08_CHOICES, S09_CHOICES } from './constants/triageChoices.js';
+
 
 const ErrorModal = ({ title, message, onClose }) => (
   <div style={{
@@ -243,7 +243,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S06"
                 question="Aujourd'hui, votre principale préoccupation est :"
-                choices={S06_CHOICES}
+                choices={flow.references?.primary_need || []}
                 onContinue={flow.onS06}
                 onBack={() => flow.setTriageStep(5)}
                 initialAnswer={flow.triageAnswers.s06 ?? null}
@@ -255,7 +255,7 @@ function DiagnosticApp() {
                 question="Votre entreprise connaît-elle actuellement l'une de ces situations ?"
                 hint="Sélectionnez toutes les options qui s'appliquent"
                 multi
-                choices={S07_CHOICES}
+                choices={flow.references?.risk_flag || []}
                 onContinue={flow.onS07}
                 onBack={() => flow.setTriageStep(6)}
                 initialAnswer={flow.triageAnswers.s07 ?? null}
@@ -265,7 +265,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S08"
                 question="Cherchez-vous à saisir une opportunité précise ?"
-                choices={S08_CHOICES}
+                choices={flow.references?.opporttunity_type || flow.references?.opportunity_type || []}
                 onContinue={flow.onS08}
                 onBack={() => flow.setTriageStep(7)}
                 initialAnswer={flow.triageAnswers.s08 ?? null}
@@ -275,7 +275,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S09"
                 question="Quel sujet souhaitez-vous analyser en priorité ?"
-                choices={S09_CHOICES}
+                choices={flow.references?.dominant_topic || []}
                 onContinue={flow.onS09}
                 onBack={() => flow.setTriageStep(8)}
                 initialAnswer={flow.triageAnswers.s09 ?? null}

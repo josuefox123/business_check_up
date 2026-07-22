@@ -3,7 +3,14 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-export const TriageScreen = ({ step, question, hint, choices, multi = false, onContinue, onBack, progress, initialAnswer }) => {
+export const TriageScreen = ({ step, question, hint, choices = [], multi = false, onContinue, onBack, progress, initialAnswer }) => {
+  const normalizedChoices = choices.map(c => ({
+    id: c.value || c.id,
+    label: c.label,
+    severity: c.severity,
+    desc: c.desc || c.description
+  }));
+
   const [selected, setSelected] = useState(() => {
     if (initialAnswer !== null && initialAnswer !== undefined) return initialAnswer;
     return multi ? [] : null;
@@ -11,11 +18,11 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
 
   const toggle = (id) => {
     if (multi) {
-      if (id === 'none' || id === 'prefer') {
+      if (id === 'none' || id === 'prefer' || id === 'prefer_not_to_answer') {
         setSelected([id]);
       } else {
         setSelected(prev => {
-          const cleaned = prev.filter(x => x !== 'none' && x !== 'prefer');
+          const cleaned = prev.filter(x => x !== 'none' && x !== 'prefer' && x !== 'prefer_not_to_answer');
           return cleaned.includes(id) ? cleaned.filter(x => x !== id) : [...cleaned, id];
         });
       }
@@ -44,7 +51,7 @@ export const TriageScreen = ({ step, question, hint, choices, multi = false, onC
         {hint && <p className="question-hint">{hint}</p>}
 
         <div className="choices-list">
-          {choices.map(c => (
+          {normalizedChoices.map(c => (
             multi ? (
               <CheckboxCard
                 key={c.id}

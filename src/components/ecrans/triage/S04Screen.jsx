@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { S04_CHOICES } from '../../../constants/triageChoices.js';
+import { useReferences } from '../../../contexts/ReferencesContext.jsx';
 
 export const AnswerConfirmModal = ({ label, onConfirm, onCancel }) => (
   <div style={{
@@ -174,43 +174,26 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
 };
 
 export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
-  const [selected, setSelected] = useState(() => {
-    if (!initialAnswer) return null;
-    if (initialAnswer === 'occ_oui' || initialAnswer === 'occ_non') return 'occ';
-    return initialAnswer;
-  });
-  const [showSubModal, setShowSubModal] = useState(false);
+  const { references } = useReferences();
+  const choices = references?.activity_stage || [];
+
+  const [selected, setSelected] = useState(initialAnswer || null);
 
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
-
-      {showSubModal && (
-        <S04SubQuestionModal
-          onConfirm={(subVal) => {
-            setShowSubModal(false);
-            onContinue(subVal === 'yes' ? 'occ_oui' : 'occ_non');
-          }}
-          onCancel={() => setShowSubModal(false)}
-        />
-      )}
 
       <div className="question-wrap animate-fade-up">
         <h1 className="question-heading">Votre activité vend-elle déjà des produits ou services ?</h1>
         <p className="question-hint" style={{marginBottom:'var(--space-6)'}}>Cette question affine votre profil et nous aide à vous orienter vers le diagnostic le plus adapté.</p>
 
         <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {S04_CHOICES.map(c => (
+          {choices.map(c => (
             <ChoiceCard
-              key={c.id}
+              key={c.value}
               label={c.label}
-              selected={selected === c.id}
-              onClick={() => {
-                setSelected(c.id);
-                if (c.id === 'occ') {
-                  setShowSubModal(true);
-                }
-              }}
+              selected={selected === c.value}
+              onClick={() => setSelected(c.value)}
             />
           ))}
         </div>

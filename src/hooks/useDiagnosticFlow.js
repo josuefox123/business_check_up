@@ -57,13 +57,20 @@ export function useDiagnosticFlow() {
   const [errorModal, setErrorModal] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
 
+  const [references, setReferences] = useState(null);
+
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
     window.addEventListener('api-offline', handleOffline);
 
-    // Test connectivity immediately
+    // Test connectivity and fetch references immediately
     apiFetch('/reference-list')
-      .then(() => setIsOffline(false))
+      .then(res => {
+        setIsOffline(false);
+        if (res) {
+          setReferences(res);
+        }
+      })
       .catch(err => {
         if (err.isNetworkError || err.status >= 500) {
           setIsOffline(true);
@@ -701,6 +708,7 @@ export function useDiagnosticFlow() {
     restitution, setRestitution,
     errorModal, setErrorModal,
     isOffline,
+    references,
     showResumeModal, setShowResumeModal,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,
