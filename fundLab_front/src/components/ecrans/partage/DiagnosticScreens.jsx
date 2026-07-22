@@ -12,7 +12,7 @@ export { RouteScreen } from '../triage/RouteScreen.jsx';
 export { CatalogScreen } from '../triage/CatalogScreen.jsx';
 export { VerifModuleScreen } from '../questionnaire/VerifModuleScreen.jsx';
 export { IntroModuleScreen } from '../questionnaire/IntroModuleScreen.jsx';
-export { QuestionScreen, QuitConfirmModal, ConfidenceModal } from '../questionnaire/QuestionScreen.jsx';
+export { QuestionScreen, QuitConfirmModal } from '../questionnaire/QuestionScreen.jsx';
 export { CalculScreen } from '../questionnaire/CalculScreen.jsx';
 export { ResultatSyntheseScreen } from '../restitution/ResultatSyntheseScreen.jsx';
 export { ForceFragilitesScreen } from '../restitution/ForceFragilitesScreen.jsx';
