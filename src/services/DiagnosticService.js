@@ -5,7 +5,6 @@
  */
 
 import { diagnosticsApi } from '../api/diagnosticsApi.js';
-import { calculateGlobalScore } from '../api/scoring.js';
 
 export const DiagnosticService = {
   getDiagnostics() {
@@ -14,8 +13,7 @@ export const DiagnosticService = {
   getDiagnosticById(id) {
     return diagnosticsApi.getById(id);
   },
-  submitDiagnostic(moduleId, answers, userDetails = null) {
-    const score = calculateGlobalScore(moduleId, answers);
+  submitDiagnostic(moduleId, answers, userDetails = null, score = 0) {
     const diag = {
       moduleId,
       score,

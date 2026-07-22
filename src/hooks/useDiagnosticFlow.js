@@ -4,8 +4,6 @@ import { useSessionPersist } from './useSessionPersist.js';
 import { generateDiagnosticPDF } from '../utils/generateDiagnosticPDF.js';
 import { getRestitutionData } from '../utils/restitutionHelper.js';
 import {
-  computeRoute,
-  calculateGlobalScore,
   createSessionApi,
   submitConsentApi,
   submitTriageToBackendApi,
@@ -26,12 +24,7 @@ const MODULE_BY_ROUTE = {
 
 const CRITICAL_SIGNALS = ['charges', 'dettes', 'treso'];
 
-const getRouteFromAnswers = (answers) => {
-  const result = computeRoute({ ...answers, s03: answers.s03 });
-  if (!result) return 'S13';
-  if (result.moduleId) return { route: result.route, moduleId: result.moduleId };
-  return result.route || 'S13';
-};
+
 
 const getVerifWarning = (chosenModule, triageAnswers) => {
   const s07 = triageAnswers.s07 || [];
@@ -305,9 +298,11 @@ export function useDiagnosticFlow() {
   const submitTriageToBackend = async (answers) => {
     const sessionId = localStorage.getItem('bc_session_id');
     if (!sessionId) {
-       const localRoute = getRouteFromAnswers(answers);
-       applyRoute(localRoute);
-       return;
+      setErrorModal({
+        title: 'Session introuvable',
+        message: 'Impossible de continuer sans session active avec le serveur.'
+      });
+      return;
     }
 
     try {
@@ -374,9 +369,11 @@ export function useDiagnosticFlow() {
 
       navigate('/diagnostic/route');
     } catch (err) {
-      console.error('Error submitting triage to backend, fallback to local:', err);
-      const localRoute = getRouteFromAnswers(answers);
-      applyRoute(localRoute);
+      console.error('Error submitting triage to backend:', err);
+      setErrorModal({
+        title: 'Erreur de transmission',
+        message: 'Impossible de transmettre vos réponses au serveur. Veuillez vérifier votre connexion et réessayer.'
+      });
     }
   };
 
@@ -528,8 +525,7 @@ export function useDiagnosticFlow() {
           if (typeof backendScore === 'number') {
             setScore(backendScore);
           } else {
-            const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
-            setScore(localScore);
+            setScore(0);
           }
           
           const restObj = res?.data?.restitution || res?.restitution;
@@ -546,17 +542,19 @@ export function useDiagnosticFlow() {
           navigate('/diagnostic/resultats');
         })
         .catch(err => {
-          console.error('Error calculating score on backend, fallback to local scoring:', err);
-          const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
-          setScore(localScore);
+          console.error('Error calculating score on backend:', err);
+          setScore(0);
           setRestitution(null);
-          navigate('/diagnostic/resultats');
+          setErrorModal({
+            title: 'Erreur de calcul',
+            message: 'Impossible de calculer le score depuis le serveur. Veuillez réessayer.'
+          });
         });
     } else {
-      const localScore = currentModule ? calculateGlobalScore(currentModule.id, moduleAnswers) : 50;
-      setScore(localScore);
-      setRestitution(null);
-      navigate('/diagnostic/resultats');
+      setErrorModal({
+        title: 'Diagnostic introuvable',
+        message: 'Impossible de terminer le diagnostic sans session active.'
+      });
     }
   };
 
@@ -597,7 +595,7 @@ export function useDiagnosticFlow() {
 
     UtilisateurService.registerUser(userData).then(user => {
       if (currentModule) {
-        DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, user);
+        DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, user, score);
       }
 
       if (action === 'suivi' && currentRunId) {
@@ -684,7 +682,7 @@ export function useDiagnosticFlow() {
 
   const onContactSkip = () => {
     if (currentModule) {
-      DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null);
+      DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null, score);
     }
     clearState();
     setTriageAnswers({});

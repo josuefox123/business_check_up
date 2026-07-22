@@ -3,7 +3,6 @@ import { ShieldCheck, CheckCircle, AlertTriangle, Target, Calendar, Download } f
 import { Button, ScoreGauge } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { calculateAxeScores } from '../../../api/scoring.js';
 import { generateDiagnosticPDF } from '../../../utils/generateDiagnosticPDF.js';
 import { getRestitutionData } from '../../../utils/restitutionHelper.js';
 

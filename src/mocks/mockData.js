@@ -3,9 +3,6 @@
  * Centralized data models for frontend execution and future API alignment.
  */
 
-import { MODULES_CATALOG } from '../api/catalog.js';
-import { MODULE_QUESTIONS, TRIAGE_QUESTIONS } from '../api/questions.js';
-
 // Initial diagnostics run history
 export const INITIAL_DIAGNOSTICS = [];
 
