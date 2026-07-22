@@ -48,7 +48,7 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
       <div className="question-wrap animate-fade-up">
         {progress && (
           <div style={{ marginBottom: 'var(--space-6)' }}>
-            <ProgressBar current={progress.current} total={progress.total} label={`Étape ${progress.current}/${progress.total}`} />
+            <ProgressBar current={progress.current} total={progress.total} />
           </div>
         )}
 
