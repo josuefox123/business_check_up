@@ -15,6 +15,10 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Voyez plus clair <span className="lp-title-accent">dans votre entreprise.</span>
             </h1>
             
+            <div className="lp-powered-by">
+              Powered by <span className="lp-powered-brand">FUND.lab</span>
+            </div>
+            
             <p className="lp-hero-desc">
               Identifiez ce qui fonctionne, ce qui fragilise votre progression et les actions prioritaires à engager d’abord.
             </p>
