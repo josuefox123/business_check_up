@@ -369,28 +369,36 @@ export function useDiagnosticFlow() {
 
       navigate('/diagnostic/route');
     } catch (err) {
-      console.error('Error submitting triage to backend:', err);
+      console.error('Error submitting triage to backend:', err, err.data);
+      let details = '';
+      if (err.data && err.data.errors) {
+        details = ' Détails: ' + JSON.stringify(err.data.errors);
+      }
       setErrorModal({
-        title: 'Erreur de transmission',
-        message: 'Impossible de transmettre vos réponses au serveur. Veuillez vérifier votre connexion et réessayer.'
+        title: 'Erreur de validation du serveur',
+        message: `Le serveur a rejeté la soumission : ${err.message}.${details}`
       });
     }
   };
 
   const onS08 = (val) => {
     setTA('s08', val);
-    const answersWithS08 = { ...triageAnswers, s08: val };
     if (val === 'no' || val === 'idk') {
       setTriageStep(10);
     } else {
-      submitTriageToBackend(answersWithS08);
+      setTriageStep(11);
     }
   };
 
   const onS09 = (val) => {
     setTA('s09', val);
-    const answersWithS09 = { ...triageAnswers, s09: val };
-    submitTriageToBackend(answersWithS09);
+    setTriageStep(11);
+  };
+
+  const onS10 = (val) => {
+    setTA('s10', val);
+    const answersWithS10 = { ...triageAnswers, s10: val };
+    submitTriageToBackend(answersWithS10);
   };
 
   const onRouteStart = () => navigate('/diagnostic/intro');
@@ -752,6 +760,7 @@ export function useDiagnosticFlow() {
     onS07,
     onS08,
     onS09,
+    onS10,
     onRouteStart,
     onRouteCatalog,
     onRouteBack,

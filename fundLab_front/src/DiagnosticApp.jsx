@@ -153,8 +153,28 @@ function DiagnosticApp() {
 
   const flow = useDiagnosticFlow();
 
-  const getTriageQuestion = (role) => flow.triageQuestions?.find(q => q.axe === role) || null;
-  const totalTriageSteps = 6;
+  const getTriageQuestion = (role) => {
+    if (role === 'main_offer_type') {
+      const q = flow.triageQuestions?.find(item => item.axe === 'main_offer_type' || item.axe === 'offer_type' || item.axe === 'main_offer');
+      if (q) return q;
+      return {
+        question: "Quel est le produit ou le service phare de votre entreprise ?",
+        hint: "Cette question permet de qualifier la nature principale de votre activité commerciale.",
+        choices: [
+          { id: 'main_product', label: "Un produit physique" },
+          { id: 'digital_product', label: "Un produit numérique ou logiciel" },
+          { id: 'professional_service', label: "Une prestation de service" },
+          { id: 'consulting_service', label: "Du conseil ou de l’accompagnement" },
+          { id: 'subscription_service', label: "Un abonnement ou service récurrent" },
+          { id: 'multiple_offers', label: "Plusieurs produits ou services sans offre dominante" },
+          { id: 'not_defined', label: "L’activité n’est pas encore définie" },
+          { id: 'other', label: "Autre" }
+        ]
+      };
+    }
+    return flow.triageQuestions?.find(q => q.axe === role) || null;
+  };
+  const totalTriageSteps = 7;
 
   const showNavbar = location.pathname !== '/diagnostic/fin';
 
@@ -294,6 +314,20 @@ function DiagnosticApp() {
                 onContinue={flow.onS09}
                 onBack={() => flow.setTriageStep(9)}
                 initialAnswer={flow.triageAnswers.s09 ?? null}
+              />
+            )}
+            {flow.triageStep === 11 && (
+              <TriageScreen
+                step="S10"
+                question={getTriageQuestion('main_offer_type')}
+                progress={{ current: 6, total: totalTriageSteps }}
+                choices={getTriageQuestion('main_offer_type')?.choices || []}
+                onContinue={flow.onS10}
+                onBack={() => {
+                  const hasOpp = flow.triageAnswers.s08 && flow.triageAnswers.s08 !== 'none' && flow.triageAnswers.s08 !== 'unknown';
+                  flow.setTriageStep(hasOpp ? 9 : 10);
+                }}
+                initialAnswer={flow.triageAnswers.s10 ?? null}
               />
             )}
           </>

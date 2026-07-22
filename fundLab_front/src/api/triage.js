@@ -220,7 +220,9 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     opportunity_type,
     dominant_topic,
     time_available: 'start_short',
-    years_in_activity
+    years_in_activity,
+    year_created: s05.creation_year || null,
+    main_offer_type: answers.s10 || null
   };
 
   return apiFetch(`/sessions/${sessionId}/triage`, {

@@ -31,7 +31,7 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
   };
 
   const filteredCommunes = DEPARTMENT_COMMUNES[data.region] || [];
-  const canContinue = data.region && data.secteur && data.business_name.trim();
+  const canContinue = data.region && data.secteur && data.business_name.trim() && data.creation_year;
 
   return (
     <ScreenWrapper>
@@ -94,7 +94,7 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Année de création <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
+            <label className="form-label">Année de création <span style={{color:'var(--color-danger)'}}>*</span></label>
             <input 
               type="number"
               className="form-input" 
