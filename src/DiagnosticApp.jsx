@@ -239,14 +239,14 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {flow.triageStep === 3 && <S03Screen question={getTriageQuestion('profile')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s03 ?? null} />}
-            {flow.triageStep === 4 && <S04Screen question={getTriageQuestion('stage')} currentStep={2} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
+            {flow.triageStep === 3 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s03 ?? null} />}
+            {flow.triageStep === 4 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
             {flow.triageStep === 5 && <S05Screen onContinue={flow.onS05} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s05 ?? null} />}
             {flow.triageStep === 6 && (
               <TriageScreen
                 step="S06"
                 question={getTriageQuestion('intention')}
-                progress={{ current: 3, total: totalTriageSteps }}
+                progress={{ current: 2, total: totalTriageSteps }}
                 choices={flow.references?.primary_need || []}
                 onContinue={flow.onS06}
                 onBack={() => flow.setTriageStep(5)}
@@ -257,7 +257,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S07"
                 question={getTriageQuestion('risk')}
-                progress={{ current: 4, total: totalTriageSteps }}
+                progress={{ current: 3, total: totalTriageSteps }}
                 multi
                 choices={flow.references?.risk_flag || []}
                 onContinue={flow.onS07}
@@ -269,7 +269,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S08"
                 question={getTriageQuestion('opportunity')}
-                progress={{ current: 5, total: totalTriageSteps }}
+                progress={{ current: 4, total: totalTriageSteps }}
                 choices={flow.references?.opporttunity_type || flow.references?.opportunity_type || []}
                 onContinue={flow.onS08}
                 onBack={() => flow.setTriageStep(7)}
@@ -280,7 +280,7 @@ function DiagnosticApp() {
               <TriageScreen
                 step="S09"
                 question={getTriageQuestion('topic')}
-                progress={{ current: 6, total: totalTriageSteps }}
+                progress={{ current: 5, total: totalTriageSteps }}
                 choices={flow.references?.dominant_topic || []}
                 onContinue={flow.onS09}
                 onBack={() => flow.setTriageStep(8)}

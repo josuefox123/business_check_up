@@ -59,7 +59,7 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
       <div className="animate-fade-up" style={{ maxWidth: '920px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
           <div style={{ marginBottom: 'var(--space-6)', maxWidth: '420px', margin: '0 auto var(--space-6) auto' }}>
-            <ProgressBar current={currentStep || 1} total={totalSteps || 6} />
+            <ProgressBar current={currentStep !== undefined ? currentStep : 0} total={totalSteps || 6} />
           </div>
           <h1 className="screen-title" style={{ textAlign: 'center' }}>
             {titleText}

@@ -194,7 +194,7 @@ export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBac
 
       <div className="question-wrap animate-fade-up">
         <div style={{ marginBottom: 'var(--space-6)' }}>
-          <ProgressBar current={currentStep || 2} total={totalSteps || 6} />
+          <ProgressBar current={currentStep !== undefined ? currentStep : 1} total={totalSteps || 6} />
         </div>
         <h1 className="question-heading">{titleText}</h1>
         <p className="question-hint" style={{ marginBottom: 'var(--space-6)', fontSize: '0.82rem', opacity: 0.9 }}>
