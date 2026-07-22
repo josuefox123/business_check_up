@@ -243,9 +243,18 @@ function DiagnosticApp() {
             {flow.triageStep === 3 && <S05Screen onContinue={flow.onS05} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s05 ?? null} />}
             {flow.triageStep === 4 && (
               <ChoixEntreeScreen
-                onAssisted={() => flow.setTriageStep(5)}
-                onCatalog={flow.onGoToCatalog}
-                onLearnMore={flow.onLearnMore}
+                question={getTriageQuestion('entry_choice')}
+                onSelect={(choiceId) => {
+                  if (choiceId === 'assisted') {
+                    flow.setTriageStep(5);
+                  } else if (choiceId === 'direct' || choiceId === 'direct_catalog') {
+                    flow.onGoToCatalog();
+                  } else if (choiceId === 'learn' || choiceId === 'learn_more') {
+                    flow.onLearnMore();
+                  } else if (choiceId === 'institutional') {
+                    navigate('/a-propos');
+                  }
+                }}
                 onBack={() => flow.setTriageStep(3)}
               />
             )}
