@@ -265,18 +265,18 @@ export function useDiagnosticFlow() {
     if (val === 'curious') {
       navigate('/a-propos');
     } else {
-      setTriageStep(4);
+      setTriageStep(5);
     }
   };
 
   const onS04 = (val) => {
     setTA('s04', val);
-    setTriageStep(5);
+    setTriageStep(6);
   };
 
   const onS05 = (val) => {
     setTA('s05', val);
-    setTriageStep(6);
+    setTriageStep(4);
   };
 
   const onS06 = (val) => {

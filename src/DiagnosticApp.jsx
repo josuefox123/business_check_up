@@ -239,9 +239,9 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {flow.triageStep === 3 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s03 ?? null} />}
-            {flow.triageStep === 4 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
-            {flow.triageStep === 5 && <S05Screen onContinue={flow.onS05} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s05 ?? null} />}
+            {flow.triageStep === 3 && <S05Screen onContinue={flow.onS05} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s05 ?? null} />}
+            {flow.triageStep === 4 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
+            {flow.triageStep === 5 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
             {flow.triageStep === 6 && (
               <TriageScreen
                 step="S06"
