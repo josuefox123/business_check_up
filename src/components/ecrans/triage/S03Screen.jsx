@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { Button } from '../../ui/index.jsx';
+import { Button, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { useReferences } from '../../../contexts/ReferencesContext.jsx';
 
@@ -58,9 +58,9 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="animate-fade-up" style={{ maxWidth: '920px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-          <span className="section-tag" style={{ marginBottom: '14px', display: 'inline-flex' }}>
-            Question {currentStep || 1} sur {totalSteps || 6}
-          </span>
+          <div style={{ marginBottom: 'var(--space-6)', maxWidth: '420px', margin: '0 auto var(--space-6) auto' }}>
+            <ProgressBar current={currentStep || 1} total={totalSteps || 6} />
+          </div>
           <h1 className="screen-title" style={{ textAlign: 'center' }}>
             {titleText}
           </h1>

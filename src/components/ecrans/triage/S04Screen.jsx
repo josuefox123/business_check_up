@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { Button, ChoiceCard } from '../../ui/index.jsx';
+import { Button, ChoiceCard, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { useReferences } from '../../../contexts/ReferencesContext.jsx';
 
@@ -193,9 +193,9 @@ export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBac
       {onBack && <TopBackLink onClick={onBack} />}
 
       <div className="question-wrap animate-fade-up">
-        <span className="section-tag" style={{ marginBottom: '14px', display: 'inline-flex' }}>
-          Question {currentStep || 2} sur {totalSteps || 6}
-        </span>
+        <div style={{ marginBottom: 'var(--space-6)' }}>
+          <ProgressBar current={currentStep || 2} total={totalSteps || 6} />
+        </div>
         <h1 className="question-heading">{titleText}</h1>
         <p className="question-hint" style={{ marginBottom: 'var(--space-6)', fontSize: '0.82rem', opacity: 0.9 }}>
           {subtitleText}
