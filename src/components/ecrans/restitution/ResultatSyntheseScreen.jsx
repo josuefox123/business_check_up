@@ -27,7 +27,7 @@ export const getConfidence = (a) => {
   return 'Déclaratif';
 };
 
-export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution }) => {
+export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution, isOffline }) => {
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
@@ -44,13 +44,19 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
     score,
     answers,
     moduleId,
-    restitution
+    restitution,
+    isOffline
   });
 
   return (
     <ScreenWrapper wide>
       <div className="animate-fade-up">
         {onBack && <TopBackLink onClick={onBack} />}
+        {isOffline && (
+          <div style={{ background: '#FFFBEB', border: '1px solid #FEF3C7', borderRadius: '12px', padding: '12px 16px', marginBottom: '24px', color: '#B45309', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', fontWeight: 700 }}>
+            <span>⚠️ Mode diagnostic local/hors-ligne activé (serveur non joignable). Les recommandations ci-dessous proviennent de la base locale de votre appareil.</span>
+          </div>
+        )}
         {/* Dashboard Header */}
         <div className="results-header">
           <div className="results-header-info">

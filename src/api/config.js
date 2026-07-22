@@ -47,12 +47,24 @@ export async function apiFetch(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers
+    });
+  } catch (err) {
+    window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
+    const error = new Error(`Network Error: Le serveur API est injoignable.`);
+    error.status = 503;
+    error.isNetworkError = true;
+    throw error;
+  }
 
   if (!response.ok) {
+    if (response.status >= 500) {
+      window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
+    }
     const errorData = await response.json().catch(() => ({}));
     const error = new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
     error.status = response.status;

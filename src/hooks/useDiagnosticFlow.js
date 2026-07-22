@@ -67,6 +67,23 @@ export function useDiagnosticFlow() {
   const [currentRunId, setCurrentRunId] = useState(null);
   const [restitution, setRestitution] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('api-offline', handleOffline);
+
+    // Test connectivity immediately
+    apiFetch('/reference-list')
+      .then(() => setIsOffline(false))
+      .catch(err => {
+        if (err.isNetworkError || err.status >= 500) {
+          setIsOffline(true);
+        }
+      });
+
+    return () => window.removeEventListener('api-offline', handleOffline);
+  }, []);
 
   const restoreState = (state) => {
     if (state.triageStep !== undefined) setTriageStep(state.triageStep);
@@ -696,6 +713,7 @@ export function useDiagnosticFlow() {
     currentRunId, setCurrentRunId,
     restitution, setRestitution,
     errorModal, setErrorModal,
+    isOffline,
     showResumeModal, setShowResumeModal,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,
