@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Compass, Target, HelpCircle, Building } from 'lucide-react';
 import { ChoiceCard, Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
@@ -9,27 +8,9 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
 
   if (!question) return null;
 
-  const getIconForId = (id) => {
-    switch (id) {
-      case 'assisted':
-        return <Compass size={20} style={{ color: '#17212D' }} />;
-      case 'direct':
-      case 'direct_catalog':
-        return <Target size={20} style={{ color: '#34BED5' }} />;
-      case 'learn':
-      case 'learn_more':
-        return <HelpCircle size={20} style={{ color: '#64748B' }} />;
-      case 'institutional':
-        return <Building size={20} style={{ color: '#8B5CF6' }} />;
-      default:
-        return <HelpCircle size={20} style={{ color: '#64748B' }} />;
-    }
-  };
-
   const choicesToRender = (question.choices || []).map(c => ({
     id: c.id,
-    label: c.label,
-    icon: getIconForId(c.id)
+    label: c.label
   }));
 
   return (
@@ -49,7 +30,6 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
               <ChoiceCard
                 key={choice.id}
                 label={choice.label}
-                icon={choice.icon}
                 selected={isSelected}
                 onClick={() => setSelected(choice.id)}
               />

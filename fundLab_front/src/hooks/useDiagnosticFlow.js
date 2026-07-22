@@ -277,7 +277,7 @@ export function useDiagnosticFlow() {
   const onS00 = (val) => {
     setTA('s00', val);
     if (val === 'assisted') {
-      setTriageStep(5);
+      setTriageStep(4);
     } else if (val === 'direct' || val === 'direct_catalog') {
       onGoToCatalog();
     } else if (val === 'learn' || val === 'learn_more') {
@@ -289,7 +289,7 @@ export function useDiagnosticFlow() {
 
   const onS05 = (val) => {
     setTA('s05', val);
-    setTriageStep(4);
+    setTriageStep(5);
   };
 
   const onS06 = (val) => {

@@ -240,15 +240,15 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {flow.triageStep === 3 && <S05Screen onContinue={flow.onS05} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s05 ?? null} />}
-            {flow.triageStep === 4 && (
+            {flow.triageStep === 3 && (
               <ChoixEntreeScreen
                 question={getTriageQuestion('entry_choice')}
                 onSelect={flow.onS00}
-                onBack={() => flow.setTriageStep(3)}
+                onBack={() => navigate('/triage/consent')}
                 initialAnswer={flow.triageAnswers.s00 ?? null}
               />
             )}
+            {flow.triageStep === 4 && <S05Screen onContinue={flow.onS05} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s05 ?? null} />}
             {flow.triageStep === 5 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
             {flow.triageStep === 6 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(5)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
             {flow.triageStep === 7 && (

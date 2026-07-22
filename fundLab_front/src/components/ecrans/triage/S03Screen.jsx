@@ -87,20 +87,7 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
                   '--p-border': profile.colorBorder,
                 }}
               >
-                <div className="profile-card-icon" style={{
-                  background: isSelected ? profile.color : profile.colorLight,
-                }}>
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      color: isSelected ? '#fff' : profile.color,
-                      fontSize: '24px',
-                      userSelect: 'none'
-                    }}
-                  >
-                    {googleIcon}
-                  </span>
-                </div>
+
 
                 <div className="profile-card-body">
                   <div className="profile-card-label">{profile.label}</div>
