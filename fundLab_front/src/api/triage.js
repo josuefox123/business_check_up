@@ -193,6 +193,16 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     normalizedCommune = match || null;
   }
 
+  let years_in_activity = null;
+  if (s05.creation_year) {
+    const parsedYear = parseInt(s05.creation_year, 10);
+    if (!isNaN(parsedYear)) {
+      years_in_activity = 2026 - parsedYear;
+      if (years_in_activity < 0) years_in_activity = 0;
+      if (years_in_activity > 99) years_in_activity = 99;
+    }
+  }
+
   const payload = {
     user_profile_type,
     full_name: answers.name || null,
@@ -209,7 +219,8 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     risk_flags,
     opportunity_type,
     dominant_topic,
-    time_available: 'start_short'
+    time_available: 'start_short',
+    years_in_activity
   };
 
   return apiFetch(`/sessions/${sessionId}/triage`, {
