@@ -14,6 +14,7 @@ import { QuestionService } from '../services/QuestionService.js';
 import { DiagnosticService } from '../services/DiagnosticService.js';
 import { UtilisateurService } from '../services/UtilisateurService.js';
 import { apiFetch, formatDurationSeconds } from '../api/config.js';
+import { questionsApi } from '../api/questionsApi.js';
 
 
 
@@ -58,6 +59,7 @@ export function useDiagnosticFlow() {
   const [isOffline, setIsOffline] = useState(false);
 
   const [references, setReferences] = useState(null);
+  const [triageQuestions, setTriageQuestions] = useState([]);
 
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
@@ -76,6 +78,15 @@ export function useDiagnosticFlow() {
           setIsOffline(true);
         }
       });
+
+    // Fetch triage questions from backend module TRI-00
+    questionsApi.getByModule('triage')
+      .then(qList => {
+        if (qList) {
+          setTriageQuestions(qList);
+        }
+      })
+      .catch(err => console.error('Error fetching triage questions from backend:', err));
 
     return () => window.removeEventListener('api-offline', handleOffline);
   }, []);
@@ -709,6 +720,7 @@ export function useDiagnosticFlow() {
     errorModal, setErrorModal,
     isOffline,
     references,
+    triageQuestions,
     showResumeModal, setShowResumeModal,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,

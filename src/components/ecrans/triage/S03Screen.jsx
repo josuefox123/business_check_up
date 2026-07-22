@@ -19,7 +19,7 @@ const CheckIcon = () => (
   </svg>
 );
 
-export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
+export const S03Screen = ({ question, onContinue, onSelect, onBack, initialAnswer }) => {
   const { references } = useReferences();
   const rawProfiles = references?.user_profile_type || [];
 
@@ -32,10 +32,16 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
     'institutional_curious': 'Découvrir la plateforme et ses modules'
   };
 
-  const profilesList = rawProfiles.map(p => ({
-    id: p.value,
+  const resolvedChoices = question?.choices || rawProfiles.map(p => ({
+    id: p.value || p.id,
     label: p.label,
-    sublabel: sublabelMapping[p.value] || '',
+    desc: p.desc || p.description
+  }));
+
+  const profilesList = resolvedChoices.map(p => ({
+    id: p.id,
+    label: p.label,
+    sublabel: p.desc || sublabelMapping[p.id] || '',
     color: '#17212D',
     colorLight: 'rgba(23, 33, 45, 0.04)',
     colorBorder: 'rgba(23, 33, 45, 0.15)'
@@ -43,6 +49,9 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
 
   const [selected, setSelected] = useState(initialAnswer || null);
   const handleCb = onContinue || onSelect;
+
+  const titleText = question?.question || 'Quel est votre profil ?';
+  const subtitleText = question?.hint || 'Sélectionnez la situation qui vous décrit le mieux. Nous adapterons le questionnaire à votre contexte.';
 
   return (
     <ScreenWrapper wide>
@@ -53,10 +62,10 @@ export const S03Screen = ({ onContinue, onSelect, onBack, initialAnswer }) => {
             Étape 1 sur 5
           </span>
           <h1 className="screen-title" style={{ textAlign: 'center' }}>
-            Quel est votre profil ?
+            {titleText}
           </h1>
-          <p className="screen-subtitle" style={{ textAlign: 'center', margin: '0 auto', maxWidth: '500px' }}>
-            Sélectionnez la situation qui vous décrit le mieux. Nous adapterons le questionnaire à votre contexte.
+          <p className="screen-subtitle" style={{ textAlign: 'center', margin: '0 auto', maxWidth: '500px', fontSize: '0.82rem', opacity: 0.9 }}>
+            {subtitleText}
           </p>
         </div>
 

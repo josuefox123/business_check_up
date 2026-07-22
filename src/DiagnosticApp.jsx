@@ -152,6 +152,8 @@ function DiagnosticApp() {
 
   const flow = useDiagnosticFlow();
 
+  const getTriageQuestion = (role) => flow.triageQuestions?.find(q => q.axe === role) || null;
+
   const showNavbar = location.pathname !== '/diagnostic/fin';
 
   const isDiagnosticPath = 
@@ -236,13 +238,13 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {flow.triageStep === 3 && <S03Screen onContinue={flow.onS03} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s03 ?? null} />}
-            {flow.triageStep === 4 && <S04Screen onContinue={flow.onS04} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
+            {flow.triageStep === 3 && <S03Screen question={getTriageQuestion('profile')} onContinue={flow.onS03} onBack={() => navigate('/triage/consent')} initialAnswer={flow.triageAnswers.s03 ?? null} />}
+            {flow.triageStep === 4 && <S04Screen question={getTriageQuestion('stage')} onContinue={flow.onS04} onBack={() => flow.setTriageStep(3)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
             {flow.triageStep === 5 && <S05Screen onContinue={flow.onS05} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s05 ?? null} />}
             {flow.triageStep === 6 && (
               <TriageScreen
                 step="S06"
-                question="Aujourd'hui, votre principale préoccupation est :"
+                question={getTriageQuestion('intention')}
                 choices={flow.references?.primary_need || []}
                 onContinue={flow.onS06}
                 onBack={() => flow.setTriageStep(5)}
@@ -252,8 +254,7 @@ function DiagnosticApp() {
             {flow.triageStep === 7 && (
               <TriageScreen
                 step="S07"
-                question="Votre entreprise connaît-elle actuellement l'une de ces situations ?"
-                hint="Sélectionnez toutes les options qui s'appliquent"
+                question={getTriageQuestion('risk')}
                 multi
                 choices={flow.references?.risk_flag || []}
                 onContinue={flow.onS07}
@@ -264,7 +265,7 @@ function DiagnosticApp() {
             {flow.triageStep === 8 && (
               <TriageScreen
                 step="S08"
-                question="Cherchez-vous à saisir une opportunité précise ?"
+                question={getTriageQuestion('opportunity')}
                 choices={flow.references?.opporttunity_type || flow.references?.opportunity_type || []}
                 onContinue={flow.onS08}
                 onBack={() => flow.setTriageStep(7)}
@@ -274,7 +275,7 @@ function DiagnosticApp() {
             {flow.triageStep === 9 && (
               <TriageScreen
                 step="S09"
-                question="Quel sujet souhaitez-vous analyser en priorité ?"
+                question={getTriageQuestion('topic')}
                 choices={flow.references?.dominant_topic || []}
                 onContinue={flow.onS09}
                 onBack={() => flow.setTriageStep(8)}

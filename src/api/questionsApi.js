@@ -3,12 +3,8 @@ import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 export const questionsApi = {
   getByModule(moduleId) {
-    if (moduleId === 'triage') {
-      const qData = LocalStoreRepository.getQuestionnaires();
-      return Promise.resolve(Object.values(qData.triage));
-    }
-    
-    return apiFetch(`/modules/${moduleId}/questions`)
+    const targetModuleId = moduleId === 'triage' ? 'TRI-00' : moduleId;
+    return apiFetch(`/modules/${targetModuleId}/questions`)
       .then(res => {
         const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
         

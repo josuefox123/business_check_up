@@ -4,7 +4,12 @@ import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.js
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
 export const TriageScreen = ({ step, question, hint, choices = [], multi = false, onContinue, onBack, progress, initialAnswer }) => {
-  const normalizedChoices = choices.map(c => ({
+  const isQuestionObject = question && typeof question === 'object';
+  const titleText = isQuestionObject ? question.question : question;
+  const hintText = isQuestionObject ? question.hint : hint;
+  const choicesToUse = isQuestionObject ? (question.choices || []) : choices;
+
+  const normalizedChoices = choicesToUse.map(c => ({
     id: c.value || c.id,
     label: c.label,
     severity: c.severity,
@@ -47,8 +52,8 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
           </div>
         )}
 
-        <h1 className="question-heading">{question}</h1>
-        {hint && <p className="question-hint">{hint}</p>}
+        <h1 className="question-heading">{titleText}</h1>
+        {hintText && <p className="question-hint" style={{ fontSize: '0.82rem', opacity: 0.9 }}>{hintText}</p>}
 
         <div className="choices-list">
           {normalizedChoices.map(c => (

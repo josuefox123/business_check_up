@@ -173,27 +173,38 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
   );
 };
 
-export const S04Screen = ({ onContinue, onBack, initialAnswer }) => {
+export const S04Screen = ({ question, onContinue, onBack, initialAnswer }) => {
   const { references } = useReferences();
-  const choices = references?.activity_stage || [];
+  const rawStages = references?.activity_stage || [];
+
+  const resolvedChoices = question?.choices || rawStages.map(p => ({
+    id: p.value || p.id,
+    label: p.label,
+    desc: p.desc || p.description
+  }));
 
   const [selected, setSelected] = useState(initialAnswer || null);
+
+  const titleText = question?.question || 'Votre activité vend-elle déjà des produits ou services ?';
+  const subtitleText = question?.hint || 'Cette question affine votre profil et nous aide à vous orienter vers le diagnostic le plus adapté.';
 
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
 
       <div className="question-wrap animate-fade-up">
-        <h1 className="question-heading">Votre activité vend-elle déjà des produits ou services ?</h1>
-        <p className="question-hint" style={{marginBottom:'var(--space-6)'}}>Cette question affine votre profil et nous aide à vous orienter vers le diagnostic le plus adapté.</p>
+        <h1 className="question-heading">{titleText}</h1>
+        <p className="question-hint" style={{ marginBottom: 'var(--space-6)', fontSize: '0.82rem', opacity: 0.9 }}>
+          {subtitleText}
+        </p>
 
         <div className="choices-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {choices.map(c => (
+          {resolvedChoices.map(c => (
             <ChoiceCard
-              key={c.value}
+              key={c.id}
               label={c.label}
-              selected={selected === c.value}
-              onClick={() => setSelected(c.value)}
+              selected={selected === c.id}
+              onClick={() => setSelected(c.id)}
             />
           ))}
         </div>
