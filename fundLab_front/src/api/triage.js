@@ -20,36 +20,62 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     'pme': 'structured_sme',
     'diffic': 'distressed_business',
     'opport': 'opportunity_seeker',
-    'curious': 'institutional_curious'
+    'curious': 'institutional_curious',
+    'project_holder': 'project_holder',
+    'active_entrepreneur': 'active_entrepreneur',
+    'structured_sme': 'structured_sme',
+    'distressed_business': 'distressed_business',
+    'opportunity_seeker': 'opportunity_seeker',
+    'institutional_curious': 'institutional_curious'
   };
-  const user_profile_type = profileMapping[s03] || 'active_entrepreneur';
+  const user_profile_type = profileMapping[s03] || s03 || 'active_entrepreneur';
 
   // ActivityStage mapping
   const stageMapping = {
     'no': 'not_launched',
+    'not_launched': 'not_launched',
     'occ_non': 'not_launched',
     'occ': 'occasional_sales',
+    'occasional': 'occasional_sales',
     'occ_oui': 'occasional_sales',
+    'occasional_sales': 'occasional_sales',
     'reg': 'regular_sales',
+    'regular': 'regular_sales',
+    'regular_sales': 'regular_sales',
     'team': 'structured_activity',
-    'drop': 'declining_sales'
+    'structured': 'structured_activity',
+    'structured_activity': 'structured_activity',
+    'drop': 'declining_sales',
+    'declining': 'declining_sales',
+    'declining_sales': 'declining_sales'
   };
-  const activity_stage = stageMapping[s04] || 'regular_sales';
+  const activity_stage = stageMapping[s04] || s04 || 'regular_sales';
 
   // PrimaryNeed mapping
   const needMapping = {
     'prj': 'clarify_project',
+    'clarify_project': 'clarify_project',
     'flh': 'global_understanding',
+    'global_understanding': 'global_understanding',
     'dif': 'urgent_difficulty',
+    'urgent_difficulty': 'urgent_difficulty',
     'com': 'increase_sales',
+    'increase_sales': 'increase_sales',
     'pro': 'clarify_offer',
+    'clarify_offer': 'clarify_offer',
     'fin': 'understand_finance',
+    'understand_finance': 'understand_finance',
     'gov': 'organize_business',
+    'organize_business': 'organize_business',
     'opp': 'assess_opportunity',
+    'assess_opportunity': 'assess_opportunity',
     'fun': 'prepare_financing',
-    'idk': 'unknown_need'
+    'prepare_financing': 'prepare_financing',
+    'idk': 'unknown_need',
+    'unknown': 'unknown_need',
+    'unknown_need': 'unknown_need'
   };
-  const primary_need = needMapping[s06] || 'global_understanding';
+  const primary_need = needMapping[s06] || s06 || 'global_understanding';
 
   // RiskFlags mapping
   const riskMapping = {
@@ -89,22 +115,32 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     'idk': 'unknown',
     'unknown': 'unknown'
   };
-  const opportunity_type = opportunityMapping[s08] || null;
+  const opportunity_type = opportunityMapping[s08] || s08 || null;
 
   // DominantTopic mapping
   const topicMapping = {
     'pro': 'product',
+    'product': 'product',
     'com': 'commercial',
+    'commercial': 'commercial',
     'fin': 'finance',
+    'finance': 'finance',
     'gov': 'governance',
+    'governance': 'governance',
     'rh': 'hr',
+    'hr': 'hr',
     'ops': 'operations',
+    'operations': 'operations',
     'for': 'formalization',
+    'formalization': 'formalization',
     'dig': 'digital',
+    'digital': 'digital',
     '360': 'full_360',
-    'idk': 'unknown'
+    'full_360': 'full_360',
+    'idk': 'unknown',
+    'unknown': 'unknown'
   };
-  const dominant_topic = topicMapping[s09] || null;
+  const dominant_topic = topicMapping[s09] || s09 || null;
 
   // Region mapping
   const regionMapping = {
@@ -121,25 +157,33 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     'Plateau': 'Plateau',
     'Zou': 'Zou'
   };
-  const region = regionMapping[s05.region] || 'Atlantique';
+  const region = regionMapping[s05.region] || s05.region || 'Atlantique';
 
   // Sector mapping
   const sectorMapping = {
     'Agriculture': 'Agriculture / élevage',
     'Agro-transformation': 'Agro-transformation',
+    'Commerce / Distribution': 'Commerce / distribution',
     'Commerce': 'Commerce / distribution',
     'Services': 'Services',
+    'Industrie / Fabrication': 'Industrie / fabrication',
     'Industrie': 'Industrie / fabrication',
+    'Numérique / technologie': 'Numérique / technologie',
     'Numérique': 'Numérique / technologie',
     'Artisanat': 'Artisanat',
+    'Transport / logistique': 'Transport / logistique',
     'Transport': 'Transport / logistique',
+    'Tourisme / hôtellerie /restauration': 'Tourisme / hôtellerie / restauration',
+    'Tourisme / hôtellerie / restauration': 'Tourisme / hôtellerie / restauration',
     'Tourisme': 'Tourisme / hôtellerie / restauration',
     'Santé': 'Santé',
+    'Éducation / formation': 'Éducation / formation',
     'Éducation': 'Éducation / formation',
+    'BTP / immobilier': 'BTP / immobilier',
     'BTP': 'BTP / immobilier',
     'Autre': 'Autre'
   };
-  const sector = sectorMapping[s05.secteur] || 'Autre';
+  const sector = sectorMapping[s05.secteur] || s05.secteur || 'Autre';
 
   let normalizedCommune = null;
   if (s05.commune) {
