@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Zap, Home, Compass, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '../ui/index.jsx';
-import logoImg from '../../assets/funlab.png';
+import logoImg from '../../assets/logo_compact.png';
 import '../layout/layout.css';
 
 export const Navbar = ({ onGoHome }) => {

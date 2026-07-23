@@ -1,6 +1,6 @@
 import React from 'react';
 import './LandingPage.css';
-import logoImg from '../../../assets/funlab.png';
+import logoImg from '../../../assets/logo_compact.png';
 import whiteLogoImg from '../../../assets/white_logo.png';
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {

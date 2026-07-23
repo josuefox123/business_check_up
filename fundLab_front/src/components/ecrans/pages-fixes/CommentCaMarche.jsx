@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Shield, BarChart2, Download, Zap, Compass, Search, FileText, Users } from 'lucide-react';
-import logoImg from '../../../assets/funlab.png';
+import logoImg from '../../../assets/logo_compact.png';
 import './CommentCaMarche.css';
 
 const STEPS = [

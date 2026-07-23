@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import logoImg from '../../assets/funlab.png';
+import logoImg from '../../assets/logo_compact.png';
 import { apiFetch } from '../../api/config.js';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/bc';
