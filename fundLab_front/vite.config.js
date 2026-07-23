@@ -7,5 +7,11 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true
+  },
+  server: {
+    watch: {
+      // Ignore folders with special characters in filenames (spaces, commas) that crash the Node watcher on Windows
+      ignored: ['**/src/assets/icone diagnostique/**']
+    }
   }
 })

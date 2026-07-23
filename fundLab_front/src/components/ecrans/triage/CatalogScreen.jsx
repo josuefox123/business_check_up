@@ -3,17 +3,27 @@ import { AlertTriangle } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-// Google Material Symbols icon names per diagnostic
+import iconFinanceStrategy from '../../../assets/icon_finance_strategy.png';
+import iconFlashCustom from '../../../assets/icon_flash_custom.png';
+import iconProjectCustom from '../../../assets/icon_project_custom.png';
+import iconDifficultyCustom from '../../../assets/icon_difficulty_custom.png';
+import iconOpportunityCustom from '../../../assets/icon_opportunity_custom.png';
+import iconProductCustom from '../../../assets/icon_product_custom.png';
+import iconCommercialCustom from '../../../assets/icon_commercial_custom.png';
+import iconGovernanceCustom from '../../../assets/icon_governance_custom.png';
+import icon360Custom from '../../../assets/icon_360_custom.png';
+
+// Google Material Symbols icon names per diagnostic + optional PNG override
 const MODULE_STYLE_MAP = {
-  'PRJ-02': { iconSymbol: 'architecture' },
-  'FLH-01': { iconSymbol: 'bolt' },
-  'DIF-03': { iconSymbol: 'sos' },
-  'OPP-04': { iconSymbol: 'ads_click' },
-  'PRO-05': { iconSymbol: 'inventory_2' },
-  'COM-06': { iconSymbol: 'filter_alt' },
-  'FIN-07': { iconSymbol: 'payments' },
-  'GOV-08': { iconSymbol: 'account_tree' },
-  '360-09': { iconSymbol: 'explore' },
+  'PRJ-02': { iconImg: iconProjectCustom },
+  'FLH-01': { iconImg: iconFlashCustom },
+  'DIF-03': { iconImg: iconDifficultyCustom },
+  'OPP-04': { iconImg: iconOpportunityCustom },
+  'PRO-05': { iconImg: iconProductCustom },
+  'COM-06': { iconImg: iconCommercialCustom },
+  'FIN-07': { iconImg: iconFinanceStrategy },   // PNG personnalisé — blanc → #070E24 via CSS filter
+  'GOV-08': { iconImg: iconGovernanceCustom },
+  '360-09': { iconImg: icon360Custom },
 };
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
@@ -58,15 +68,23 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--slate-400)', fontSize: '0.9rem' }}>Chargement des modules…</div>
         ) : (
           <div className="catalog-modules-grid">
-            {modules.map((m, i) => (
+            {modules.map((m) => (
               <div key={m.id} className="catalog-module-item">
                 <button
                   className="catalog-module-card"
                   onClick={() => onSelect(m)}
                 >
-                  <span className="material-symbols-outlined catalog-icon">
-                    {m.iconSymbol || 'help_outline'}
-                  </span>
+                  {m.iconImg ? (
+                    <img
+                      src={m.iconImg}
+                      alt={m.name}
+                      className="catalog-icon catalog-icon-png"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined catalog-icon">
+                      {m.iconSymbol || 'help_outline'}
+                    </span>
+                  )}
                 </button>
                 <div className="catalog-module-label">
                   <div className="catalog-module-name">{m.name}</div>

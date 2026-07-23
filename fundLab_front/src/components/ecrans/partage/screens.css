@@ -552,13 +552,25 @@
 }
 
 .catalog-module-card .catalog-icon {
-  font-size: 72px;
+  font-size: 90px;
   line-height: 1;
   color: #17212D;
   pointer-events: none;
   user-select: none;
   font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
   transition: none; /* icon never changes color on hover */
+}
+
+/* PNG icon variant — white image recolored to #070E24 via CSS filter */
+.catalog-module-card .catalog-icon-png {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  pointer-events: none;
+  /* Convert white (#fff) → near-black navy (#070E24):
+     brightness(0) = white→black, then shift to deep navy */
+  filter: brightness(0) invert(5%) sepia(50%) saturate(500%) hue-rotate(210deg);
+  transition: none;
 }
 
 /* Hover: only card changes — icon untouched */
@@ -569,10 +581,27 @@
   transform: translateY(-6px) scale(1.04);
 }
 
-/* Icon floats only while hovered — scoped strictly to catalog card */
+/* Icon floats only while hovered on desktop, but runs permanently on mobile */
 .catalog-module-card:hover .catalog-icon {
-  animation: catalog-icon-float 1.4s ease-in-out infinite;
+  animation: catalog-icon-float 2.5s ease-in-out infinite;
 }
+
+@media (max-width: 768px) {
+  .catalog-module-card .catalog-icon {
+    animation: catalog-icon-float 2.5s ease-in-out infinite;
+  }
+}
+
+/* Desynchronize/stagger the float animation for each icon for a highly polished, professional effect */
+.catalog-module-item:nth-child(1) .catalog-icon { animation-delay: 0.1s; }
+.catalog-module-item:nth-child(2) .catalog-icon { animation-delay: 0.4s; }
+.catalog-module-item:nth-child(3) .catalog-icon { animation-delay: 0.7s; }
+.catalog-module-item:nth-child(4) .catalog-icon { animation-delay: 1.0s; }
+.catalog-module-item:nth-child(5) .catalog-icon { animation-delay: 1.3s; }
+.catalog-module-item:nth-child(6) .catalog-icon { animation-delay: 1.6s; }
+.catalog-module-item:nth-child(7) .catalog-icon { animation-delay: 1.9s; }
+.catalog-module-item:nth-child(8) .catalog-icon { animation-delay: 2.2s; }
+.catalog-module-item:nth-child(9) .catalog-icon { animation-delay: 2.5s; }
 
 .catalog-module-label {
   display: flex;
@@ -588,7 +617,7 @@
 
 .catalog-module-name {
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 500;
   color: var(--color-primary);
   line-height: 1.35;
   text-align: center;
