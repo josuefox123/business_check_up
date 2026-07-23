@@ -669,10 +669,32 @@
 
 .catalog-module-dur { display: none; }
 
-/* ============================================
-   S30 — INTRO MODULE
-   ============================================ */
 .intro-wrap { max-width: 520px; }
+
+/* Premium diagnostic icon display for the Intro screen */
+.intro-module-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 28px;
+  border: 2px solid var(--slate-200);
+  background: var(--bg-white);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin: 0 auto 24px auto;
+  position: relative;
+}
+
+.intro-module-card .intro-module-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: brightness(0) invert(5%) sepia(50%) saturate(500%) hue-rotate(210deg);
+  animation: catalog-icon-float 2.5s ease-in-out infinite;
+}
 
 .intro-meta-row {
   display: flex;

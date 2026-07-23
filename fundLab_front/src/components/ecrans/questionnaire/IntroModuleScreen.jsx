@@ -1,40 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Rocket, Zap, AlertTriangle, Target, Lightbulb, Users, TrendingUp, Building2, Award,
-  Clock, FileText, BarChart2, HelpCircle
+  Clock, FileText, BarChart2, Lightbulb
 } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-const MODULE_ICONS_MAP = {
-  Rocket,
-  Zap,
-  AlertTriangle,
-  Target,
-  Lightbulb,
-  Users,
-  TrendingUp,
-  Building2,
-  Award
-};
+import iconFinanceStrategy from '../../../assets/icone diagnostique/Icon_strategy,-strategics,-finance-strategy,-chess,-horse.png';
+import iconFlashCustom from '../../../assets/icone diagnostique/flash.png';
+import iconProjectCustom from '../../../assets/icone diagnostique/PROJET.png';
+import iconDifficultyCustom from '../../../assets/icone diagnostique/difficulté.png';
+import iconOpportunityCustom from '../../../assets/icone diagnostique/OPPORTUNITé.png';
+import iconProductCustom from '../../../assets/icone diagnostique/OFFRE PRODUIT.png';
+import iconCommercialCustom from '../../../assets/icone diagnostique/COMMERCIAL.png';
+import iconGovernanceCustom from '../../../assets/icone diagnostique/organisation.png';
+import icon360Custom from '../../../assets/icone diagnostique/360.png';
 
-const MODULE_INTRO_STYLES = {
-  'PRJ-02': { iconName: 'Rocket', bg: '#EFF6FF', iconColor: '#2659F2' },
-  'FLH-01': { iconName: 'Zap', bg: '#ECFDF5', iconColor: '#059669' },
-  'DIF-03': { iconName: 'AlertTriangle', bg: '#FEF2F2', iconColor: '#ef4444' },
-  'OPP-04': { iconName: 'Target', bg: '#FFFBEB', iconColor: '#f59e0b' },
-  'PRO-05': { iconName: 'Lightbulb', bg: '#F0FDF4', iconColor: '#10b981' },
-  'COM-06': { iconName: 'Users', bg: '#FFF7ED', iconColor: '#f97316' },
-  'FIN-07': { iconName: 'TrendingUp', bg: '#EFF6FF', iconColor: '#2563eb' },
-  'GOV-08': { iconName: 'Building2', bg: '#FAF5FF', iconColor: '#8b5cf6' },
-  '360-09': { iconName: 'Award', bg: '#F0FDF4', iconColor: '#16a34a' },
+const MODULE_STYLE_MAP = {
+  'PRJ-02': iconProjectCustom,
+  'FLH-01': iconFlashCustom,
+  'DIF-03': iconDifficultyCustom,
+  'OPP-04': iconOpportunityCustom,
+  'PRO-05': iconProductCustom,
+  'COM-06': iconCommercialCustom,
+  'FIN-07': iconFinanceStrategy,
+  'GOV-08': iconGovernanceCustom,
+  '360-09': icon360Custom,
 };
 
 export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, onBack }) => {
   const [backendModule, setBackendModule] = useState(null);
-  const style = MODULE_INTRO_STYLES[moduleId] || MODULE_INTRO_STYLES['FLH-01'];
-  const IconComp = MODULE_ICONS_MAP[style.iconName] || HelpCircle;
+  const activeIcon = MODULE_STYLE_MAP[moduleId] || icon360Custom;
 
   useEffect(() => {
     if (moduleData?.name && moduleData?.question_count) {
@@ -68,11 +64,11 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="intro-wrap animate-fade-up">
-        <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center' }}>
-          <div className="screen-icon" style={{ background: style.bg, color: style.iconColor, width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconComp size={32} />
-          </div>
+        {/* Animated custom PNG icon inside a premium card wrapper */}
+        <div className="intro-module-card">
+          <img src={activeIcon} alt={title} className="intro-module-icon" />
         </div>
+
         <h1 className="screen-title" style={{ textAlign: 'center' }}>{title}</h1>
 
         <div className="intro-meta-row" style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
