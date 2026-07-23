@@ -45,7 +45,7 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
   return (
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
-      <div className="question-wrap animate-fade-up">
+      <div key={step || titleText} className="question-wrap animate-fade-up">
         {progress && (
           <div style={{ marginBottom: 'var(--space-6)' }}>
             <ProgressBar current={progress.current} total={progress.total} />

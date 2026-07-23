@@ -122,7 +122,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         />
       )}
 
-      <div className="question-wrap animate-fade-up">
+      <div key={questionData.id || current} className="question-wrap animate-fade-up">
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <ProgressBar current={current} total={total} />
         </div>

@@ -192,7 +192,7 @@ export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBac
     <ScreenWrapper>
       {onBack && <TopBackLink onClick={onBack} />}
 
-      <div className="question-wrap animate-fade-up">
+      <div key={currentStep || titleText} className="question-wrap animate-fade-up">
         <div style={{ marginBottom: 'var(--space-6)' }}>
           <ProgressBar current={currentStep !== undefined ? currentStep : 1} total={totalSteps || 6} />
         </div>

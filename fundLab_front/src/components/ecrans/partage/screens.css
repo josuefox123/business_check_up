@@ -143,6 +143,30 @@
   margin-bottom: 8px;
 }
 
+@keyframes optionEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.choices-list > * {
+  opacity: 0;
+  animation: optionEntrance 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.choices-list > *:nth-child(1) { animation-delay: 0.08s; }
+.choices-list > *:nth-child(2) { animation-delay: 0.16s; }
+.choices-list > *:nth-child(3) { animation-delay: 0.24s; }
+.choices-list > *:nth-child(4) { animation-delay: 0.32s; }
+.choices-list > *:nth-child(5) { animation-delay: 0.40s; }
+.choices-list > *:nth-child(6) { animation-delay: 0.48s; }
+.choices-list > *:nth-child(7) { animation-delay: 0.56s; }
+.choices-list > *:nth-child(8) { animation-delay: 0.64s; }
+
 /* ============================================
    S01 — CONSENT
    ============================================ */
@@ -257,7 +281,24 @@
 /* ============================================
    TRIAGE SCREENS (S03-S09)
    ============================================ */
-.question-wrap { max-width: 560px; }
+@keyframes questionEntrance {
+  0% {
+    opacity: 0;
+    transform: translateX(45px) scale(0.96) rotate(1.2deg);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+    filter: none;
+  }
+}
+
+.question-wrap {
+  max-width: 560px;
+  transform-origin: center right;
+  animation: questionEntrance 0.85s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+}
 
 .question-meta-label {
   font-size: 0.75rem;
