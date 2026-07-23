@@ -1,7 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { 
+  AlertTriangle, 
+  Rocket, 
+  Zap, 
+  Target, 
+  Lightbulb, 
+  Users, 
+  TrendingUp, 
+  Building2, 
+  Award, 
+  HelpCircle 
+} from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
+
+const ICON_COMPONENTS = {
+  Rocket,
+  Zap,
+  AlertTriangle,
+  Target,
+  Lightbulb,
+  Users,
+  TrendingUp,
+  Building2,
+  Award
+};
 
 const MODULE_STYLE_MAP = {
   'PRJ-02': { iconName: 'Rocket', bg: '#EFF6FF', iconColor: '#2659F2' },
@@ -60,26 +83,41 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--slate-400)', fontSize: '0.9rem' }}>Chargement des modules…</div>
         ) : (
           <div className="catalog-modules-grid">
-            {modules.map((m, i) => (
-              <button
-                key={m.id}
-                className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
-                onClick={() => onSelect(m)}
-                style={{ borderLeft: `4px solid ${m.iconColor || 'var(--slate-300)'}` }}
-              >
-                <div className="catalog-module-info">
-                  <div className="catalog-module-name">{m.name}</div>
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
-                    {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
-                    {m.question_count && (
-                      <div className="catalog-module-dur" style={{ color: 'var(--slate-400)', fontWeight: 500 }}>
-                        {m.question_count} questions
-                      </div>
-                    )}
+            {modules.map((m, i) => {
+              const IconComponent = ICON_COMPONENTS[m.iconName] || HelpCircle;
+              return (
+                <button
+                  key={m.id}
+                  className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
+                  onClick={() => onSelect(m)}
+                >
+                  <div style={{
+                    backgroundColor: m.bg || '#F1F5F9',
+                    color: m.iconColor || '#64748B',
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '8px'
+                  }}>
+                    <IconComponent size={30} />
                   </div>
-                </div>
-              </button>
-            ))}
+                  <div className="catalog-module-info">
+                    <div className="catalog-module-name">{m.name}</div>
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                      {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
+                      {m.question_count && (
+                        <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)', fontWeight: 550 }}>
+                          {m.question_count} Q
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
