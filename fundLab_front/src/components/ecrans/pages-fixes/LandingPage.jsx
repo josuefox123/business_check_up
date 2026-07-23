@@ -1,6 +1,6 @@
 import React from 'react';
 import './LandingPage.css';
-import logoImg from '../../../assets/logofundlab.png';
+import logoImg from '../../../assets/funlab.png';
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, FileText, Handshake } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
-import logoImg from '../../../assets/logofundlab.png';
+import logoImg from '../../../assets/funlab.png';
 import aboutIllustration from '../../../assets/about_illustration.png';
 
 export const InstitutionnelleScreen = ({ onBack, onContact }) => (
