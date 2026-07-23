@@ -1,5 +1,6 @@
 import React from 'react';
 import './LandingPage.css';
+import logoImg from '../../../assets/logo.png';
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
   return (
@@ -53,7 +54,19 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Diagnostic indicatif fondé sur vos réponses. Il ne constitue ni un audit, ni une due diligence, ni une décision de financement.
             </p>
             <div className="lp-disclaimer-powered">
-              Powered by <span className="lp-disclaimer-brand">FUND.lab</span>
+              Powered by
+              <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '6px' }}>
+                <img 
+                  src={logoImg} 
+                  alt="FUND.lab" 
+                  style={{ 
+                    height: '24px', 
+                    width: 'auto', 
+                    filter: 'brightness(0) invert(1)',
+                    verticalAlign: 'middle'
+                  }} 
+                />
+              </a>
             </div>
           </div>
         </div>
