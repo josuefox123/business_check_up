@@ -1,6 +1,7 @@
 import React from 'react';
 import './LandingPage.css';
 import logoImg from '../../../assets/funlab.png';
+import whiteLogoImg from '../../../assets/white_logo.png';
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
   return (
@@ -57,7 +58,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Powered by
               <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '6px' }}>
                 <img
-                  src={logoImg}
+                  src={whiteLogoImg}
                   alt="FUND.lab"
                   style={{
                     height: '24px',
