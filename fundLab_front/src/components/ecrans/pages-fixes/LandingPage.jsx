@@ -21,7 +21,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             
             {/* Value Pills / Badges (Sans icônes) */}
             <div className="lp-pills-row">
-              <span className="lp-pill">7–15 min</span>
               <span className="lp-pill">Résultat immédiat</span>
               <span className="lp-pill">Sans compte</span>
             </div>
