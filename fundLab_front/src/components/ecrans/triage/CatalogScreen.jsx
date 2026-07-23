@@ -1,28 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, HelpCircle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-import iconProject from '../../../assets/icon_project.png';
-import iconFlash from '../../../assets/icon_flash.png';
-import iconDifficulties from '../../../assets/icon_difficulties.png';
-import iconOpportunities from '../../../assets/icon_opportunities.png';
-import iconProduct from '../../../assets/icon_product.png';
-import iconSales from '../../../assets/icon_sales.png';
-import iconFinance from '../../../assets/icon_finance.png';
-import iconOrganization from '../../../assets/icon_organization.png';
-import icon360 from '../../../assets/icon_360.png';
-
+// Google Material Symbols icon names per diagnostic
 const MODULE_STYLE_MAP = {
-  'PRJ-02': { iconImg: iconProject },
-  'FLH-01': { iconImg: iconFlash },
-  'DIF-03': { iconImg: iconDifficulties },
-  'OPP-04': { iconImg: iconOpportunities },
-  'PRO-05': { iconImg: iconProduct },
-  'COM-06': { iconImg: iconSales },
-  'FIN-07': { iconImg: iconFinance },
-  'GOV-08': { iconImg: iconOrganization },
-  '360-09': { iconImg: icon360 },
+  'PRJ-02': { iconSymbol: 'architecture' },
+  'FLH-01': { iconSymbol: 'bolt' },
+  'DIF-03': { iconSymbol: 'sos' },
+  'OPP-04': { iconSymbol: 'ads_click' },
+  'PRO-05': { iconSymbol: 'inventory_2' },
+  'COM-06': { iconSymbol: 'filter_alt' },
+  'FIN-07': { iconSymbol: 'payments' },
+  'GOV-08': { iconSymbol: 'account_tree' },
+  '360-09': { iconSymbol: 'explore' },
 };
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
@@ -38,9 +29,6 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
             setModules(list.filter(m => m.is_available !== false && m.code !== 'TRI-00').map(m => ({
               id: m.code,
               name: m.name,
-              duration: m.target_duration_formatted || m.target_duration || '',
-              question_count: m.question_count || null,
-              description: m.description || null,
               ...MODULE_STYLE_MAP[m.code]
             })));
           }
@@ -76,22 +64,12 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
                   className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
                   onClick={() => onSelect(m)}
                 >
-                  {m.iconImg ? (
-                    <img src={m.iconImg} alt={m.name} className="catalog-icon" />
-                  ) : (
-                    <HelpCircle size={44} strokeWidth={1.5} className="catalog-icon" />
-                  )}
+                  <span className="material-symbols-outlined catalog-icon">
+                    {m.iconSymbol || 'help_outline'}
+                  </span>
                 </button>
-                <div className="catalog-module-label animate-fade-up">
+                <div className="catalog-module-label">
                   <div className="catalog-module-name">{m.name}</div>
-                  <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
-                    {m.question_count && (
-                      <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)' }}>
-                        {m.question_count} Q
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             ))}
