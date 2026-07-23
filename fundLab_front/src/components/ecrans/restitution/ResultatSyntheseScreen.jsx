@@ -144,7 +144,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         {/* Actions Footer */}
         <div style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
           <div style={{ background: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
-            <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#17212D', marginBottom: '6px' }}>Enrichir votre analyse</h4>
+            <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#17212D', marginBottom: '6px' }}>Personnaliser mon rapport</h4>
             <p style={{ fontSize: '0.88rem', color: '#64748B', lineHeight: '1.55', margin: 0 }}>
               L'approfondissement vous permet d'évaluer d'autres aspects essentiels de votre entreprise (comme la finance, la stratégie commerciale ou l'organisation). En répondant à ces modules complémentaires, vous enrichirez votre diagnostic global pour obtenir des recommandations encore plus ciblées et un plan d'action optimisé.
             </p>
