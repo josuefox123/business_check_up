@@ -10,7 +10,11 @@ export const Navbar = ({ onGoHome }) => {
   const location = useLocation();
 
   const handleLogoClick = () => {
-    window.location.href = 'https://fund-lab.org/';
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      navigate('/');
+    }
   };
 
   const handleStartClick = () => {
@@ -31,8 +35,8 @@ export const Navbar = ({ onGoHome }) => {
       <nav className="navbar no-print">
         <div className="navbar-inner">
           {/* Logo */}
-          <button className="navbar-logo" onClick={handleLogoClick} aria-label="Accueil FUND.lab" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
-            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '48px', width: 'auto', display: 'block' }} />
+          <button className="navbar-logo" onClick={handleLogoClick} aria-label="Accueil" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
+            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '70px', width: 'auto', display: 'block' }} />
           </button>
 
           {/* Desktop Nav */}
