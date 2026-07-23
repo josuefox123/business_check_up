@@ -151,7 +151,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             {SCALE_LABELS.map((l, i) => (
               <ChoiceCard key={i + 1} label={l} selected={answer === i + 1} onClick={() => handleChoiceSelect(i + 1)} />
             ))}
-            <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => handleChoiceSelect('idk')} />
           </div>
         ) : isMulti ? (
           <div className="choices-list">
@@ -164,9 +163,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             {questionData.choices.map(c => (
               <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => handleChoiceSelect(c.id)} />
             ))}
-            {!questionData.noUnknown && !questionData.choices.some(c => c.id === 'idk' || c.label.toLowerCase().includes('ne sais pas')) && (
-              <ChoiceCard label="Je ne sais pas" selected={answer === 'idk'} onClick={() => handleChoiceSelect('idk')} />
-            )}
           </div>
         )}
 

@@ -8,23 +8,9 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
   const backendForces = restitution?.strengths || [];
   const backendFragilites = restitution?.weaknesses || [];
 
-  const forces = backendForces.length > 0 ? backendForces : [
-    'Connaissance du secteur et ancrage local fort',
-    'Volonté d\'agir et engagement personnel du dirigeant',
-    score >= 60 ? 'Situation financière sous contrôle' : null,
-  ].filter(Boolean);
-
-  const fragilites = backendFragilites.length > 0 ? backendFragilites : [
-    score < 60 ? 'Trésorerie sous tension — à surveiller en priorité' : null,
-    'Manque de formalisation des processus clés',
-    'Suivi des indicateurs de performance à structurer',
-  ].filter(Boolean);
-
-  const priorityText = restitution?.summary || (score < 40
-    ? 'La stabilisation de votre situation financière est le sujet à traiter en premier, avant tout autre développement.'
-    : score < 70
-      ? 'Structurer vos processus commerciaux et formaliser votre suivi de performance sont les leviers prioritaires.'
-      : 'Préparer une stratégie de croissance en capitalisant sur vos fondations solides est votre prochain chantier.');
+  const forces = backendForces;
+  const fragilites = backendFragilites;
+  const priorityText = restitution?.summary || '';
 
   return (
     <ScreenWrapper>

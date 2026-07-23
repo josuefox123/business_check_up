@@ -7,28 +7,14 @@ import { TopBackLink } from '../partage/sharedUI.jsx';
 export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }) => {
   const backendPriorities = restitution?.priority_actions || restitution?.priorities || [];
 
-  const priorities = backendPriorities.length > 0
-    ? backendPriorities.map((text, i) => {
-      if (typeof text === 'object') return text;
-      const labels = ['Action immédiate', 'Stabilisation à 30 jours', 'Plan de relance', 'Structuration', 'Capitalisation', 'Croissance'];
-      return {
-        label: labels[i] || 'Action recommandée',
-        text: text
-      };
-    })
-    : (score < 40 ? [
-      { label: 'Action immédiate', text: 'Évaluer la trésorerie disponible et contacter votre banque ou un conseiller financier sous 48h.' },
-      { label: 'Stabilisation à 30 jours', text: 'Identifier les charges non essentielles à réduire et les créances à recouvrer en priorité.' },
-      { label: 'Plan de relance', text: 'Définir un plan commercial minimal pour retrouver un flux de revenus régulier d\'ici 60 jours.' },
-    ] : score < 70 ? [
-      { label: 'Action immédiate', text: 'Mettre en place un suivi mensuel de trésorerie avec un tableau de bord simple.' },
-      { label: 'Structuration à 30 jours', text: 'Formaliser votre offre commerciale et votre processus de vente pour gagner en efficacité.' },
-      { label: 'Préparation à 90 jours', text: 'Explorer les opportunités de financement (aides, prêts) pour financer votre développement.' },
-    ] : [
-      { label: 'Capitaliser', text: 'Documenter et formaliser vos pratiques qui fonctionnent pour les reproduire à l\'échelle.' },
-      { label: 'Croissance', text: 'Identifier et tester un nouveau segment de marché ou canal d\'acquisition dans les 60 jours.' },
-      { label: 'Préparation', text: 'Préparer votre entreprise pour une éventuelle levée de fonds ou un partenariat stratégique.' },
-    ]);
+  const priorities = backendPriorities.map((text, i) => {
+    if (typeof text === 'object') return text;
+    const labels = ['Action immédiate', 'Stabilisation à 30 jours', 'Plan de relance', 'Structuration', 'Capitalisation', 'Croissance'];
+    return {
+      label: labels[i] || 'Action recommandée',
+      text: text
+    };
+  });
 
   return (
     <ScreenWrapper>

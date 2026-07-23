@@ -68,7 +68,7 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
             </div>
             <div className="route-detail-row" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--slate-600)' }}>
               <FileText size={15} className="text-blue" />
-              <span>Vous pouvez répondre avec des <strong>estimations</strong>. Option "Je ne sais pas" disponible.</span>
+              <span>Vous pouvez répondre avec des <strong>estimations</strong>.</span>
             </div>
           </div>
 

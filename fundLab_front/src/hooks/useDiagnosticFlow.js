@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSessionPersist } from './useSessionPersist.js';
 import { generateDiagnosticPDF } from '../utils/generateDiagnosticPDF.js';
-import { getRestitutionData } from '../utils/restitutionHelper.js';
 import {
   createSessionApi,
   submitConsentApi,
@@ -57,9 +56,13 @@ export function useDiagnosticFlow() {
   const [restitution, setRestitution] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
-
   const [references, setReferences] = useState(null);
   const [triageQuestions, setTriageQuestions] = useState([]);
+  const lastSubmittedQuestionIdRef = useRef(null);
+
+  useEffect(() => {
+    lastSubmittedQuestionIdRef.current = null;
+  }, [questionIndex, currentModule]);
 
   useEffect(() => {
     const handleOffline = () => setIsOffline(true);
@@ -83,7 +86,11 @@ export function useDiagnosticFlow() {
     questionsApi.getByModule('triage')
       .then(qList => {
         if (qList) {
-          setTriageQuestions(qList);
+          const filtered = qList.map(q => ({
+            ...q,
+            choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
+          }));
+          setTriageQuestions(filtered);
         }
       })
       .catch(err => console.error('Error fetching triage questions from backend:', err));
@@ -177,14 +184,22 @@ export function useDiagnosticFlow() {
     if (currentModule) {
       QuestionService.getQuestionsByModule(currentModule.id)
         .then(res => {
-          setQuestions(res || []);
+          if (res) {
+            const filtered = res.map(q => ({
+              ...q,
+              choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
+            }));
+            setQuestions(filtered);
+          } else {
+            setQuestions([]);
+          }
         });
     } else {
       setQuestions([]);
     }
   }, [currentModule]);
 
-  const onStartAssisted = async () => {
+  const onStartAssisted = () => {
     clearState();
     setTriageStep(3);
     setTriageAnswers({});
@@ -194,40 +209,7 @@ export function useDiagnosticFlow() {
     setCurrentRunId(null);
     setQuestions([]);
     setScore(0);
-    
-    try {
-      const res = await createSessionApi();
-      const sessionId = res?.data?.session_id || res?.session_id;
-      if (sessionId) {
-        localStorage.setItem('bc_session_id', sessionId);
-        saveState({
-          triageStep: 3,
-          triageAnswers: {},
-          consentAnswers: { diag: false, stats: false, contact: false },
-          currentModule: null,
-          routeKey: null,
-          questionIndex: 0,
-          moduleAnswers: {},
-          score: 0,
-          chosenForVerif: null,
-          currentRunId: null,
-          restitution: null,
-          currentPath: '/triage/consent',
-          sessionId: sessionId
-        });
-        setIsOffline(false);
-        navigate('/triage/consent');
-      } else {
-        throw new Error('Aucun identifiant de session n\'a été renvoyé par le serveur.');
-      }
-    } catch (err) {
-      console.error('Error creating session:', err);
-      setIsOffline(true);
-      setErrorModal({
-        title: 'Serveur temporairement indisponible',
-        message: 'Impossible de démarrer le diagnostic sans connexion avec le serveur. Veuillez vérifier votre connexion internet ou réessayer plus tard.'
-      });
-    }
+    navigate('/triage/consent');
   };
 
   const onGoToCatalog   = () => navigate('/catalog');
@@ -244,18 +226,52 @@ export function useDiagnosticFlow() {
     navigate('/');
   };
 
-  const onConsent = () => {
+  const onConsent = async () => {
     setTriageStep(3);
-    const sessionId = localStorage.getItem('bc_session_id');
-    if (sessionId) {
+    try {
+      const res = await createSessionApi();
+      const sessionId = res?.data?.session_id || res?.session_id;
+      if (!sessionId) throw new Error('Aucun identifiant de session renvoyé par le serveur.');
+
+      localStorage.setItem('bc_session_id', sessionId);
+      saveState({
+        triageStep: 3,
+        triageAnswers: {},
+        consentAnswers: { diag: true, stats: false, contact: false },
+        currentModule: null,
+        routeKey: null,
+        questionIndex: 0,
+        moduleAnswers: {},
+        score: 0,
+        chosenForVerif: null,
+        currentRunId: null,
+        restitution: null,
+        currentPath: currentModule ? '/diagnostic/intro' : '/triage/wizard',
+        sessionId: sessionId
+      });
+
       submitConsentApi(sessionId, true)
         .then(() => {
           updateSessionApi(sessionId, 'in_progress', 'S01_consent')
             .catch(err => console.error('Error tracking session consent stage:', err));
         })
         .catch(err => console.error('Error submitting consent:', err));
+
+      setIsOffline(false);
+      // Si un module est déjà sélectionné (venu du catalogue), retourner à l'intro du diagnostic
+      if (currentModule) {
+        navigate('/diagnostic/intro');
+      } else {
+        navigate('/triage/wizard');
+      }
+    } catch (err) {
+      console.error('Error creating session on consent:', err);
+      setIsOffline(true);
+      setErrorModal({
+        title: 'Serveur temporairement indisponible',
+        message: 'Impossible de démarrer le diagnostic sans connexion avec le serveur. Veuillez vérifier votre connexion internet ou réessayer plus tard.'
+      });
     }
-    navigate('/triage/wizard');
   };
 
   const setTA = (key, val) => setTriageAnswers(p => ({ ...p, [key]: val }));
@@ -354,6 +370,9 @@ export function useDiagnosticFlow() {
         console.error('Error fetching module details:', err);
       }
 
+      setCurrentRunId(null);
+      setModuleAnswers({});
+      setQuestionIndex(0);
       setCurrentModule(fullModuleData);
       setRouteKey(backendRoute);
       
@@ -409,6 +428,9 @@ export function useDiagnosticFlow() {
   };
 
   const onSelectModule = (mod) => {
+    setCurrentRunId(null);
+    setModuleAnswers({});
+    setQuestionIndex(0);
     const warning = getVerifWarning(mod, triageAnswers);
     if (warning && Object.keys(triageAnswers).length > 0) {
       setChosenForVerif(mod);
@@ -420,11 +442,17 @@ export function useDiagnosticFlow() {
   };
 
   const onVerifConfirm = () => {
+    setCurrentRunId(null);
+    setModuleAnswers({});
+    setQuestionIndex(0);
     setCurrentModule(chosenForVerif);
     navigate('/diagnostic/intro');
   };
 
   const onVerifReco = async () => {
+    setCurrentRunId(null);
+    setModuleAnswers({});
+    setQuestionIndex(0);
     const recommendedModuleId = localStorage.getItem('bc_recommended_module_code') || 'FLH-01';
     try {
       const res = await apiFetch(`/modules/${recommendedModuleId}`);
@@ -446,14 +474,26 @@ export function useDiagnosticFlow() {
   const onIntroStart = async () => {
     setQuestionIndex(0);
     setModuleAnswers({});
-    
-    const sessionId = localStorage.getItem('bc_session_id');
-    const triageId = localStorage.getItem('bc_triage_id');
-    const recommendedCode = localStorage.getItem('bc_recommended_module_code');
-    const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
-    const isOverride = !isRecommended;
+
+    let sessionId = localStorage.getItem('bc_session_id');
+
+    // Si pas de session : rediriger vers le consentement d'abord (le module est déjà mémorisé dans currentModule)
+    if (!sessionId) {
+      navigate('/triage/consent');
+      return;
+    }
+
+    // Si un run existe déjà (retour arrière depuis les questions), on le réutilise sans en créer un nouveau
+    if (currentRunId) {
+      navigate('/diagnostic/question');
+      return;
+    }
 
     if (sessionId && currentModule) {
+      const triageId = localStorage.getItem('bc_triage_id');
+      const recommendedCode = localStorage.getItem('bc_recommended_module_code');
+      const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
+      const isOverride = !isRecommended;
       try {
         const res = await apiFetch(`/sessions/${sessionId}/diagnostics`, {
           method: 'POST',
@@ -474,12 +514,20 @@ export function useDiagnosticFlow() {
         console.error('Error starting diagnostic run:', err);
       }
     }
-    
+
     navigate('/diagnostic/question');
   };
 
   const onAnswer = (answer, proof, confidence, evidenceType, evidenceLabel) => {
     const q = questions[questionIndex];
+    if (!q) return;
+
+    if (lastSubmittedQuestionIdRef.current === q.id) {
+      console.warn('Duplicate answer submission blocked for question:', q.id);
+      return;
+    }
+    lastSubmittedQuestionIdRef.current = q.id;
+
     setModuleAnswers(p => ({ 
       ...p, 
       [q.id]: answer, 
@@ -508,7 +556,11 @@ export function useDiagnosticFlow() {
           evidence_type: evidenceType || null,
           evidence_label: evidenceLabel || null
         })
-      }).catch(err => console.error('Error posting answer:', err));
+      }).catch(err => {
+        // 409 = question already answered (user navigated back) — silently ignore
+        if (err?.status === 409) return;
+        console.error('Error posting answer:', err);
+      });
     }
 
     if (questionIndex + 1 >= questions.length) {
@@ -550,7 +602,14 @@ export function useDiagnosticFlow() {
           
           const restObj = res?.data?.restitution || res?.restitution;
           if (restObj) {
-            setRestitution(restObj);
+            const scoringData = res?.data?.scoring || res?.scoring || null;
+            console.log('[DEBUG] Backend scoring object:', JSON.stringify(scoringData, null, 2));
+            setRestitution({ 
+              ...restObj, 
+              scoring: scoringData,
+              disclaimer: res?.data?.disclaimer || res?.disclaimer || null,
+              disclaimer_financing: res?.data?.disclaimer_financing || res?.disclaimer_financing || null
+            });
           }
           
           const sessionId = localStorage.getItem('bc_session_id');

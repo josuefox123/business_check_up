@@ -4,7 +4,7 @@ import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 export const questionsApi = {
   getByModule(moduleId) {
     const targetModuleId = moduleId === 'triage' ? 'TRI-00' : moduleId;
-    return apiFetch(`/modules/${targetModuleId}/questions`)
+    return apiFetch(`/modules/${targetModuleId}/questions?question_kind=diagnostic`)
       .then(res => {
         const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
         
