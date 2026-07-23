@@ -62,7 +62,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
                   style={{
                     height: '24px',
                     width: 'auto',
-                    filter: 'brightness(0) invert(1)',
                     verticalAlign: 'middle'
                   }}
                 />
