@@ -159,7 +159,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
               Faire un autre diagnostic
             </Button>
             <Button variant="primary" onClick={onCatalog} style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center' }}>
-              Approfondir mon diagnostic
+              Personnaliser mon rapport - 2 à 4 minutes
             </Button>
           </div>
         </div>
