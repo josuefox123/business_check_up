@@ -85,30 +85,57 @@ export const ResultatSyntheseScreen = ({
 
   const cleanModuleName = restitution?.module_name || moduleId;
 
+  // ── Normalize list fields (noms exacts du backend) ──
+  const pointsAppui       = normalizeToArray(restitution?.typical_strengths);
+  const strengthsList     = normalizeToArray(restitution?.strengths);
+  const weaknessesList    = normalizeToArray(restitution?.weaknesses);
+  const fragilitiesList   = normalizeToArray(restitution?.typical_fragilities);
+  const prioritiesList    = normalizeToArray(restitution?.priorities);
+
+  const credScore = (() => {
+    const cs = restitution?.scoring?.credibility_score ?? restitution?.scoring?.credibiliy_score;
+    if (cs === null || cs === undefined) return '—';
+    const num = Number(cs);
+    if (isNaN(num)) return String(cs);
+    // Backend sends decimal (0–1), convert to percentage
+    return `${Math.round(num * 100)}%`;
+  })();
+
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      await generateDiagnosticPDF(moduleId, score, answers, restitution);
+      const forces = normalizeToArray(restitution?.strengths);
+      const fragilites = [
+        ...normalizeToArray(restitution?.weaknesses),
+        ...normalizeToArray(restitution?.typical_fragilities)
+      ];
+      const priorities = normalizeToArray(restitution?.priorities);
+
+      await generateDiagnosticPDF({
+        score,
+        moduleId,
+        moduleName: cleanModuleName || moduleId || 'Diagnostic',
+        forces,
+        fragilites,
+        priorityText: restitution?.scoring?.dominant_weakness || restitution?.scoring?.dominant_strength || null,
+        priorities,
+        totalQuestions: answers ? Object.keys(answers).length : 0,
+        confidence: credScore,
+        date: null,
+        userName: null,
+        companyName: null,
+        userEmail: null,
+        userPhone: null,
+        sector: null,
+        department: null,
+        commune: null,
+      });
     } catch (err) {
       console.error('Error generating PDF:', err);
     } finally {
       setIsGeneratingPDF(false);
     }
   };
-
-  // Normalize all list fields
-  const pointsAppui  = normalizeToArray(restitution?.typical_strengths ?? restitution?.scoring?.typical_strengths);
-  const strengthsList = normalizeToArray(restitution?.strengths);
-  const weaknessesList = normalizeToArray(restitution?.weaknesses);
-  const prioritiesList = normalizeToArray(restitution?.priority_actions ?? restitution?.scoring?.priorities);
-  const lowPriorityVal = restitution?.scoring?.dominant_strength ?? restitution?.scoring?.priority_low ?? restitution?.priority_low;
-
-  const credScore = (() => {
-    const cs = restitution?.scoring?.credibility_score ?? restitution?.scoring?.credibiliy_score;
-    if (cs === null || cs === undefined) return '—';
-    const num = Number(cs);
-    return `${Math.round(num <= 1.0 ? num * 100 : num)}%`;
-  })();
 
   return (
     <ScreenWrapper wide>
@@ -348,17 +375,28 @@ export const ResultatSyntheseScreen = ({
           </div>
         )}
 
-        {/* ── Priorité faible ── */}
-        {hasContent(lowPriorityVal) && (
+        {/* ── Fragilités typiques ── */}
+        {fragilitiesList.length > 0 && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <ShieldCheck size={15} style={{ color: '#64748B' }} />
+              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={13} style={{ color: '#D97706' }} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Priorité faible</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Fragilités typiques</h3>
             </div>
-            <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #94A3B8', borderRadius: '16px', padding: '18px 20px' }}>
-              <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: 0 }}>{lowPriorityVal}</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {fragilitiesList.map((f, i) => {
+                const p = parseItem(f);
+                return (
+                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #F59E0B', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ paddingRight: '12px' }}>
+                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
+                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
+                    </div>
+                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -390,12 +428,12 @@ export const ResultatSyntheseScreen = ({
         )}
 
         {/* ── Orientation recommandée ── */}
-        {hasContent(restitution?.orientation) && (
+        {hasContent(restitution?.orientation_text) && (
           <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
             <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '14px' }}>
               Orientation recommandée
             </div>
-            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }}>{restitution.orientation}</div>
+            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }}>{restitution.orientation_text}</div>
           </div>
         )}
 
