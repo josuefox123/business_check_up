@@ -19,17 +19,35 @@ function getDeviceType() {
 }
 
 /**
+ * Récupérer l'IP publique de l'utilisateur avec un timeout rapide
+ */
+async function getUserIp() {
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 1200);
+    const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+    clearTimeout(id);
+    const data = await res.json();
+    return data.ip || '127.0.0.1';
+  } catch (e) {
+    return '127.0.0.1';
+  }
+}
+
+/**
  * Créer une nouvelle session utilisateur
  * POST /sessions
  */
 export async function createSessionApi(entryMode = 'assisted') {
+  const ip = await getUserIp();
   return apiFetch('/sessions', {
     method: 'POST',
     body: JSON.stringify({
       entry_source: 'direct',
       entry_mode: entryMode,
       device_type: getDeviceType(),
-      browser_language: 'fr'
+      browser_language: 'fr',
+      ip_address: ip
     })
   });
 }
