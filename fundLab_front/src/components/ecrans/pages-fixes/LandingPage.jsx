@@ -54,16 +54,15 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             <p className="lp-disclaimer-text">
               Diagnostic indicatif fondé sur vos réponses. Il ne constitue ni un audit, ni une due diligence, ni une décision de financement.
             </p>
-            <div className="lp-disclaimer-powered">
-              Powered by
-              <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '6px' }}>
+            <div className="lp-disclaimer-powered" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
+              <span>Powered by</span>
+              <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <img
                   src={whiteLogoImg}
                   alt="FUND.lab"
                   style={{
-                    height: '24px',
-                    width: 'auto',
-                    verticalAlign: 'middle'
+                    height: '36px',
+                    width: 'auto'
                   }}
                 />
               </a>
