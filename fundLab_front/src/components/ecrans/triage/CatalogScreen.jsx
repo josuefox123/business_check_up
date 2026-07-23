@@ -61,7 +61,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
             {modules.map((m, i) => (
               <div key={m.id} className="catalog-module-item">
                 <button
-                  className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
+                  className="catalog-module-card"
                   onClick={() => onSelect(m)}
                 >
                   <span className="material-symbols-outlined catalog-icon">

@@ -495,100 +495,108 @@
 
 /* ============================================
    CATALOG (S20)
-   ============================================ */
-.catalog-wrap { max-width: 960px; }
+/* === Catalog-specific keyframe animations (nowhere else) === */
+@keyframes catalog-card-pop {
+  0%   { opacity: 0; transform: scale(0.7) translateY(20px); }
+  70%  { transform: scale(1.05) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes catalog-icon-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+.catalog-wrap { max-width: 1040px; }
 
 .catalog-modules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
 }
 
 .catalog-module-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   text-align: center;
   width: 100%;
+  animation: catalog-card-pop 0.55s cubic-bezier(0.25, 0.8, 0.25, 1) both;
 }
+.catalog-module-item:nth-child(2) { animation-delay: 0.07s; }
+.catalog-module-item:nth-child(3) { animation-delay: 0.14s; }
+.catalog-module-item:nth-child(4) { animation-delay: 0.21s; }
+.catalog-module-item:nth-child(5) { animation-delay: 0.28s; }
+.catalog-module-item:nth-child(6) { animation-delay: 0.35s; }
+.catalog-module-item:nth-child(7) { animation-delay: 0.42s; }
+.catalog-module-item:nth-child(8) { animation-delay: 0.49s; }
+.catalog-module-item:nth-child(9) { animation-delay: 0.56s; }
 
 .catalog-module-card {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 110px;
+  max-width: 180px;
   aspect-ratio: 1 / 1;
-  border-radius: 24px;
-  border: 1.5px solid var(--slate-200);
+  border-radius: 32px;
+  border: 2px solid var(--slate-200);
   background: var(--bg-white);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease, transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
   padding: 0;
 }
 
 .catalog-module-card .catalog-icon {
-  font-size: 44px;
+  font-size: 72px;
   line-height: 1;
   color: #17212D;
   pointer-events: none;
   user-select: none;
   font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+  transition: none; /* icon never changes color on hover */
 }
 
-/* Hover effect on card — card only, icon unchanged */
+/* Hover: only card changes — icon untouched */
 .catalog-module-card:hover {
-  transform: scale(1.1) translateY(-4px);
-  box-shadow: 0 16px 32px -8px rgba(52, 190, 213, 0.25);
   border-color: #34BED5;
+  box-shadow: 0 12px 36px -8px rgba(52, 190, 213, 0.30);
   background: rgba(52, 190, 213, 0.06);
+  transform: translateY(-6px) scale(1.04);
+}
+
+/* Icon floats only while hovered — scoped strictly to catalog card */
+.catalog-module-card:hover .catalog-icon {
+  animation: catalog-icon-float 1.4s ease-in-out infinite;
 }
 
 .catalog-module-label {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
 }
 
-.catalog-module-emoji {
-  display: none;
-}
-
-.catalog-module-info { 
-  display: none;
-}
+.catalog-module-emoji { display: none; }
+.catalog-module-info  { display: none; }
+.catalog-module-arrow { display: none; }
 
 .catalog-module-name {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1.35;
   text-align: center;
-  max-width: 140px;
+  max-width: 160px;
   margin: 0;
 }
 
-.catalog-module-dur {
-  font-size: 0.68rem;
-  color: var(--slate-500);
-  font-weight: 700;
-  background: var(--slate-100);
-  padding: 2px 8px;
-  border-radius: 9999px;
-  display: inline-block;
-  align-self: center;
-}
-
-.catalog-module-arrow {
-  display: none;
-}
+.catalog-module-dur { display: none; }
 
 /* ============================================
    S30 — INTRO MODULE
