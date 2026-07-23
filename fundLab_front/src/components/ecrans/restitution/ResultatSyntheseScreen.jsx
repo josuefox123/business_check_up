@@ -135,9 +135,8 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
                   <div className="priority-icon" style={{ color: 'var(--color-blue)', background: 'var(--color-blue-light)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Target size={22} />
                   </div>
-                  <div className="priority-content">
-                    <h4 style={{ fontSize: '0.98rem', fontWeight: 850, color: 'var(--slate-800)', marginBottom: '6px' }}>Priorité {i + 1}</h4>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.55', margin: 0 }}>{p.text}</p>
+                  <div className="priority-content" style={{ display: 'flex', alignItems: 'center' }}>
+                    <p style={{ fontSize: '0.92rem', color: 'var(--slate-700)', fontWeight: 550, lineHeight: '1.6', margin: 0 }}>{p.text}</p>
                   </div>
                 </div>
               ))}
