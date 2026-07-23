@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "cd fundLab_front && npm install",
+    "dev": "cd fundLab_front && npm run dev",
     "build": "cd fundLab_front && npm run build"
   }
 }

@@ -79,26 +79,7 @@
   color: #34BED5; /* Dark Turquoise */
 }
 
-/* Powered by FUND.lab badge */
-.lp-powered-by {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #64748B;
-  margin-bottom: 24px;
-}
 
-.lp-powered-brand {
-  background: rgba(52, 190, 213, 0.15);
-  color: #17212D; /* Bleu crépuscule */
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-weight: 800;
-  font-size: 0.88rem;
-  letter-spacing: 0.02em;
-}
 
 /* Description */
 .lp-hero-desc {
@@ -232,6 +213,31 @@
   margin: 0;
   font-weight: 450;
   max-width: 760px;
+}
+
+/* Powered by FUND.lab centered footer brand */
+.lp-disclaimer-powered {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #94A3B8; /* cool slate grey */
+  margin-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+}
+
+.lp-disclaimer-brand {
+  background: rgba(52, 190, 213, 0.15); /* Light turquoise backdrop */
+  color: #34BED5; /* Dark Turquoise */
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
 }
 
 /* ══════════════════════════════════════════

@@ -15,10 +15,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Voyez plus clair <span className="lp-title-accent">dans votre entreprise.</span>
             </h1>
             
-            <div className="lp-powered-by">
-              Powered by <span className="lp-powered-brand">FUND.lab</span>
-            </div>
-            
             <p className="lp-hero-desc">
               Identifiez ce qui fonctionne, ce qui fragilise votre progression et les actions prioritaires à engager d’abord.
             </p>
@@ -57,6 +53,9 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             <p className="lp-disclaimer-text">
               Diagnostic indicatif fondé sur vos réponses. Il ne constitue ni un audit, ni une due diligence, ni une décision de financement.
             </p>
+            <div className="lp-disclaimer-powered">
+              Powered by <span className="lp-disclaimer-brand">FUND.lab</span>
+            </div>
           </div>
         </div>
       </footer>
