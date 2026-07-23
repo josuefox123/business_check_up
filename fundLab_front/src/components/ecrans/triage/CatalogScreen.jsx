@@ -4,11 +4,12 @@ import {
   Rocket, 
   Zap, 
   Target, 
-  Lightbulb, 
-  Users, 
-  Coins, 
-  Building2, 
-  Award, 
+  LifeBuoy, 
+  Package, 
+  Filter, 
+  BarChart3, 
+  Network, 
+  Compass, 
   HelpCircle 
 } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
@@ -19,23 +20,24 @@ const ICON_COMPONENTS = {
   Zap,
   AlertTriangle,
   Target,
-  Lightbulb,
-  Users,
-  Coins,
-  Building2,
-  Award
+  LifeBuoy,
+  Package,
+  Filter,
+  BarChart3,
+  Network,
+  Compass
 };
 
 const MODULE_STYLE_MAP = {
   'PRJ-02': { iconName: 'Rocket', bg: '#EFF6FF', iconColor: '#2659F2' },
   'FLH-01': { iconName: 'Zap', bg: '#ECFDF5', iconColor: '#059669' },
-  'DIF-03': { iconName: 'AlertTriangle', bg: '#FEF2F2', iconColor: '#ef4444' },
+  'DIF-03': { iconName: 'LifeBuoy', bg: '#FEF2F2', iconColor: '#ef4444' },
   'OPP-04': { iconName: 'Target', bg: '#FFFBEB', iconColor: '#f59e0b' },
-  'PRO-05': { iconName: 'Lightbulb', bg: '#F0FDF4', iconColor: '#10b981' },
-  'COM-06': { iconName: 'Users', bg: '#FFF7ED', iconColor: '#f97316' },
-  'FIN-07': { iconName: 'Coins', bg: '#EFF6FF', iconColor: '#2563eb' },
-  'GOV-08': { iconName: 'Building2', bg: '#FAF5FF', iconColor: '#8b5cf6' },
-  '360-09': { iconName: 'Award', bg: '#F0FDF4', iconColor: '#16a34a' },
+  'PRO-05': { iconName: 'Package', bg: '#F0FDF4', iconColor: '#10b981' },
+  'COM-06': { iconName: 'Filter', bg: '#FFF7ED', iconColor: '#f97316' },
+  'FIN-07': { iconName: 'BarChart3', bg: '#EFF6FF', iconColor: '#2563eb' },
+  'GOV-08': { iconName: 'Network', bg: '#FAF5FF', iconColor: '#8b5cf6' },
+  '360-09': { iconName: 'Compass', bg: '#F0FDF4', iconColor: '#16a34a' },
 };
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
