@@ -400,6 +400,7 @@ function DiagnosticApp() {
             onBack={flow.onResultsBack}
             restitution={flow.restitution}
             isOffline={flow.isOffline}
+            onCatalog={flow.onGoToCatalog}
           />
         } />
         <Route path="/diagnostic/forces-fragilites" element={

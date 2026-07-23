@@ -26,7 +26,7 @@ export const getConfidence = (a) => {
   return 'Déclaratif';
 };
 
-export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution }) => {
+export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onContact, onRestart, onBack, restitution, onCatalog }) => {
   const lvl = getLevel(score);
   const conf = getConfidence(answers);
 
@@ -146,9 +146,22 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
         )}
 
         {/* Actions Footer */}
-        <div className="results-actions" style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
-          <Button variant="outline" onClick={onContact}><Download size={18} /> Exporter PDF</Button>
-          <Button variant="teal" onClick={onContact}><Calendar size={18} /> Planifier un suivi</Button>
+        <div style={{ marginTop: '40px', borderTop: '1px solid var(--slate-200)', paddingTop: '28px' }}>
+          <div style={{ background: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
+            <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: '#17212D', marginBottom: '6px' }}>Enrichir votre analyse</h4>
+            <p style={{ fontSize: '0.88rem', color: '#64748B', lineHeight: '1.55', margin: 0 }}>
+              L'approfondissement vous permet d'évaluer d'autres aspects essentiels de votre entreprise (comme la finance, la stratégie commerciale ou l'organisation). En répondant à ces modules complémentaires, vous enrichirez votre diagnostic global pour obtenir des recommandations encore plus ciblées et un plan d'action optimisé.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <Button variant="outline" onClick={onRestart} style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center' }}>
+              Faire un autre diagnostic
+            </Button>
+            <Button variant="primary" onClick={onCatalog} style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center' }}>
+              Approfondir mon diagnostic
+            </Button>
+          </div>
         </div>
       </div>
     </ScreenWrapper>
