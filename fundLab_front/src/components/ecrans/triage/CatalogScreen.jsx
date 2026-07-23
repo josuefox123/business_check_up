@@ -21,7 +21,7 @@ const MODULE_STYLE_MAP = {
   'OPP-04': { iconImg: iconOpportunityCustom },
   'PRO-05': { iconImg: iconProductCustom },
   'COM-06': { iconImg: iconCommercialCustom },
-  'FIN-07': { iconImg: iconFinanceStrategy },   // PNG personnalisé — blanc → #070E24 via CSS filter
+  'FIN-07': { iconImg: iconFinanceStrategy },
   'GOV-08': { iconImg: iconGovernanceCustom },
   '360-09': { iconImg: icon360Custom },
 };
