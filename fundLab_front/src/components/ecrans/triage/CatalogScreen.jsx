@@ -3,15 +3,15 @@ import { AlertTriangle } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-import iconFinanceStrategy from '../../../assets/icon_finance_strategy.png';
-import iconFlashCustom from '../../../assets/icon_flash_custom.png';
-import iconProjectCustom from '../../../assets/icon_project_custom.png';
-import iconDifficultyCustom from '../../../assets/icon_difficulty_custom.png';
-import iconOpportunityCustom from '../../../assets/icon_opportunity_custom.png';
-import iconProductCustom from '../../../assets/icon_product_custom.png';
-import iconCommercialCustom from '../../../assets/icon_commercial_custom.png';
-import iconGovernanceCustom from '../../../assets/icon_governance_custom.png';
-import icon360Custom from '../../../assets/icon_360_custom.png';
+import iconFinanceStrategy from '../../../assets/icone diagnostique/Icon_strategy,-strategics,-finance-strategy,-chess,-horse.png';
+import iconFlashCustom from '../../../assets/icone diagnostique/flash.png';
+import iconProjectCustom from '../../../assets/icone diagnostique/PROJET.png';
+import iconDifficultyCustom from '../../../assets/icone diagnostique/difficulté.png';
+import iconOpportunityCustom from '../../../assets/icone diagnostique/OPPORTUNITé.png';
+import iconProductCustom from '../../../assets/icone diagnostique/OFFRE PRODUIT.png';
+import iconCommercialCustom from '../../../assets/icone diagnostique/COMMERCIAL.png';
+import iconGovernanceCustom from '../../../assets/icone diagnostique/organisation.png';
+import icon360Custom from '../../../assets/icone diagnostique/360.png';
 
 // Google Material Symbols icon names per diagnostic + optional PNG override
 const MODULE_STYLE_MAP = {
