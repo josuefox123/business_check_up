@@ -1,43 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  AlertTriangle, 
-  Rocket, 
-  Zap, 
-  Target, 
-  LifeBuoy, 
-  Package, 
-  Filter, 
-  BarChart3, 
-  Network, 
-  Compass, 
-  HelpCircle 
-} from 'lucide-react';
+import { AlertTriangle, HelpCircle } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 
-const ICON_COMPONENTS = {
-  Rocket,
-  Zap,
-  AlertTriangle,
-  Target,
-  LifeBuoy,
-  Package,
-  Filter,
-  BarChart3,
-  Network,
-  Compass
-};
+import iconProject from '../../../assets/icon_project.png';
+import iconFlash from '../../../assets/icon_flash.png';
+import iconDifficulties from '../../../assets/icon_difficulties.png';
+import iconOpportunities from '../../../assets/icon_opportunities.png';
+import iconProduct from '../../../assets/icon_product.png';
+import iconSales from '../../../assets/icon_sales.png';
+import iconFinance from '../../../assets/icon_finance.png';
+import iconOrganization from '../../../assets/icon_organization.png';
+import icon360 from '../../../assets/icon_360.png';
 
 const MODULE_STYLE_MAP = {
-  'PRJ-02': { iconName: 'Rocket', bg: '#EFF6FF', iconColor: '#2659F2' },
-  'FLH-01': { iconName: 'Zap', bg: '#ECFDF5', iconColor: '#059669' },
-  'DIF-03': { iconName: 'LifeBuoy', bg: '#FEF2F2', iconColor: '#ef4444' },
-  'OPP-04': { iconName: 'Target', bg: '#FFFBEB', iconColor: '#f59e0b' },
-  'PRO-05': { iconName: 'Package', bg: '#F0FDF4', iconColor: '#10b981' },
-  'COM-06': { iconName: 'Filter', bg: '#FFF7ED', iconColor: '#f97316' },
-  'FIN-07': { iconName: 'BarChart3', bg: '#EFF6FF', iconColor: '#2563eb' },
-  'GOV-08': { iconName: 'Network', bg: '#FAF5FF', iconColor: '#8b5cf6' },
-  '360-09': { iconName: 'Compass', bg: '#F0FDF4', iconColor: '#16a34a' },
+  'PRJ-02': { iconImg: iconProject },
+  'FLH-01': { iconImg: iconFlash },
+  'DIF-03': { iconImg: iconDifficulties },
+  'OPP-04': { iconImg: iconOpportunities },
+  'PRO-05': { iconImg: iconProduct },
+  'COM-06': { iconImg: iconSales },
+  'FIN-07': { iconImg: iconFinance },
+  'GOV-08': { iconImg: iconOrganization },
+  '360-09': { iconImg: icon360 },
 };
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
@@ -85,31 +70,31 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--slate-400)', fontSize: '0.9rem' }}>Chargement des modules…</div>
         ) : (
           <div className="catalog-modules-grid">
-            {modules.map((m, i) => {
-              const IconComponent = ICON_COMPONENTS[m.iconName] || HelpCircle;
-              return (
-                <div key={m.id} className="catalog-module-item">
-                  <button
-                    className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
-                    onClick={() => onSelect(m)}
-                    style={{ color: m.iconColor || 'var(--color-primary)' }}
-                  >
-                    <IconComponent size={44} color={m.iconColor} fill={m.bg} strokeWidth={1.5} className="catalog-icon-container" />
-                  </button>
-                  <div className="catalog-module-label animate-fade-up">
-                    <div className="catalog-module-name">{m.name}</div>
-                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                      {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
-                      {m.question_count && (
-                        <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)' }}>
-                          {m.question_count} Q
-                        </div>
-                      )}
-                    </div>
+            {modules.map((m, i) => (
+              <div key={m.id} className="catalog-module-item">
+                <button
+                  className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
+                  onClick={() => onSelect(m)}
+                >
+                  {m.iconImg ? (
+                    <img src={m.iconImg} alt={m.name} className="catalog-icon" />
+                  ) : (
+                    <HelpCircle size={44} strokeWidth={1.5} className="catalog-icon" />
+                  )}
+                </button>
+                <div className="catalog-module-label animate-fade-up">
+                  <div className="catalog-module-name">{m.name}</div>
+                  <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
+                    {m.question_count && (
+                      <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)' }}>
+                        {m.question_count} Q
+                      </div>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>

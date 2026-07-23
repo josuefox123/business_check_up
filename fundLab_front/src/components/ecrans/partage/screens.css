@@ -532,19 +532,23 @@
   padding: 0;
 }
 
-.catalog-module-card .catalog-icon-container {
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+.catalog-module-card .catalog-icon {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Hover effect on card */
 .catalog-module-card:hover {
   transform: scale(1.1) translateY(-4px);
   box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
-  border-color: currentColor;
+  border-color: #34BED5;
 }
 
-.catalog-module-card:hover .catalog-icon-container {
-  transform: scale(1.15);
+.catalog-module-card:hover .catalog-icon {
+  transform: scale(1.1);
+  filter: invert(72%) sepia(29%) saturate(1140%) hue-rotate(144deg) brightness(92%) contrast(87%);
 }
 
 .catalog-module-label {
