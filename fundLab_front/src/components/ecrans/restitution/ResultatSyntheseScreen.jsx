@@ -62,10 +62,7 @@ export const ResultatSyntheseScreen = ({ score, answers, moduleId, onDetail, onC
           </div>
         </div>
 
-        {/* KPI Card */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px 0', marginBottom: '24px' }}>
-          <ScoreGauge score={score} size={160} />
-        </div>
+
 
         {/* Forces & Vigilances */}
         {(forces.length > 0 || fragilites.length > 0) && (
