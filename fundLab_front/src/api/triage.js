@@ -222,7 +222,25 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     time_available: 'start_short',
     years_in_activity,
     year_created: s05.creation_year || null,
-    main_offer_type: answers.s10 || null
+    main_offer_type: (() => {
+      const val = answers.s10 || null;
+      if (!val) return null;
+      const translationMap = {
+        'main_product': 'physical_product',
+        'physical_product': 'physical_product',
+        'digital_product': 'digital_product',
+        'professional_service': 'service',
+        'service': 'service',
+        'consulting_service': 'consulting',
+        'consulting': 'consulting',
+        'subscription_service': 'subscription',
+        'subscription': 'subscription',
+        'multiple_offers': 'multiple_offers',
+        'not_defined': 'not_defined',
+        'other': 'other'
+      };
+      return translationMap[val] || val;
+    })()
   };
 
   return apiFetch(`/sessions/${sessionId}/triage`, {
