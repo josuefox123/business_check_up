@@ -32,7 +32,7 @@ export const Navbar = ({ onGoHome }) => {
         <div className="navbar-inner">
           {/* Logo */}
           <button className="navbar-logo" onClick={handleLogoClick} aria-label="Accueil FUND.lab" style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0 }}>
-            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '38px', width: 'auto', display: 'block' }} />
+            <img src={logoImg} alt="FUND.lab Logo" style={{ height: '48px', width: 'auto', display: 'block' }} />
           </button>
 
           {/* Desktop Nav */}

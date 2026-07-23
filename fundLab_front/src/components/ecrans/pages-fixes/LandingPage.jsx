@@ -61,7 +61,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
                   src={whiteLogoImg}
                   alt="FUND.lab"
                   style={{
-                    height: '36px',
+                    height: '48px',
                     width: 'auto'
                   }}
                 />
