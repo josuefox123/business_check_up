@@ -6,7 +6,7 @@ import {
   Target, 
   Lightbulb, 
   Users, 
-  TrendingUp, 
+  Coins, 
   Building2, 
   Award, 
   HelpCircle 
@@ -21,7 +21,7 @@ const ICON_COMPONENTS = {
   Target,
   Lightbulb,
   Users,
-  TrendingUp,
+  Coins,
   Building2,
   Award
 };
@@ -33,7 +33,7 @@ const MODULE_STYLE_MAP = {
   'OPP-04': { iconName: 'Target', bg: '#FFFBEB', iconColor: '#f59e0b' },
   'PRO-05': { iconName: 'Lightbulb', bg: '#F0FDF4', iconColor: '#10b981' },
   'COM-06': { iconName: 'Users', bg: '#FFF7ED', iconColor: '#f97316' },
-  'FIN-07': { iconName: 'TrendingUp', bg: '#EFF6FF', iconColor: '#2563eb' },
+  'FIN-07': { iconName: 'Coins', bg: '#EFF6FF', iconColor: '#2563eb' },
   'GOV-08': { iconName: 'Building2', bg: '#FAF5FF', iconColor: '#8b5cf6' },
   '360-09': { iconName: 'Award', bg: '#F0FDF4', iconColor: '#16a34a' },
 };
@@ -86,36 +86,26 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
             {modules.map((m, i) => {
               const IconComponent = ICON_COMPONENTS[m.iconName] || HelpCircle;
               return (
-                <button
-                  key={m.id}
-                  className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
-                  onClick={() => onSelect(m)}
-                >
-                  <div style={{
-                    backgroundColor: m.bg || '#F1F5F9',
-                    color: m.iconColor || '#64748B',
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '8px'
-                  }}>
-                    <IconComponent size={30} />
-                  </div>
-                  <div className="catalog-module-info">
+                <div key={m.id} className="catalog-module-item">
+                  <button
+                    className={`catalog-module-card animate-fade-up delay-${Math.min(i, 5) + 1}00`}
+                    onClick={() => onSelect(m)}
+                    style={{ color: m.iconColor || 'var(--color-primary)' }}
+                  >
+                    <IconComponent size={44} color={m.iconColor} fill={m.bg} strokeWidth={1.5} className="catalog-icon-container" />
+                  </button>
+                  <div className="catalog-module-label animate-fade-up">
                     <div className="catalog-module-name">{m.name}</div>
-                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
                       {m.duration && <div className="catalog-module-dur">{m.duration}</div>}
                       {m.question_count && (
-                        <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)', fontWeight: 550 }}>
+                        <div className="catalog-module-dur" style={{ color: 'var(--slate-500)', background: 'var(--slate-100)' }}>
                           {m.question_count} Q
                         </div>
                       )}
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

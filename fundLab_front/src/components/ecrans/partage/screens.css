@@ -500,35 +500,59 @@
 
 .catalog-modules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 24px;
   margin-bottom: 32px;
+}
+
+.catalog-module-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  width: 100%;
 }
 
 .catalog-module-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
-  gap: 12px;
-  padding: 20px;
-  background: var(--bg-white);
-  border: 1.5px solid var(--slate-200);
-  border-radius: 24px;
-  cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: center;
   width: 100%;
-  font-family: var(--font);
+  max-width: 110px;
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  border: 1.5px solid var(--slate-200);
+  background: var(--bg-white);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
 }
 
+.catalog-module-card .catalog-icon-container {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Hover effect on card */
 .catalog-module-card:hover {
-  border-color: rgba(38, 89, 242, 0.3);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.03);
-  transform: translateY(-4px);
-  background: var(--bg-white);
+  transform: scale(1.1) translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12);
+  border-color: currentColor;
+}
+
+.catalog-module-card:hover .catalog-icon-container {
+  transform: scale(1.15);
+}
+
+.catalog-module-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
 }
 
 .catalog-module-emoji {
@@ -536,36 +560,25 @@
 }
 
 .catalog-module-info { 
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.catalog-module-id {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--slate-400);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 2px;
+  display: none;
 }
 
 .catalog-module-name {
-  font-size: 0.92rem;
-  font-weight: 850;
+  font-size: 0.82rem;
+  font-weight: 800;
   color: var(--color-primary);
   line-height: 1.35;
   text-align: center;
+  max-width: 140px;
+  margin: 0;
 }
 
 .catalog-module-dur {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   color: var(--slate-500);
-  font-weight: 600;
+  font-weight: 700;
   background: var(--slate-100);
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: 9999px;
   display: inline-block;
   align-self: center;
