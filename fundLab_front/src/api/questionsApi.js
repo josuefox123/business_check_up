@@ -2,9 +2,9 @@ import { apiFetch } from './config.js';
 import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 export const questionsApi = {
-  getByModule(moduleId) {
+  getByModule(moduleId, questionKind = 'diagnostic') {
     const targetModuleId = moduleId === 'triage' ? 'TRI-00' : moduleId;
-    return apiFetch(`/modules/${targetModuleId}/questions?question_kind=diagnostic`)
+    return apiFetch(`/modules/${targetModuleId}/questions?question_kind=${questionKind}`)
       .then(res => {
         const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
         

@@ -21,3 +21,4 @@ export { OrientationSuivanteScreen } from '../restitution/OrientationSuivanteScr
 export { ContactSuiviScreen } from '../restitution/ContactSuiviScreen.jsx';
 export { FinParcoursScreen } from '../restitution/FinParcoursScreen.jsx';
 export { InstitutionnelleScreen } from '../restitution/InstitutionnelleScreen.jsx';
+export { UserProfileFormScreen } from '../restitution/UserProfileFormScreen.jsx';

@@ -74,14 +74,14 @@ export const ResultatSyntheseScreen = ({
   onRestart,
   onBack,
   restitution,
-  onCatalog
+  onCatalog,
+  onEnrichment
 }) => {
   // Use scoring.converted_score_0_100 or fallback to localScore prop
   const scoreRaw = restitution?.scoring?.converted_score_0_100 ?? localScore;
   const score = typeof scoreRaw === 'number' ? scoreRaw : Number(scoreRaw || 0);
 
   const lvl = getLevel(score);
-  const [isGeneratingPDF, setIsGeneratingPDF] = React.useState(false);
 
   const cleanModuleName = restitution?.module_name || moduleId;
 
@@ -100,42 +100,6 @@ export const ResultatSyntheseScreen = ({
     // Backend sends decimal (0–1), convert to percentage
     return `${Math.round(num * 100)}%`;
   })();
-
-  const handleDownloadPDF = async () => {
-    setIsGeneratingPDF(true);
-    try {
-      const forces = normalizeToArray(restitution?.strengths);
-      const fragilites = [
-        ...normalizeToArray(restitution?.weaknesses),
-        ...normalizeToArray(restitution?.typical_fragilities)
-      ];
-      const priorities = normalizeToArray(restitution?.priorities);
-
-      await generateDiagnosticPDF({
-        score,
-        moduleId,
-        moduleName: cleanModuleName || moduleId || 'Diagnostic',
-        forces,
-        fragilites,
-        priorityText: restitution?.scoring?.dominant_weakness || restitution?.scoring?.dominant_strength || null,
-        priorities,
-        totalQuestions: answers ? Object.keys(answers).length : 0,
-        confidence: credScore,
-        date: null,
-        userName: null,
-        companyName: null,
-        userEmail: null,
-        userPhone: null,
-        sector: null,
-        department: null,
-        commune: null,
-      });
-    } catch (err) {
-      console.error('Error generating PDF:', err);
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
 
   return (
     <ScreenWrapper wide>
@@ -262,9 +226,9 @@ export const ResultatSyntheseScreen = ({
           </div>
         </div>
 
-        {/* ── Download PDF row ── */}
+        {/* ── Enrichment questions row ── */}
         <div
-          onClick={handleDownloadPDF}
+          onClick={onEnrichment}
           style={{
             background: '#ffffff',
             border: '1px solid #E2E8F0',
@@ -284,7 +248,7 @@ export const ResultatSyntheseScreen = ({
             </div>
             <span style={{ fontSize: '1rem', fontWeight: 600 }}>Voir mon rapport complet</span>
           </div>
-          {isGeneratingPDF ? <Loader2 size={18} className="animate-spin" style={{ color: '#94A3B8' }} /> : <ChevronRight size={20} style={{ color: '#94A3B8' }} />}
+          <ChevronRight size={20} style={{ color: '#94A3B8' }} />
         </div>
 
         {/* ── Synthèse ── */}

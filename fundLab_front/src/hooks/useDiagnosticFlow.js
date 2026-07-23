@@ -58,6 +58,7 @@ export function useDiagnosticFlow() {
   const [isOffline, setIsOffline] = useState(false);
   const [references, setReferences] = useState(null);
   const [triageQuestions, setTriageQuestions] = useState([]);
+  const [isEnrichmentMode, setIsEnrichmentMode] = useState(false);
   const lastSubmittedQuestionIdRef = useRef(null);
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export function useDiagnosticFlow() {
     if (state.chosenForVerif !== undefined) setChosenForVerif(state.chosenForVerif);
     if (state.currentRunId !== undefined) setCurrentRunId(state.currentRunId);
     if (state.restitution !== undefined) setRestitution(state.restitution);
+    if (state.isEnrichmentMode !== undefined) setIsEnrichmentMode(state.isEnrichmentMode);
     if (state.sessionId) localStorage.setItem('bc_session_id', state.sessionId);
 
     if (state.currentPath && location.pathname !== state.currentPath) {
@@ -160,6 +162,7 @@ export function useDiagnosticFlow() {
         currentRunId,
         restitution,
         consentAnswers,
+        isEnrichmentMode,
         currentPath: location.pathname,
         sessionId: localStorage.getItem('bc_session_id'),
       });
@@ -177,6 +180,7 @@ export function useDiagnosticFlow() {
     currentRunId,
     restitution,
     consentAnswers,
+    isEnrichmentMode,
     location.pathname,
   ]);
 
@@ -564,7 +568,41 @@ export function useDiagnosticFlow() {
     }
 
     if (questionIndex + 1 >= questions.length) {
-      navigate('/diagnostic/calcul');
+      if (isEnrichmentMode) {
+        const triageDone = triageAnswers && triageAnswers.s03;
+        if (!triageDone) {
+          navigate('/diagnostic/profil');
+        } else {
+          // Triage déjà fait : on soumet le triage avec ces réponses pour l'enregistrement et le mail final
+          const sessionId = localStorage.getItem('bc_session_id');
+          if (sessionId) {
+            submitTriageToBackendApi(sessionId, triageAnswers)
+              .then(() => {
+                if (currentModule) {
+                  DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null, score);
+                }
+                clearState();
+                setTriageAnswers({});
+                setConsentAnswers({ diag: false, stats: false, contact: false });
+                setCurrentModule(null);
+                setModuleAnswers({});
+                setQuestionIndex(0);
+                setCurrentRunId(null);
+                setRestitution(null);
+                setIsEnrichmentMode(false);
+                navigate('/diagnostic/fin');
+              })
+              .catch(err => {
+                console.error('Error auto-submitting triage at end of enrichment:', err);
+                navigate('/diagnostic/fin');
+              });
+          } else {
+            navigate('/diagnostic/fin');
+          }
+        }
+      } else {
+        navigate('/diagnostic/calcul');
+      }
     } else {
       setQuestionIndex(p => p + 1);
     }
@@ -774,6 +812,105 @@ export function useDiagnosticFlow() {
     navigate('/diagnostic/fin');
   };
 
+  const onEnrichment = async () => {
+    if (!currentModule) return;
+    try {
+      const qList = await questionsApi.getByModule(currentModule.id, 'enrichment');
+      if (qList && qList.length > 0) {
+        setQuestions(qList);
+        setQuestionIndex(0);
+        setIsEnrichmentMode(true);
+        navigate('/diagnostic/question');
+      } else {
+        // Pas de questions d'enrichissement pour ce module, aller directement au profil ou à la fin
+        const triageDone = triageAnswers && triageAnswers.s03;
+        if (!triageDone) {
+          navigate('/diagnostic/profil');
+        } else {
+          navigate('/diagnostic/fin');
+        }
+      }
+    } catch (err) {
+      console.error('Error loading enrichment questions:', err);
+      navigate('/diagnostic/fin');
+    }
+  };
+
+  const onProfileSubmit = async (profileData) => {
+    const sessionId = localStorage.getItem('bc_session_id');
+    if (!sessionId) {
+      navigate('/diagnostic/fin');
+      return;
+    }
+
+    // Convertir les réponses du formulaire au format de triage attendu par le backend
+    const formattedAnswers = {
+      s03: profileData.user_profile_type,
+      s04: profileData.activity_stage,
+      s05: {
+        business_name: profileData.business_name || null,
+        region: profileData.region,
+        commune: profileData.commune || null,
+        secteur: profileData.sector,
+        soussecteur: profileData.sub_sector || null,
+        creation_year: profileData.year_created || null,
+      },
+      name: profileData.full_name || null,
+      phone: profileData.phone_number || null,
+      email: profileData.email || null,
+      // Valeurs par défaut indispensables au triage
+      s00: 'direct',
+      s06: 'global_understanding',
+      s07: [],
+      s08: 'none',
+      s09: 'full_360'
+    };
+
+    try {
+      await submitTriageToBackendApi(sessionId, formattedAnswers);
+      
+      // Soumettre les réponses finales du diagnostic
+      if (currentModule) {
+        await DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, {
+          name: profileData.full_name || 'Anonyme',
+          email: profileData.email || '',
+          phone: profileData.phone_number || '',
+          companyName: profileData.business_name || ''
+        }, score);
+      }
+      
+      clearState();
+      setTriageAnswers({});
+      setConsentAnswers({ diag: false, stats: false, contact: false });
+      setCurrentModule(null);
+      setModuleAnswers({});
+      setQuestionIndex(0);
+      setCurrentRunId(null);
+      setRestitution(null);
+      setIsEnrichmentMode(false);
+      navigate('/diagnostic/fin');
+    } catch (err) {
+      console.error('Error submitting profile triage at end:', err);
+      throw err;
+    }
+  };
+
+  const onProfileSkip = () => {
+    if (currentModule) {
+      DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null, score);
+    }
+    clearState();
+    setTriageAnswers({});
+    setConsentAnswers({ diag: false, stats: false, contact: false });
+    setCurrentModule(null);
+    setModuleAnswers({});
+    setQuestionIndex(0);
+    setCurrentRunId(null);
+    setRestitution(null);
+    setIsEnrichmentMode(false);
+    navigate('/diagnostic/fin');
+  };
+
   const onRestartFin = () => onGoHome();
   const onShare = () => {
     if (navigator.share) {
@@ -841,6 +978,10 @@ export function useDiagnosticFlow() {
     onContactSkip,
     onRestartFin,
     onShare,
-    restoreState
+    restoreState,
+    isEnrichmentMode,
+    onEnrichment,
+    onProfileSubmit,
+    onProfileSkip
   };
 }

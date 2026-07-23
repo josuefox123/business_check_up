@@ -30,6 +30,7 @@ import {
   ContactSuiviScreen,
   FinParcoursScreen,
   InstitutionnelleScreen,
+  UserProfileFormScreen
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
 
 
@@ -401,6 +402,7 @@ function DiagnosticApp() {
             restitution={flow.restitution}
             isOffline={flow.isOffline}
             onCatalog={flow.onGoToCatalog}
+            onEnrichment={flow.onEnrichment}
           />
         } />
         <Route path="/diagnostic/forces-fragilites" element={
@@ -434,6 +436,9 @@ function DiagnosticApp() {
         } />
         <Route path="/diagnostic/contact" element={
           <ContactSuiviScreen onSubmit={flow.onContactSubmit} onSkip={flow.onContactSkip} />
+        } />
+        <Route path="/diagnostic/profil" element={
+          <UserProfileFormScreen onSubmit={flow.onProfileSubmit} onSkip={flow.onProfileSkip} />
         } />
         <Route path="/diagnostic/fin" element={
           <FinParcoursScreen onRestart={flow.onRestartFin} onShare={flow.onShare} />
