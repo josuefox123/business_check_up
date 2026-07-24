@@ -83,8 +83,8 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
         </div>
       </div>
 
-      {/* Row 2: Activity + Notifications */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+      {/* Row 2: Activity */}
+      <div style={{ marginTop: '20px' }}>
         {/* Activity Chart */}
         <div className="admin-card">
           <div className="admin-card-header">
@@ -116,36 +116,6 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
               </div>
             ) : (
               <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '20px 0', fontSize: '0.875rem' }}>Aucune activité récente</p>
-            )}
-          </div>
-        </div>
-
-        {/* Unread Alerts */}
-        <div className="admin-card">
-          <div className="admin-card-header">
-            <h2>Alertes CCI en attente</h2>
-            <Link to="/admin/notifications" className="btn btn-ghost btn-sm">Voir tout</Link>
-          </div>
-          <div style={{ padding: '8px 0' }}>
-            {notifications.filter(n => !n.read).slice(0, 4).map(n => (
-              <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px 20px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-                <div style={{ marginTop: '2px', flexShrink: 0 }}>
-                  {n.type === 'danger'
-                    ? <AlertTriangle size={15} color="#ef4444" />
-                    : <Info size={15} color="#3b82f6" />}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.title}</div>
-                  <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '2px 0 0' }}>{n.message}</p>
-                </div>
-                <button
-                  onClick={() => onMarkRead(n.id)}
-                  style={{ flexShrink: 0, background: 'none', border: 'none', color: '#0d9488', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >✓ Lu</button>
-              </div>
-            ))}
-            {notifications.filter(n => !n.read).length === 0 && (
-              <p style={{ color: 'var(--adm-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '24px 20px' }}>Aucune alerte en attente</p>
             )}
           </div>
         </div>
