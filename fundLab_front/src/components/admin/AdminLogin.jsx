@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Check, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import logoImg from '../../assets/logo_compact.png';
-import { apiFetch } from '../../api/config.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/bc';
+import { apiFetch, API_BASE_URL } from '../../api/config.js';
 
 export const AdminLogin = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -24,9 +22,11 @@ export const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // Utilise l'origine courante de la fenêtre pour cibler précisément /api/auth/login dans tous les environnements
-    const loginUrl = typeof window !== 'undefined'
-      ? `${window.location.origin}/api/auth/login`
+    // Si API_BASE_URL est absolue (ex: https://business-chekcup.nicktep.com/api/api/bc)
+    // On extrait le domaine backend et /api pour pointer vers /api/auth/login
+    // Sinon on utilise le chemin relatif /api/auth/login pour le proxy local
+    const loginUrl = API_BASE_URL.startsWith('http')
+      ? API_BASE_URL.replace('/api/bc', '') + '/auth/login'
       : '/api/auth/login';
 
     apiFetch(loginUrl, {
