@@ -216,17 +216,70 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
         .profile-form-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 20px;
         }
         .profile-form-span-2 {
           grid-column: span 2;
         }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .form-label {
+          font-weight: 700 !important;
+          font-size: 0.85rem !important;
+          color: #1E293B !important;
+          margin-bottom: 2px;
+        }
+        .form-input {
+          height: 46px !important;
+          border-radius: 12px !important;
+          border: 1.5px solid #CBD5E1 !important;
+          background: #F8FAFC !important;
+          color: #0F172A !important;
+          font-size: 0.92rem !important;
+          padding: 0 16px !important;
+          transition: all 0.2s ease-in-out !important;
+          outline: none !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+        }
+        .form-input:focus {
+          border-color: #14B8A6 !important;
+          background: #ffffff !important;
+          box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1) !important;
+        }
+        select.form-input {
+          cursor: pointer !important;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 16px center;
+          background-size: 16px;
+          padding-right: 40px;
+        }
+        .profile-card-container {
+          background: #ffffff !important;
+          border: 1px solid #E2E8F0 !important;
+          padding: 32px !important;
+          border-radius: 20px !important;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02) !important;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
         @media (max-width: 640px) {
           .profile-form-grid {
             grid-template-columns: 1fr !important;
+            gap: 16px !important;
           }
           .profile-form-span-2 {
             grid-column: span 1 !important;
+          }
+          .profile-card-container {
+            padding: 20px 16px !important;
+            border-radius: 16px !important;
           }
         }
       `}</style>
@@ -244,7 +297,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
           </p>
         </div>
  
-        <form onSubmit={handleFormSubmit} style={{ background: 'var(--bg-white)', border: '1px solid var(--slate-200)', padding: isMobile ? '16px' : '28px', borderRadius: isMobile ? '12px' : '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px' }}>
+        <form onSubmit={handleFormSubmit} className="profile-card-container">
           
           {errors.global && (
             <div className="alert alert-danger" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', background: 'var(--color-danger-bg)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
@@ -262,7 +315,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
               </div>
               
               <div className="profile-form-grid">
-                <div className="form-group profile-form-span-2">
+                <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Vous êtes... <span style={{ color: 'var(--color-danger)' }}>*</span></label>
                   <select 
                     className="form-input" 
@@ -529,7 +582,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                   )}
                 </div>
  
-                <div className="form-group profile-form-span-2">
+                <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Stade d'activité <span style={{ color: 'var(--color-danger)' }}>*</span></label>
                   <select 
                     className="form-input" 
