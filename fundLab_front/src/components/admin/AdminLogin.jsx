@@ -77,10 +77,8 @@ export const AdminLogin = ({ onLogin }) => {
 
     setError('');
     
-    // Extrait le domaine pour pointer précisément vers /api/auth/login
-    const loginUrl = API_BASE_URL.includes('/api') 
-      ? `${API_BASE_URL.split('/api')[0]}/api/auth/login`
-      : '/api/auth/login';
+    // Conserve le préfixe complet de l'API /api/bc
+    const loginUrl = `${API_BASE_URL}/auth/login`;
 
     apiFetch(loginUrl, {
       method: 'POST',
