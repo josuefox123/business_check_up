@@ -33,59 +33,53 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
         <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
-              <div className="admin-stat-title">Diagnostics complétés</div>
+              <div className="admin-stat-title">Trafic total (visiteurs)</div>
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--brand-blue)' }}><Activity size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.totalDiagnostics ?? 0}</div>
-          {diagsTrend && (
-            <div className={`admin-stat-trend ${diagsTrend.cls}`}>
-              {diagsTrend.cls === 'positive' ? '↑' : diagsTrend.cls === 'negative' ? '↓' : '→'} {diagsTrend.label}
-            </div>
-          )}
-        </div>
-
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <div>
-              <div className="admin-stat-title">Prospects enregistrés</div>
-            </div>
-            <div className="admin-stat-icon" style={{ color: 'var(--color-teal)' }}><Users size={20} /></div>
+          <div className="admin-stat-value">{stats.traffic?.total_visitors ?? 0}</div>
+          <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
+            {stats.traffic?.new_sessions ?? 0} nouvelles sessions
           </div>
-          <div className="admin-stat-value">{stats.totalUsers ?? 0}</div>
-          {usersTrend && (
-            <div className={`admin-stat-trend ${usersTrend.cls}`}>
-              {usersTrend.cls === 'positive' ? '↑' : usersTrend.cls === 'negative' ? '↓' : '→'} {usersTrend.label}
-            </div>
-          )}
         </div>
 
         <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
-              <div className="admin-stat-title">Score moyen</div>
+              <div className="admin-stat-title">Diagnostics démarrés</div>
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-blue)' }}><BarChart2 size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.avgScore ?? 0}<span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--adm-muted)' }}>/100</span></div>
-          {scoreTrend && (
-            <div className={`admin-stat-trend ${scoreTrend.cls}`}>
-              {scoreTrend.cls === 'positive' ? '↑' : scoreTrend.cls === 'negative' ? '↓' : '→'} {scoreTrend.label}
-            </div>
-          )}
+          <div className="admin-stat-value">{stats.diagnostics?.started ?? 0}</div>
+          <div className="admin-stat-trend" style={{ color: 'var(--color-teal)', fontWeight: 600 }}>
+            {stats.diagnostics?.completed ?? 0} complétés
+          </div>
         </div>
 
         <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
-              <div className="admin-stat-title">Module dominant</div>
+              <div className="admin-stat-title">Taux de complétion</div>
+            </div>
+            <div className="admin-stat-icon" style={{ color: 'var(--color-teal)' }}><Users size={20} /></div>
+          </div>
+          <div className="admin-stat-value">{stats.diagnostics?.completion_rate ?? 0}%</div>
+          <div className="admin-stat-trend" style={{ color: '#ef4444' }}>
+            {stats.diagnostics?.abandoned ?? 0} abandonnés
+          </div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="admin-stat-header">
+            <div>
+              <div className="admin-stat-title">Demandes d'accompagnement</div>
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-warning)' }}><Award size={20} /></div>
           </div>
-          <div className="admin-stat-value" style={{ fontSize: '1.2rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {stats.mostUsedModuleName || '—'}
+          <div className="admin-stat-value">{stats.follow_ups?.total_requests ?? 0}</div>
+          <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
+            {stats.follow_ups?.new ?? 0} nouveaux · {stats.follow_ups?.urgent ?? 0} urgents
           </div>
-          <div className="admin-stat-trend">{stats.mostUsedModulePercentage ?? 0}% des sessions</div>
         </div>
       </div>
 
@@ -205,10 +199,10 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
           </div>
         </div>
 
-        {/* Top Sectors */}
+        {/* Top Sectors / Regions */}
         <div className="admin-card">
           <div className="admin-card-header">
-            <h2>Top secteurs d'activité</h2>
+            <h2>Top départements / régions</h2>
             <Link to="/admin/utilisateurs" className="btn btn-ghost btn-sm">Prospects</Link>
           </div>
           <div style={{ padding: '8px 0 16px' }}>

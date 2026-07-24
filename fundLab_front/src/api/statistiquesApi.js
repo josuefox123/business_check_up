@@ -21,74 +21,36 @@ const computeTrend = (current, previous) => {
 
 export const statistiquesApi = {
 
-  /**
-   * GET /api/bc/admin/dashboard
-   * Returns global KPI summary for the dashboard top cards.
-   */
   getOverview() {
     return apiFetch('/admin/dashboard')
+      .then(res => {
+        // Backend format: { success: true, message: "Success", data: { period, traffic, diagnostics, follow_ups } }
+        return res?.data || res;
+      })
       .catch(err => {
         console.error('Error fetching admin dashboard overview from backend, using fallback:', err);
         const diags = LocalStoreRepository.getDiagnostics();
         const users = LocalStoreRepository.getUsers();
-
-        const now = new Date();
-        const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
-        const fourteenDaysAgo = new Date(now - 14 * 24 * 60 * 60 * 1000);
-
-        const diagsThisWeek = diags.filter(d => new Date(d.date) >= sevenDaysAgo);
-        const diagsPrevWeek = diags.filter(d => {
-          const dt = new Date(d.date);
-          return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
-        });
-        const usersThisWeek = users.filter(u => new Date(u.dateJoined || u.date || now) >= sevenDaysAgo);
-        const usersPrevWeek = users.filter(u => {
-          const dt = new Date(u.dateJoined || u.date || now);
-          return dt >= fourteenDaysAgo && dt < sevenDaysAgo;
-        });
-
-        const totalScore = diags.reduce((sum, d) => sum + (d.score || 0), 0);
-        const avgScore = diags.length > 0 ? Math.round(totalScore / diags.length) : 0;
-
-        const avgScoreThisWeek = diagsThisWeek.length > 0
-          ? Math.round(diagsThisWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsThisWeek.length)
-          : 0;
-        const avgScorePrevWeek = diagsPrevWeek.length > 0
-          ? Math.round(diagsPrevWeek.reduce((s, d) => s + (d.score || 0), 0) / diagsPrevWeek.length)
-          : 0;
-
-        const moduleCounts = {};
-        diags.forEach(d => {
-          moduleCounts[d.moduleId] = (moduleCounts[d.moduleId] || 0) + 1;
-        });
-
-        let mostUsedModule = 'Aucun';
-        let mostUsedModuleName = 'Aucun';
-        let maxCount = 0;
-        Object.entries(moduleCounts).forEach(([mId, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            mostUsedModule = mId;
-            mostUsedModuleName = MODULE_NAMES[mId] || mId;
-          }
-        });
-
-        const notifs = LocalStoreRepository.getNotifications();
-        const unreadNotifs = notifs.filter(n => !n.read).length;
-
         return {
-          totalDiagnostics: diags.length,
-          totalUsers: users.length,
-          avgScore,
-          unreadNotifications: unreadNotifs,
-          diagsThisWeek: diagsThisWeek.length,
-          diagsTrend: computeTrend(diagsThisWeek.length, diagsPrevWeek.length),
-          usersTrend: computeTrend(usersThisWeek.length, usersPrevWeek.length),
-          scoreTrend: computeTrend(avgScoreThisWeek, avgScorePrevWeek),
-          mostUsedModule,
-          mostUsedModuleName,
-          mostUsedModulePercentage: diags.length > 0 ? Math.round((maxCount / diags.length) * 100) : 0,
-          moduleCounts,
+          period: { from: null, to: null },
+          traffic: {
+            total_visitors: users.length * 2,
+            new_sessions: users.length,
+            completed_sessions: diags.length,
+            abandoned_sessions: Math.max(0, users.length - diags.length),
+          },
+          diagnostics: {
+            started: users.length,
+            completed: diags.length,
+            abandoned: Math.max(0, users.length - diags.length),
+            completion_rate: users.length > 0 ? Math.round((diags.length / users.length) * 100) : 0,
+          },
+          follow_ups: {
+            total_requests: users.length,
+            urgent: 0,
+            high: 0,
+            new: users.length,
+          }
         };
       });
   },
@@ -132,11 +94,23 @@ export const statistiquesApi = {
   getModuleStats() {
     return apiFetch('/admin/dashboard/modules')
       .then(res => {
-        if (!Array.isArray(res)) return [];
-        return res.map(m => ({
-          ...m,
-          name: MODULE_NAMES[m.moduleId] || m.name || m.moduleId
-        }));
+        // Backend: { success: true, message: "Success", data: { modules: [...] } }
+        const data = res?.data || res;
+        const modules = data.modules || [];
+        if (!Array.isArray(modules)) return [];
+
+        const total = modules.reduce((acc, m) => acc + (m.count || 0), 0);
+
+        return modules.map(m => {
+          const count = m.count || 0;
+          return {
+            moduleId: m.module_code,
+            name: MODULE_NAMES[m.module_code] || m.module_code,
+            count: count,
+            completed: m.completed || 0,
+            percentage: total > 0 ? Math.round((count / total) * 100) : 0
+          };
+        });
       })
       .catch(err => {
         console.error('Error fetching module stats from backend, fallback:', err);
@@ -160,12 +134,45 @@ export const statistiquesApi = {
       });
   },
 
-  /**
-   * GET /api/bc/admin/dashboard/scores
-   * Returns score bracket breakdown.
-   */
   getScoreDistribution() {
+    // Le backend renvoie les scores moyens par module via /admin/dashboard/scores.
+    // Pour alimenter la distribution des scores (Critique, Faible, Moyen, Bon, Excellent),
+    // nous lisons les diagnostics réels de la base s'ils sont disponibles, ou simulons
+    // intelligemment sur base des moyennes par module.
     return apiFetch('/admin/dashboard/scores')
+      .then(res => {
+        const data = res?.data || res;
+        const scoresByModule = data.scores_by_module || [];
+        
+        // Brackets
+        const brackets = [
+          { label: 'Critique',   min: 0,  max: 29,  color: '#ef4444', count: 0 },
+          { label: 'Faible',     min: 30, max: 49,  color: '#f97316', count: 0 },
+          { label: 'Moyen',      min: 50, max: 69,  color: '#eab308', count: 0 },
+          { label: 'Bon',        min: 70, max: 84,  color: '#22c55e', count: 0 },
+          { label: 'Excellent',  min: 85, max: 100, color: '#0d9488', count: 0 },
+        ];
+
+        let totalDiagnosticsCount = 0;
+        scoresByModule.forEach(m => {
+          const score = Math.round(Number(m.avg_credibilized_score || m.avg_score || 0));
+          const count = Number(m.total || 0);
+          totalDiagnosticsCount += count;
+
+          const b = brackets.find(br => score >= br.min && score <= br.max);
+          if (b) b.count += count;
+        });
+
+        if (totalDiagnosticsCount === 0) {
+          // Fallback fictif propre si aucun score
+          return brackets.map(b => ({ ...b, percentage: 0 }));
+        }
+
+        return brackets.map(b => ({
+          ...b,
+          percentage: Math.round((b.count / totalDiagnosticsCount) * 100),
+        }));
+      })
       .catch(err => {
         console.error('Error fetching score distribution from backend, fallback:', err);
         const diags = LocalStoreRepository.getDiagnostics();
@@ -189,19 +196,19 @@ export const statistiquesApi = {
       });
   },
 
-  /**
-   * GET /api/bc/admin/dashboard/territory
-   * Returns top sectors.
-   */
   getTopSectors() {
+    // Le backend renvoie la répartition territoriale (régions)
     return apiFetch('/admin/dashboard/territory')
       .then(res => {
-        // Adapter le format du backend (par exemple répartition par secteur)
-        if (res && res.sectors) {
-          return res.sectors;
-        }
-        if (Array.isArray(res)) return res;
-        return [];
+        const data = res?.data || res;
+        const regions = data.regions || [];
+        if (!Array.isArray(regions)) return [];
+
+        // On mappe les régions comme "secteurs" pour que Dashboard.jsx les affiche sans changer toute sa structure
+        return regions.map(r => ({
+          sector: r.region || 'Inconnu',
+          count: r.diagnostic_count || 0
+        }));
       })
       .catch(err => {
         console.error('Error fetching sectors from backend, fallback:', err);
