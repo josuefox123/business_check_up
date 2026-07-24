@@ -5,7 +5,7 @@ import {
   FileText, ChevronRight, Bell, Search, Menu, X, Layers
 } from 'lucide-react';
 
-import logoImg from '../../assets/white_logo.png';
+import logoImg from '../../assets/icone diagnostique/logo_inverted_transparent.png';
 
 export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
   const location = useLocation();
