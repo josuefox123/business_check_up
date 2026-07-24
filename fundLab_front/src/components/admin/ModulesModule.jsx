@@ -1,43 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { questionnairesApi } from '../../api/questionnairesApi.js';
+import { questionsApi } from '../../api/questionsApi.js';
 
 export const ModulesModule = () => {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Charger les modules
+  // Charger les modules et leurs questions
   const loadModules = () => {
     setLoading(true);
-    // Charger d'abord depuis LocalStorage si existant, sinon depuis le backend
-    const saved = localStorage.getItem('bc_custom_modules');
-    if (saved) {
-      setModules(JSON.parse(saved));
-      setLoading(false);
-    } else {
-      questionnairesApi.getAll()
-        .then(list => {
-          const normalized = list.map(m => ({
-            code: m.id,
-            name: m.name,
-            family: m.family || 'general',
-            status: m.status || 'mvp',
-            target_duration: m.estimatedTime || '5 min',
-            question_count: m.questionsCount || 0
-          }));
-          setModules(normalized);
-          localStorage.setItem('bc_custom_modules', JSON.stringify(normalized));
-        })
-        .catch(() => {
-          const fallback = [
-            { code: 'FLH-01', name: 'Diagnostic Flash', family: 'general', status: 'mvp', target_duration: '5 min', question_count: 5 },
-            { code: 'PRJ-02', name: 'Diagnostic Projet', family: 'project', status: 'mvp', target_duration: '10 min', question_count: 10 }
-          ];
-          setModules(fallback);
-          localStorage.setItem('bc_custom_modules', JSON.stringify(fallback));
-        })
-        .finally(() => setLoading(false));
-    }
+    questionnairesApi.getAll()
+      .then(async (list) => {
+        const normalized = list.map(m => ({
+          code: m.id,
+          name: m.name,
+          family: m.family || 'general',
+          status: m.status || 'mvp',
+          target_duration: m.estimatedTime || '5 min',
+          question_count: m.questionsCount || 0,
+          diag_count: 0,
+          enrich_count: 0
+        }));
+
+        // Charger dynamiquement les décomptes des questions pour chaque module en parallèle
+        const enrichedModules = await Promise.all(
+          normalized.map(async (m) => {
+            try {
+              const diagList = await questionsApi.getByModule(m.code, 'diagnostic').catch(() => []);
+              const enrichList = await questionsApi.getByModule(m.code, 'enrichment').catch(() => []);
+              return {
+                ...m,
+                diag_count: diagList.length,
+                enrich_count: enrichList.length
+              };
+            } catch (e) {
+              // Valeurs par défaut si échec ou local
+              return {
+                ...m,
+                diag_count: m.question_count || 5,
+                enrich_count: m.code === 'PRJ-02' ? 8 : 0
+              };
+            }
+          })
+        );
+
+        setModules(enrichedModules);
+      })
+      .catch(() => {
+        const fallback = [
+          { code: 'FLH-01', name: 'Diagnostic Flash', family: 'general', status: 'mvp', target_duration: '5 min', question_count: 5, diag_count: 5, enrich_count: 0 },
+          { code: 'PRJ-02', name: 'Diagnostic Projet', family: 'project', status: 'mvp', target_duration: '10 min', question_count: 10, diag_count: 10, enrich_count: 8 }
+        ];
+        setModules(fallback);
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -65,7 +82,8 @@ export const ModulesModule = () => {
                   <th>Nom du module</th>
                   <th>Famille / Catégorie</th>
                   <th>Durée estimée</th>
-                  <th>Questions</th>
+                  <th>Q. Diagnostic</th>
+                  <th>Q. Enrichissement</th>
                   <th>Statut</th>
                 </tr>
               </thead>
@@ -88,7 +106,12 @@ export const ModulesModule = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="badge badge-slate">{m.question_count} question{m.question_count > 1 ? 's' : ''}</span>
+                      <span className="badge badge-slate">{m.diag_count} question{m.diag_count > 1 ? 's' : ''}</span>
+                    </td>
+                    <td>
+                      <span className="badge" style={{ background: 'rgba(52, 190, 213, 0.1)', color: 'var(--color-accent-dark, #1A9DB8)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                        {m.enrich_count} question{m.enrich_count > 1 ? 's' : ''}
+                      </span>
                     </td>
                     <td>
                       <span className={`admin-badge-severity ${m.status === 'mvp' || m.status === 'mvp_recommended' ? 'moyen' : 'faible'}`} style={{ textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>
@@ -99,7 +122,7 @@ export const ModulesModule = () => {
                 ))}
                 {modules.length === 0 && (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>Aucun module enregistré</td>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>Aucun module enregistré</td>
                   </tr>
                 )}
               </tbody>
