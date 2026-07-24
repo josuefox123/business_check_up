@@ -573,13 +573,12 @@ export function useDiagnosticFlow() {
     }
 
     if (questionIndex + 1 >= questions.length) {
-      // Profil déjà collecté en début de parcours
-      // Mode enrichissement → rendez-vous directement
-      // Mode diagnostic normal → calcul du score
+      // Mode enrichissement → profil déjà complet → rendez-vous directement
+      // Mode diagnostic normal → formulaire complémentaire (CA, employés) avant le calcul
       if (isEnrichmentMode) {
         navigate('/diagnostic/fin');
       } else {
-        navigate('/diagnostic/calcul');
+        navigate('/diagnostic/profil');
       }
     } else {
       setQuestionIndex(p => p + 1);
