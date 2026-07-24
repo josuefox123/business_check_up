@@ -218,24 +218,24 @@ export const RendezVousModule = ({ users }) => {
                         </div>
                       </td>
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           {appt.status === 'requested' && (
                             <>
-                              <button className="btn btn-teal btn-xs" onClick={() => handleOpenConfirm(appt)} title="Confirmer le créneau">
+                              <button className="btn btn-teal btn-xs" onClick={() => handleOpenConfirm(appt)} style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Confirmer le créneau">
                                 <Check size={14} /> Confirmer
                               </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} style={{ color: '#dc2626' }} title="Annuler">
-                                <XCircle size={14} />
+                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }} title="Annuler le rendez-vous">
+                                <XCircle size={14} /> Annuler
                               </button>
                             </>
                           )}
                           {appt.status === 'confirmed' && (
                             <>
-                              <button className="btn btn-teal btn-xs" onClick={() => handleComplete(appt.id)} title="Marquer comme réalisé">
-                                <Check size={14} /> Réalisé
+                              <button className="btn btn-teal btn-xs" onClick={() => handleComplete(appt.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Marquer comme réalisé">
+                                <Check size={14} /> Terminer
                               </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} style={{ color: '#dc2626' }} title="Annuler">
-                                <XCircle size={14} />
+                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }} title="Annuler le rendez-vous">
+                                <XCircle size={14} /> Annuler
                               </button>
                             </>
                           )}
