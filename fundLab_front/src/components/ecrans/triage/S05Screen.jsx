@@ -3,11 +3,10 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { REGIONS, SECTORS, DEPARTMENT_COMMUNES } from '../../../constants/locationData.js';
-import { AlertOctagon } from 'lucide-react';
 
 const COUNTRIES = [
   { code: 'BJ', name: 'Bénin', prefix: '+229', length: 8, extra: '01' },
-  { code: 'CI', name: 'Côte d’Ivoire', prefix: '+225', length: 10 },
+  { code: 'CI', name: "Côte d'Ivoire", prefix: '+225', length: 10 },
   { code: 'SN', name: 'Sénégal', prefix: '+221', length: 9 },
   { code: 'TG', name: 'Togo', prefix: '+228', length: 8 },
   { code: 'CM', name: 'Cameroun', prefix: '+237', length: 9 },
@@ -21,32 +20,216 @@ const COUNTRIES = [
   { code: 'FR', name: 'France', prefix: '+33', length: 9 },
 ];
 
+/* ─── Indicateur de progression ─── */
+const StepDots = ({ current, total }) => (
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '28px' }}>
+    {Array.from({ length: total }).map((_, i) => (
+      <div
+        key={i}
+        style={{
+          width: i === current ? '28px' : '8px',
+          height: '8px',
+          borderRadius: '999px',
+          background: i === current ? 'var(--color-primary, #14B8A6)' : 'var(--slate-200, #e2e8f0)',
+          transition: 'all 0.3s ease',
+        }}
+      />
+    ))}
+    <span style={{ marginLeft: '4px', fontSize: '0.78rem', color: 'var(--slate-400)', fontWeight: 500 }}>
+      {current + 1}/{total}
+    </span>
+  </div>
+);
+
+/* ─── Champ avec label et message d'erreur ─── */
+const Field = ({ label, required, optional, error, children }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <label style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--slate-700)' }}>
+      {label}
+      {required && <span style={{ color: 'var(--color-danger, #ef4444)', marginLeft: '3px' }}>*</span>}
+      {optional && (
+        <span style={{ color: 'var(--slate-400)', fontWeight: 400, marginLeft: '4px', fontSize: '0.8rem' }}>
+          (facultatif)
+        </span>
+      )}
+    </label>
+    {children}
+    {error && (
+      <span style={{ color: 'var(--color-danger, #ef4444)', fontSize: '0.76rem', fontWeight: 600 }}>
+        {error}
+      </span>
+    )}
+  </div>
+);
+
+/* ─── Input stylisé ─── */
+const inputStyle = {
+  width: '100%',
+  height: '46px',
+  padding: '0 14px',
+  fontSize: '0.92rem',
+  borderRadius: '12px',
+  border: '1.5px solid var(--slate-200, #e2e8f0)',
+  background: '#F8FAFC',
+  color: 'var(--slate-800)',
+  outline: 'none',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
+};
+
+const selectStyle = { ...inputStyle, cursor: 'pointer', appearance: 'none' };
+
+/* ─── Sélecteur téléphonique ─── */
+const PhoneInput = ({ countryCode, suffix, onCountryChange, onSuffixChange, dropdownOpen, setDropdownOpen }) => {
+  const config = COUNTRIES.find(c => c.code === countryCode) || COUNTRIES[0];
+  return (
+    <div style={{ display: 'flex', alignItems: 'stretch', position: 'relative' }}>
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'var(--slate-50)',
+            border: '1.5px solid var(--slate-200)',
+            borderRight: 'none',
+            padding: '0 12px',
+            borderTopLeftRadius: '12px',
+            borderBottomLeftRadius: '12px',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            color: 'var(--slate-700)',
+            cursor: 'pointer',
+            outline: 'none',
+            width: '105px',
+            height: '46px',
+            boxSizing: 'border-box',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <img
+              src={`https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`}
+              alt=""
+              style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }}
+            />
+            <span>{config.prefix}</span>
+          </div>
+          <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
+        </button>
+        {dropdownOpen && (
+          <>
+            <div
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
+              onClick={() => setDropdownOpen(false)}
+            />
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              zIndex: 1000,
+              background: 'white',
+              border: '1px solid var(--slate-200)',
+              borderRadius: '12px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              width: '240px',
+              marginTop: '4px',
+            }}>
+              {COUNTRIES.map(c => (
+                <div
+                  key={c.code}
+                  onClick={() => { onCountryChange(c.code); setDropdownOpen(false); }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    fontSize: '0.88rem',
+                    fontWeight: 500,
+                    color: 'var(--slate-700)',
+                    background: countryCode === c.code ? 'var(--slate-50)' : 'transparent',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-100)'}
+                  onMouseLeave={e => e.currentTarget.style.background = countryCode === c.code ? 'var(--slate-50)' : 'transparent'}
+                >
+                  <img src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} alt="" style={{ width: '20px', height: 'auto', borderRadius: '2px' }} />
+                  <span style={{ flex: 1 }}>{c.name}</span>
+                  <span style={{ color: 'var(--slate-400)', fontWeight: 600 }}>{c.prefix}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+      {countryCode === 'BJ' && (
+        <div style={{
+          background: 'var(--slate-100)',
+          border: '1.5px solid var(--slate-200)',
+          borderRight: 'none',
+          padding: '0 14px',
+          fontSize: '0.9rem',
+          color: 'var(--slate-600)',
+          fontWeight: 700,
+          userSelect: 'none',
+          height: '46px',
+          display: 'flex',
+          alignItems: 'center',
+          boxSizing: 'border-box',
+        }}>01</div>
+      )}
+      <input
+        type="text"
+        maxLength={countryCode === 'BJ' ? 8 : (config.length || 10)}
+        placeholder={countryCode === 'BJ' ? 'XXXXXXXX' : 'Numéro de téléphone'}
+        value={suffix}
+        onChange={e => onSuffixChange(e.target.value.replace(/[^0-9]/g, ''))}
+        style={{
+          ...inputStyle,
+          borderTopLeftRadius: '0',
+          borderBottomLeftRadius: '0',
+          flex: 1,
+          borderLeft: 'none',
+        }}
+      />
+    </div>
+  );
+};
+
+/* ════════════════════════════════════════════
+   COMPOSANT PRINCIPAL
+════════════════════════════════════════════ */
 export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
   const parsePhoneNumber = (num) => {
     if (!num) return { countryCode: 'BJ', suffix: '' };
     const clean = num.replace(/[\s\-\(\)]/g, '');
-    
     if (clean.startsWith('+22901')) return { countryCode: 'BJ', suffix: clean.slice(6) };
     if (clean.startsWith('22901')) return { countryCode: 'BJ', suffix: clean.slice(5) };
-    
     for (const c of COUNTRIES) {
-      if (clean.startsWith(c.prefix)) {
-        return { countryCode: c.code, suffix: clean.slice(c.prefix.length) };
-      }
+      if (clean.startsWith(c.prefix)) return { countryCode: c.code, suffix: clean.slice(c.prefix.length) };
       const rawPrefix = c.prefix.slice(1);
-      if (clean.startsWith(rawPrefix)) {
-        return { countryCode: c.code, suffix: clean.slice(rawPrefix.length) };
-      }
+      if (clean.startsWith(rawPrefix)) return { countryCode: c.code, suffix: clean.slice(rawPrefix.length) };
     }
-    
     if (clean.startsWith('01') && clean.length === 10) return { countryCode: 'BJ', suffix: clean.slice(2) };
     if (clean.length === 8) return { countryCode: 'BJ', suffix: clean };
-    
     return { countryCode: 'BJ', suffix: clean };
   };
 
+  const [step, setStep] = useState(1); // 1 = contact, 2 = entreprise
+  const [errors, setErrors] = useState({});
+  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
+
   const [data, setData] = useState(() => {
     const defaults = {
+      full_name: '',
+      email: '',
+      phone_country: 'BJ',
+      phone_suffix: '',
       business_name: '',
       region: '',
       commune: '',
@@ -55,88 +238,45 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
       creation_year: '',
       last_year_turnover: '',
       last_month_turnover: '',
-      phone_country: 'BJ',
-      phone_suffix: '',
-      whatsapp_country: 'BJ',
-      whatsapp_suffix: '',
-      email: ''
     };
     if (initialAnswer && typeof initialAnswer === 'object') {
       const parsedPhone = parsePhoneNumber(initialAnswer.phone_number);
-      const parsedWA = parsePhoneNumber(initialAnswer.whatsapp_number);
-      return { 
-        ...defaults, 
+      return {
+        ...defaults,
         ...initialAnswer,
         phone_country: parsedPhone.countryCode,
         phone_suffix: parsedPhone.suffix,
-        whatsapp_country: parsedWA.countryCode,
-        whatsapp_suffix: parsedWA.suffix,
       };
     }
     return defaults;
   });
-  
-  const [errors, setErrors] = useState({});
-  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
-  const [whatsappDropdownOpen, setWhatsappDropdownOpen] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const yearsList = [];
-  for (let y = currentYear; y >= 1960; y--) {
-    yearsList.push(y);
-  }
+  for (let y = currentYear; y >= 1960; y--) yearsList.push(y);
 
-  const handleRegionChange = (newRegion) => {
-    setData(prev => ({
-      ...prev,
-      region: newRegion,
-      commune: ''
-    }));
+  const filteredCommunes = DEPARTMENT_COMMUNES[data.region] || [];
+
+  /* ─── Validation Étape 1 ─── */
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!data.full_name.trim()) newErrors.full_name = 'Le nom et prénom sont requis.';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email.trim())) newErrors.email = "L'adresse e-mail n'est pas valide.";
+    const phoneConfig = COUNTRIES.find(c => c.code === data.phone_country) || COUNTRIES[0];
+    if (!data.phone_suffix || data.phone_suffix.trim().length !== phoneConfig.length) {
+      newErrors.phone_number = `Le numéro doit comporter exactement ${phoneConfig.length} chiffres.`;
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  /* ─── Validation Étape 2 + soumission ─── */
+  const handleFinalSubmit = () => {
     const newErrors = {};
-
-    // 1. Validation de l'année de création
-    if (!data.creation_year) {
-      newErrors.creation_year = "L'année de création est requise.";
-    }
-
-    // Trouver les configs de pays
-    const phoneCountryConfig = COUNTRIES.find(c => c.code === data.phone_country) || COUNTRIES[0];
-    const waCountryConfig = COUNTRIES.find(c => c.code === data.whatsapp_country) || COUNTRIES[0];
-
-    // 2. Validation du numéro de téléphone
-    if (!data.phone_suffix || data.phone_suffix.trim().length !== phoneCountryConfig.length) {
-      newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
-    }
-
-    // 3. Validation de l'email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email.trim())) {
-      newErrors.email = "L'adresse e-mail n'est pas valide (ex: contact@entreprise.com).";
-    }
-
-    // 4. Validation du WhatsApp (facultatif, mais s'il est fourni, format correct)
-    if (data.whatsapp_suffix && data.whatsapp_suffix.trim() && data.whatsapp_suffix.trim().length !== waCountryConfig.length) {
-      newErrors.whatsapp_number = `Le numéro WhatsApp doit comporter exactement ${waCountryConfig.length} chiffres.`;
-    }
-
-    // 5. Validation du CA annuel (facultatif)
-    if (data.last_year_turnover && data.last_year_turnover.trim()) {
-      const cleanTurnover = data.last_year_turnover.replace(/[\s\.FCAfca]/g, '');
-      if (isNaN(Number(cleanTurnover))) {
-        newErrors.last_year_turnover = "Le chiffre d'affaires annuel doit être un nombre.";
-      }
-    }
-
-    // 6. Validation du CA mensuel (facultatif)
-    if (data.last_month_turnover && data.last_month_turnover.trim()) {
-      const cleanTurnover = data.last_month_turnover.replace(/[\s\.FCAfca]/g, '');
-      if (isNaN(Number(cleanTurnover))) {
-        newErrors.last_month_turnover = "Le chiffre d'affaires mensuel doit être un nombre.";
-      }
-    }
+    if (!data.region) newErrors.region = 'Le département est requis.';
+    if (!data.secteur) newErrors.secteur = "Le secteur d'activité est requis.";
+    if (!data.creation_year) newErrors.creation_year = "L'année de création est requise.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -144,381 +284,179 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
     }
 
     setErrors({});
-    
-    // Reconstruire le format complet attendu par l'API
-    const finalPhonePrefix = phoneCountryConfig.code === 'BJ' ? '+22901' : phoneCountryConfig.prefix;
-    const finalWAPrefix = waCountryConfig.code === 'BJ' ? '+22901' : waCountryConfig.prefix;
+    const phoneConfig = COUNTRIES.find(c => c.code === data.phone_country) || COUNTRIES[0];
+    const finalPhonePrefix = phoneConfig.code === 'BJ' ? '+22901' : phoneConfig.prefix;
 
     const submitData = {
       ...data,
       phone_number: `${finalPhonePrefix}${data.phone_suffix}`,
-      whatsapp_number: data.whatsapp_suffix ? `${finalWAPrefix}${data.whatsapp_suffix}` : ''
+      whatsapp_number: '',
     };
     onContinue(submitData);
   };
 
-  const filteredCommunes = DEPARTMENT_COMMUNES[data.region] || [];
-  const canContinue = data.region && data.secteur && data.business_name.trim() && data.creation_year && data.phone_suffix.trim() && data.email.trim();
+  const set = (field) => (e) => setData(prev => ({ ...prev, [field]: e.target.value }));
+
+  /* ─── STEP 1 ─── */
+  const renderStep1 = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <Field label="Nom & Prénom" required error={errors.full_name}>
+        <input
+          style={inputStyle}
+          placeholder="Ex: Koffi SOGLO"
+          value={data.full_name}
+          onChange={set('full_name')}
+          onFocus={e => { e.target.style.borderColor = '#14B8A6'; e.target.style.boxShadow = '0 0 0 3px rgba(20,184,166,0.12)'; }}
+          onBlur={e => { e.target.style.borderColor = 'var(--slate-200)'; e.target.style.boxShadow = 'none'; }}
+        />
+      </Field>
+
+      <Field label="Adresse e-mail" required error={errors.email}>
+        <input
+          type="email"
+          style={inputStyle}
+          placeholder="Ex: koffi@soglo.bj"
+          value={data.email}
+          onChange={set('email')}
+          onFocus={e => { e.target.style.borderColor = '#14B8A6'; e.target.style.boxShadow = '0 0 0 3px rgba(20,184,166,0.12)'; }}
+          onBlur={e => { e.target.style.borderColor = 'var(--slate-200)'; e.target.style.boxShadow = 'none'; }}
+        />
+      </Field>
+
+      <Field label="Téléphone" required error={errors.phone_number}>
+        <PhoneInput
+          countryCode={data.phone_country}
+          suffix={data.phone_suffix}
+          onCountryChange={(code) => setData(prev => ({ ...prev, phone_country: code, phone_suffix: '' }))}
+          onSuffixChange={(val) => setData(prev => ({ ...prev, phone_suffix: val }))}
+          dropdownOpen={phoneDropdownOpen}
+          setDropdownOpen={setPhoneDropdownOpen}
+        />
+      </Field>
+    </div>
+  );
+
+  /* ─── STEP 2 ─── */
+  const renderStep2 = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <Field label="Nom de l'entreprise / projet" optional>
+        <input
+          style={inputStyle}
+          placeholder="Ex: Ets Soglo & Associés"
+          value={data.business_name}
+          onChange={set('business_name')}
+          onFocus={e => { e.target.style.borderColor = '#14B8A6'; e.target.style.boxShadow = '0 0 0 3px rgba(20,184,166,0.12)'; }}
+          onBlur={e => { e.target.style.borderColor = 'var(--slate-200)'; e.target.style.boxShadow = 'none'; }}
+        />
+      </Field>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <Field label="Département / Région" required error={errors.region}>
+          <div style={{ position: 'relative' }}>
+            <select
+              style={selectStyle}
+              value={data.region}
+              onChange={(e) => setData(prev => ({ ...prev, region: e.target.value, commune: '' }))}
+            >
+              <option value="">Sélectionnez</option>
+              {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: 'var(--slate-400)', pointerEvents: 'none' }}>▼</span>
+          </div>
+        </Field>
+
+        <Field label="Commune" optional>
+          <div style={{ position: 'relative' }}>
+            <select
+              style={{ ...selectStyle, opacity: !data.region ? 0.6 : 1 }}
+              value={data.commune}
+              onChange={set('commune')}
+              disabled={!data.region || data.region === 'Autre'}
+            >
+              <option value="">{!data.region ? "Département d'abord" : 'Sélectionnez'}</option>
+              {filteredCommunes.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: 'var(--slate-400)', pointerEvents: 'none' }}>▼</span>
+          </div>
+        </Field>
+      </div>
+
+      <Field label="Secteur d'activité" required error={errors.secteur}>
+        <div style={{ position: 'relative' }}>
+          <select style={selectStyle} value={data.secteur} onChange={set('secteur')}>
+            <option value="">Sélectionnez un secteur</option>
+            {SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: 'var(--slate-400)', pointerEvents: 'none' }}>▼</span>
+        </div>
+      </Field>
+
+      <Field label="Année de création" required error={errors.creation_year}>
+        <div style={{ position: 'relative' }}>
+          <select style={selectStyle} value={data.creation_year} onChange={set('creation_year')}>
+            <option value="">Sélectionnez l'année</option>
+            {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+          <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: 'var(--slate-400)', pointerEvents: 'none' }}>▼</span>
+        </div>
+      </Field>
+    </div>
+  );
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
+      {step === 1 && onBack && <TopBackLink onClick={onBack} />}
+      {step === 2 && <TopBackLink onClick={() => { setStep(1); setErrors({}); }} />}
+
       <div className="question-wrap animate-fade-up">
-        <h1 className="question-heading">Information Générale</h1>
-        <p className="question-hint">Ces informations nous permettent de contextualiser votre diagnostic.</p>
+        <StepDots current={step - 1} total={2} />
 
-        <div style={{display:'flex',flexDirection:'column',gap:'var(--space-4)',marginBottom:'var(--space-6)'}}>
-          
-          <div className="form-group">
-            <label className="form-label">Nom de l'entreprise <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <input 
-              className="form-input" 
-              placeholder="Saisissez le nom de votre entreprise" 
-              value={data.business_name} 
-              onChange={e=>setData({...data,business_name:e.target.value})} 
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Département <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select className="form-select" value={data.region} onChange={e=>handleRegionChange(e.target.value)}>
-              <option value="">Sélectionnez votre département</option>
-              {REGIONS.map(r=><option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Commune <span style={{color:'var(--slate-400)',fontWeight:400}}>(recommandé)</span></label>
-            <select 
-              className="form-select" 
-              value={data.commune} 
-              onChange={e=>setData({...data,commune:e.target.value})}
-              disabled={!data.region || data.region === 'Autre'}
-            >
-              <option value="">
-                {!data.region 
-                  ? 'Sélectionnez d’abord un département' 
-                  : data.region === 'Autre'
-                    ? 'Non applicable'
-                    : 'Sélectionnez votre commune'
-                }
-              </option>
-              {filteredCommunes.map(c=><option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Secteur d'activité <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select className="form-select" value={data.secteur} onChange={e=>setData({...data,secteur:e.target.value})}>
-              <option value="">Sélectionnez un secteur</option>
-              {SECTORS.map(s=><option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Sous-secteur <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
-            <input className="form-input" placeholder="Ex: Restauration, E-commerce, Logistique..." value={data.soussecteur} onChange={e=>setData({...data,soussecteur:e.target.value})} />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Année de création <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select 
-              className="form-select" 
-              value={data.creation_year} 
-              onChange={e=>setData({...data,creation_year:e.target.value})} 
-            >
-              <option value="">Sélectionnez l'année</option>
-              {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-            {errors.creation_year && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.creation_year}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Chiffre d'affaires de l'année dernière (FCFA) <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
-            <input 
-              className="form-input" 
-              placeholder="Ex: 5 000 000" 
-              value={data.last_year_turnover} 
-              onChange={e=>setData({...data,last_year_turnover:e.target.value})} 
-            />
-            {errors.last_year_turnover && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.last_year_turnover}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Chiffre d'affaires du mois dernier (FCFA) <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
-            <input 
-              className="form-input" 
-              placeholder="Ex: 450 000" 
-              value={data.last_month_turnover} 
-              onChange={e=>setData({...data,last_month_turnover:e.target.value})} 
-            />
-            {errors.last_month_turnover && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.last_month_turnover}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Numéro de téléphone <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-              <div style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  onClick={() => setPhoneDropdownOpen(!phoneDropdownOpen)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'var(--slate-50)',
-                    border: '1px solid var(--slate-300)',
-                    borderRight: 'none',
-                    padding: '0 12px',
-                    borderTopLeftRadius: '8px',
-                    borderBottomLeftRadius: '8px',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: 'var(--slate-700)',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    width: '105px',
-                    height: '42px',
-                    boxSizing: 'border-box',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <img 
-                      src={`https://flagcdn.com/w20/${data.phone_country.toLowerCase()}.png`} 
-                      alt="" 
-                      style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
-                    />
-                    <span>{COUNTRIES.find(c => c.code === data.phone_country)?.prefix}</span>
-                  </div>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
-                </button>
-                {phoneDropdownOpen && (
-                  <>
-                    <div 
-                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} 
-                      onClick={() => setPhoneDropdownOpen(false)} 
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      zIndex: 1000,
-                      background: 'white',
-                      border: '1px solid var(--slate-200)',
-                      borderRadius: '8px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      width: '240px',
-                      marginTop: '4px'
-                    }}>
-                      {COUNTRIES.map(c => (
-                        <div
-                          key={c.code}
-                          onClick={() => {
-                            setData({ ...data, phone_country: c.code, phone_suffix: '' });
-                            setPhoneDropdownOpen(false);
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '10px 12px',
-                            cursor: 'pointer',
-                            fontSize: '0.88rem',
-                            fontWeight: 500,
-                            color: 'var(--slate-700)',
-                            background: data.phone_country === c.code ? 'var(--slate-50)' : 'transparent',
-                            transition: 'background 0.2s'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-100)'}
-                          onMouseLeave={e => e.currentTarget.style.background = data.phone_country === c.code ? 'var(--slate-50)' : 'transparent'}
-                        >
-                          <img 
-                            src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
-                            alt="" 
-                            style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
-                          />
-                          <span style={{ flex: 1 }}>{c.name}</span>
-                          <span style={{ color: 'var(--slate-400)', fontWeight: 600 }}>{c.prefix}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-              {data.phone_country === 'BJ' && (
-                <div style={{ background: 'var(--slate-100)', border: '1px solid var(--slate-300)', borderRight: 'none', padding: '10px 14px', fontSize: '0.9rem', color: 'var(--slate-600)', fontWeight: 700, userSelect: 'none', height: '42px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
-                  01
-                </div>
-              )}
-              <input 
-                className="form-input" 
-                type="text"
-                maxLength={data.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === data.phone_country)?.length || 10)}
-                placeholder={data.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"} 
-                value={data.phone_suffix} 
-                onChange={e=>setData({...data, phone_suffix: e.target.value.replace(/[^0-9]/g, '')})} 
-                style={{ borderTopLeftRadius: '0', borderBottomLeftRadius: '0', flex: 1, height: '42px', boxSizing: 'border-box' }}
-              />
-            </div>
-            {errors.phone_number && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.phone_number}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Numéro WhatsApp <span style={{color:'var(--slate-400)',fontWeight:400}}>(facultatif)</span></label>
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-              <div style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  onClick={() => setWhatsappDropdownOpen(!whatsappDropdownOpen)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'var(--slate-50)',
-                    border: '1px solid var(--slate-300)',
-                    borderRight: 'none',
-                    padding: '0 12px',
-                    borderTopLeftRadius: '8px',
-                    borderBottomLeftRadius: '8px',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: 'var(--slate-700)',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    width: '105px',
-                    height: '42px',
-                    boxSizing: 'border-box',
-                    justifyContent: 'space-between'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <img 
-                      src={`https://flagcdn.com/w20/${data.whatsapp_country.toLowerCase()}.png`} 
-                      alt="" 
-                      style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
-                    />
-                    <span>{COUNTRIES.find(c => c.code === data.whatsapp_country)?.prefix}</span>
-                  </div>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
-                </button>
-                {whatsappDropdownOpen && (
-                  <>
-                    <div 
-                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} 
-                      onClick={() => setWhatsappDropdownOpen(false)} 
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      zIndex: 1000,
-                      background: 'white',
-                      border: '1px solid var(--slate-200)',
-                      borderRadius: '8px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                      width: '240px',
-                      marginTop: '4px'
-                    }}>
-                      {COUNTRIES.map(c => (
-                        <div
-                          key={c.code}
-                          onClick={() => {
-                            setData({ ...data, whatsapp_country: c.code, whatsapp_suffix: '' });
-                            setWhatsappDropdownOpen(false);
-                          }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '10px 12px',
-                            cursor: 'pointer',
-                            fontSize: '0.88rem',
-                            fontWeight: 500,
-                            color: 'var(--slate-700)',
-                            background: data.whatsapp_country === c.code ? 'var(--slate-50)' : 'transparent',
-                            transition: 'background 0.2s'
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-100)'}
-                          onMouseLeave={e => e.currentTarget.style.background = data.whatsapp_country === c.code ? 'var(--slate-50)' : 'transparent'}
-                        >
-                          <img 
-                            src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
-                            alt="" 
-                            style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
-                          />
-                          <span style={{ flex: 1 }}>{c.name}</span>
-                          <span style={{ color: 'var(--slate-400)', fontWeight: 600 }}>{c.prefix}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-              {data.whatsapp_country === 'BJ' && (
-                <div style={{ background: 'var(--slate-100)', border: '1px solid var(--slate-300)', borderRight: 'none', padding: '10px 14px', fontSize: '0.9rem', color: 'var(--slate-600)', fontWeight: 700, userSelect: 'none', height: '42px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
-                  01
-                </div>
-              )}
-              <input 
-                className="form-input" 
-                type="text"
-                maxLength={data.whatsapp_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === data.whatsapp_country)?.length || 10)}
-                placeholder={data.whatsapp_country === 'BJ' ? "XXXXXXXX" : "Numéro WhatsApp"} 
-                value={data.whatsapp_suffix} 
-                onChange={e=>setData({...data, whatsapp_suffix: e.target.value.replace(/[^0-9]/g, '')})} 
-                style={{ borderTopLeftRadius: '0', borderBottomLeftRadius: '0', flex: 1, height: '42px', boxSizing: 'border-box' }}
-              />
-            </div>
-            {errors.whatsapp_number && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.whatsapp_number}
-              </div>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Adresse e-mail <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <input 
-              type="email"
-              className="form-input" 
-              placeholder="Ex: contact@entreprise.com" 
-              value={data.email} 
-              onChange={e=>setData({...data,email:e.target.value})} 
-            />
-            {errors.email && (
-              <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                {errors.email}
-              </div>
-            )}
-          </div>
-
-        </div>
+        {step === 1 ? (
+          <>
+            <h1 className="question-heading" style={{ marginBottom: '8px' }}>
+              Peut-on en savoir plus sur vous ?
+            </h1>
+            <p className="question-hint" style={{ marginBottom: '28px' }}>
+              Ces informations nous permettent de personnaliser votre diagnostic.
+            </p>
+            {renderStep1()}
+          </>
+        ) : (
+          <>
+            <h1 className="question-heading" style={{ marginBottom: '8px' }}>
+              Parlez-nous de votre activité
+            </h1>
+            <p className="question-hint" style={{ marginBottom: '28px' }}>
+              Aidez-nous à comprendre le contexte de votre entreprise.
+            </p>
+            {renderStep2()}
+          </>
+        )}
       </div>
 
       <div className="screen-nav">
-        <Button variant="outline" onClick={onBack}>Retour</Button>
-        <Button variant="primary" disabled={!canContinue} onClick={handleContinue}>Continuer</Button>
+        {step === 1 ? (
+          <>
+            <Button variant="outline" onClick={onBack}>Retour</Button>
+            <Button
+              variant="primary"
+              onClick={() => { if (validateStep1()) { setStep(2); setErrors({}); } }}
+            >
+              Continuer
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="outline" onClick={() => { setStep(1); setErrors({}); }}>Retour</Button>
+            <Button
+              variant="primary"
+              disabled={!data.region || !data.secteur || !data.creation_year}
+              onClick={handleFinalSubmit}
+            >
+              Continuer
+            </Button>
+          </>
+        )}
       </div>
     </ScreenWrapper>
   );
