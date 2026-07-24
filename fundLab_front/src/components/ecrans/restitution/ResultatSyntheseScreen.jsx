@@ -397,37 +397,19 @@ export const ResultatSyntheseScreen = ({
           </div>
         )}
 
-        {/* ── Enrichment questions row ── */}
-        <div
-          onClick={onEnrichment}
-          style={{
-            background: '#ffffff',
-            border: '1px solid #E2E8F0',
-            borderRadius: '16px',
-            padding: '20px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
-          className="action-row-hover"
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <FileText size={20} color="#070E24" />
-            </div>
-            <span style={{ fontSize: '1rem', fontWeight: 600 }}>Voir mon rapport complet</span>
-          </div>
-          <ChevronRight size={20} style={{ color: '#94A3B8' }} />
-        </div>
-
         {/* ── Action Buttons ── */}
-        <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+        <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <Button
             variant="primary"
+            onClick={onEnrichment}
+            style={{ width: '100%', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
+          >
+            Voir mon rapport complet
+          </Button>
+          <Button
+            variant="outline"
             onClick={onRestart}
-            style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
+            style={{ width: '100%', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
           >
             Faire un autre diagnostic
           </Button>
