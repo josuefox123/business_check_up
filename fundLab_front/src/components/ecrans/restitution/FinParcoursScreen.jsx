@@ -18,7 +18,7 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Générer les 5 prochains jours ouvrés (du lundi au vendredi, à partir de demain)
+  // Récupération des plages de disponibilité définies par l'administrateur
   const [daysList, setDaysList] = useState([]);
   useEffect(() => {
     const days = [];
@@ -30,7 +30,7 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
     
     while (days.length < 5) {
       const dayOfWeek = current.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Exclure samedi et dimanche
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         const dateStr = current.toISOString().split('T')[0];
         
         const options = { weekday: 'long', day: 'numeric', month: 'long' };
