@@ -870,6 +870,16 @@ export function useDiagnosticFlow() {
         await DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, userObj, score);
       }
 
+      if (currentRunId) {
+        localStorage.setItem('last_run_id', currentRunId);
+      }
+      if (profileData) {
+        localStorage.setItem('last_user_name', profileData.full_name || '');
+        localStorage.setItem('last_user_email', profileData.email || '');
+        localStorage.setItem('last_user_phone', profileData.phone_number || '');
+        localStorage.setItem('last_user_whatsapp', profileData.whatsapp_number || '');
+      }
+
       clearState();
       setTriageAnswers({});
       setConsentAnswers({ diag: false, stats: false, contact: false });
