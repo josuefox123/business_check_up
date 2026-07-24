@@ -12,6 +12,7 @@ import { EntrepriseService } from './EntrepriseService.js';
 import { NotificationService } from './NotificationService.js';
 import { StatistiqueService } from './StatistiqueService.js';
 import { ParametreService } from './ParametreService.js';
+import { RendezVousService } from './RendezVousService.js';
 
 export const AdministrationService = {
   // CRUD modules
@@ -22,6 +23,7 @@ export const AdministrationService = {
   enterprises:    EntrepriseService,
   notifications:  NotificationService,
   settings:       ParametreService,
+  appointments:   RendezVousService,
 
   // Analytics — all methods exposed for the Dashboard
   statistics: {

@@ -8,6 +8,7 @@ import { QuestionnairesModule } from './QuestionnairesModule.jsx';
 import { UtilisateursModule } from './UtilisateursModule.jsx';
 import { ParametresModule } from './ParametresModule.jsx';
 import { ModulesModule } from './ModulesModule.jsx';
+import { RendezVousModule } from './RendezVousModule.jsx';
 import { AdminLogin } from './AdminLogin.jsx';
 import './admin.css';
 
@@ -115,6 +116,9 @@ export const AdminApp = () => {
             onDelete={handleDeleteUser} 
             onAdd={handleAddUser}
           />
+        } />
+        <Route path="/rendezvous" element={
+          <RendezVousModule users={users} />
         } />
         <Route path="/parametres" element={<ParametresModule />} />
       </Routes>

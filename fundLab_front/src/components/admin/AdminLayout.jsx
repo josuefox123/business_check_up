@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, ClipboardList, Settings, Users, 
-  FileText, ChevronRight, Bell, Search, Menu, X, Layers
+  FileText, ChevronRight, Bell, Search, Menu, X, Layers, Calendar
 } from 'lucide-react';
 
 import logoImg from '../../assets/icone diagnostique/logo_inverted_transparent.png';
@@ -20,6 +20,7 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
     { name: 'Diagnostics', path: '/admin/diagnostics', icon: <ClipboardList size={20} /> },
     { name: 'Questionnaires', path: '/admin/questionnaires', icon: <FileText size={20} /> },
     { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: <Users size={20} /> },
+    { name: 'Rendez-vous', path: '/admin/rendezvous', icon: <Calendar size={20} /> },
     { name: 'Paramètres', path: '/admin/parametres', icon: <Settings size={20} /> },
   ];
 
