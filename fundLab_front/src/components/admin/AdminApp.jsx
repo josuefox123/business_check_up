@@ -7,6 +7,7 @@ import { DiagnosticsModule } from './DiagnosticsModule.jsx';
 import { QuestionnairesModule } from './QuestionnairesModule.jsx';
 import { UtilisateursModule } from './UtilisateursModule.jsx';
 import { ParametresModule } from './ParametresModule.jsx';
+import { ModulesModule } from './ModulesModule.jsx';
 import { AdminLogin } from './AdminLogin.jsx';
 import './admin.css';
 
@@ -100,6 +101,7 @@ export const AdminApp = () => {
             onMarkRead={handleMarkReadNotif} 
           />
         } />
+        <Route path="/modules" element={<ModulesModule />} />
         <Route path="/diagnostics" element={
           <DiagnosticsModule 
             diagnostics={diagnostics} 
