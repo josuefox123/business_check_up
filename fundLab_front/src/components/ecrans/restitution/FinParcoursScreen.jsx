@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Award, Calendar, Clock, CheckCircle2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
+import { apiFetch } from '../../../api/config.js';
 
 /* ─── Créneaux horaires ─── */
 const generateSlots = () => {
@@ -179,27 +180,39 @@ export const FinParcoursScreen = ({ onRestart }) => {
   const handleBookAppointment = async () => {
     if (!selectedTime || !selectedDate) return;
     setIsSubmitting(true);
+
     const runId = localStorage.getItem('last_run_id');
-    const name  = localStorage.getItem('last_user_name')  || 'Anonyme';
-    const email = localStorage.getItem('last_user_email') || null;
-    const phone = localStorage.getItem('last_user_phone') || '00000000';
-    const whatsapp = localStorage.getItem('last_user_whatsapp') || phone;
-    const slotLabel = `${formatDayFull(selectedDate)} à ${selectedTime}`;
+
+    // Construction du datetime ISO 8601 : date sélectionnée + heure choisie
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const rdvDate = new Date(selectedDate);
+    rdvDate.setHours(hours, minutes, 0, 0);
+    const requested_starts_at = rdvDate.toISOString();
 
     if (!runId) {
+      // Pas de runId en local → simule la confirmation
       setTimeout(() => { setIsSubmitting(false); setBooked(true); setShowModal(false); }, 800);
       return;
     }
+
     try {
-      const res = await fetch(`/api/bc/diagnostics/${runId}/follow-up`, {
+      // POST /diagnostics/{diagnosticRunId}/appointment
+      // Base URL : https://business-chekcup.nicktep.com/api/
+      const BASE = 'https://business-chekcup.nicktep.com/api';
+      await apiFetch(`${BASE}/diagnostics/${runId}/appointment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: `${name} (RDV: ${slotLabel})`, phone_number: phone, whatsapp_number: whatsapp, email, follow_up_need_type: 'diagnostic_expert', preferred_contact_channel: 'phone' })
+        body: JSON.stringify({
+          requested_starts_at,
+          main_question: null
+        })
       });
-      if (!res.ok) throw new Error();
-      setBooked(true); setShowModal(false);
-    } catch {
-      setBooked(true); setShowModal(false);
+      setBooked(true);
+      setShowModal(false);
+    } catch (err) {
+      console.error('Appointment booking error:', err);
+      // En cas d'erreur réseau, on confirme quand même côté UX
+      setBooked(true);
+      setShowModal(false);
     } finally {
       setIsSubmitting(false);
     }
