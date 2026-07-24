@@ -106,11 +106,11 @@ export const ModulesModule = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="badge badge-slate">{m.diag_count} question{m.diag_count > 1 ? 's' : ''}</span>
+                      <span className="badge badge-slate" style={{ fontWeight: 700 }}>{m.diag_count}</span>
                     </td>
                     <td>
-                      <span className="badge" style={{ background: 'rgba(52, 190, 213, 0.1)', color: 'var(--color-accent-dark, #1A9DB8)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                        {m.enrich_count} question{m.enrich_count > 1 ? 's' : ''}
+                      <span className="badge" style={{ background: 'rgba(52, 190, 213, 0.1)', color: 'var(--color-accent-dark, #1A9DB8)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                        {m.enrich_count}
                       </span>
                     </td>
                     <td>
