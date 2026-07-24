@@ -106,9 +106,10 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     setForm(prev => ({ ...prev, [field]: val }));
   };
 
+  const [initialStep, setInitialStep] = useState(1);
   const isInitial = mode === 'initial';
-  const showContactFields = isInitial || (!triageAnswers?.name && !triageAnswers?.phone);
-  const showBusinessFields = isInitial;
+  const showContactFields = (isInitial && initialStep === 1) || (!isInitial && (!triageAnswers?.name && !triageAnswers?.phone));
+  const showBusinessFields = isInitial && initialStep === 2;
   const showFinancialFields = !isInitial;
  
   const handleFormSubmit = async (e) => {
@@ -170,6 +171,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       setErrors(newErrors);
       return;
     }
+
+    if (isInitial && initialStep === 1) {
+      setInitialStep(2);
+      return;
+    }
  
     setIsSubmitting(true);
     try {
@@ -185,7 +191,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       await onSubmit({
         ...form,
         phone_number: form.phone_suffix ? `${finalPhonePrefix}${form.phone_suffix}` : '',
-        whatsapp_number: '', // Retiré complètement de la soumission
+        whatsapp_number: '',
         years_in_activity: calculatedYears !== '' ? calculatedYears : null
       });
     } catch (err) {
@@ -193,6 +199,14 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       setErrors({ global: err.message || "Une erreur est survenue lors de l'enregistrement de votre profil." });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleBackClick = () => {
+    if (isInitial && initialStep === 2) {
+      setInitialStep(1);
+    } else if (onBack) {
+      onBack();
     }
   };
  
@@ -219,12 +233,14 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
         <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
           <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>
-            {isInitial ? "Complétez votre profil" : "Finalisez votre profil"}
+            {isInitial && initialStep === 1 && "Commençons par faire connaissance"}
+            {isInitial && initialStep === 2 && "Parlez-nous de votre activité"}
+            {!isInitial && "Finalisez votre profil"}
           </h1>
           <p style={{ fontSize: '0.92rem', color: 'var(--slate-500)', lineHeight: 1.6 }}>
-            {isInitial 
-              ? "Ces informations nous permettent de personnaliser votre diagnostic." 
-              : "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
+            {isInitial && initialStep === 1 && "Présentez-vous en quelques secondes pour démarrer votre diagnostic."}
+            {isInitial && initialStep === 2 && "Quelques détails sur votre projet ou votre entreprise."}
+            {!isInitial && "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
           </p>
         </div>
  
@@ -598,11 +614,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
  
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {onBack && (
+              {(onBack || (isInitial && initialStep === 2)) && (
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onBack}
+                  onClick={handleBackClick}
                   style={{ flex: isMobile ? '1 1 100%' : '1', order: isMobile ? 2 : 1, justifyContent: 'center', height: '42px' }}
                 >
                   Retour
@@ -614,7 +630,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                 style={{ flex: isMobile ? '1 1 100%' : '2', order: isMobile ? 1 : 2, justifyContent: 'center', height: '42px' }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Enregistrement...' : (isInitial ? 'Continuer vers le diagnostic →' : 'Valider et voir mon résultat →')}
+                {isSubmitting ? 'Enregistrement...' : (isInitial && initialStep === 1 ? 'Continuer →' : (isInitial ? 'Lancer le diagnostic →' : 'Valider et voir mon résultat →'))}
               </Button>
             </div>
           </div>
