@@ -425,18 +425,11 @@ export const ResultatSyntheseScreen = ({
         {/* ── Action Buttons ── */}
         <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '28px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
           <Button
-            variant="outline"
+            variant="primary"
             onClick={onRestart}
             style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
           >
             Faire un autre diagnostic
-          </Button>
-          <Button
-            variant="primary"
-            onClick={onCatalog}
-            style={{ flex: '1 1 0%', minWidth: '200px', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
-          >
-            Personnaliser mon rapport
           </Button>
         </div>
 
