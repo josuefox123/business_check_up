@@ -151,54 +151,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
         </div>
       </div>
 
-      {/* Row 3: Module Breakdown + Score Distribution + Top Sectors */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-        {/* Module Breakdown */}
-        <div className="admin-card">
-          <div className="admin-card-header">
-            <h2>Modules — Répartition</h2>
-            <Link to="/admin/diagnostics" className="btn btn-ghost btn-sm">Détails</Link>
-          </div>
-          <div style={{ padding: '16px 20px 20px' }}>
-            {moduleStats.length > 0 ? moduleStats.map(m => (
-              <div key={m.moduleId} style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px', color: '#0f172a' }}>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{m.name}</span>
-                  <span style={{ color: 'var(--adm-muted)', fontWeight: 500, flexShrink: 0 }}>{m.count} session{m.count !== 1 ? 's' : ''} · {m.percentage}%</span>
-                </div>
-                <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
-                  <div style={{ width: `${m.percentage}%`, height: '100%', background: 'linear-gradient(90deg, #5eead4, #0d9488)', borderRadius: '99px', transition: 'width 0.5s ease' }} />
-                </div>
-              </div>
-            )) : (
-              <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '20px 0', fontSize: '0.875rem' }}>Aucune session enregistrée</p>
-            )}
-          </div>
-        </div>
 
-        {/* Score Distribution */}
-        <div className="admin-card">
-          <div className="admin-card-header">
-            <h2>Distribution des scores</h2>
-          </div>
-          <div style={{ padding: '16px 20px 20px' }}>
-            {scoreDistrib.map(b => (
-              <div key={b.label} style={{ marginBottom: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px' }}>
-                  <span style={{ color: b.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: b.color, display: 'inline-block', flexShrink: 0 }} />
-                    {b.label} ({b.min}–{b.max})
-                  </span>
-                  <span style={{ color: 'var(--adm-muted)' }}>{b.count} · {b.percentage}%</span>
-                </div>
-                <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '99px', overflow: 'hidden' }}>
-                  <div style={{ width: `${b.percentage}%`, height: '100%', background: b.color, borderRadius: '99px', transition: 'width 0.5s ease' }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* Recent Diagnostics Quick List */}
       <div className="admin-card" style={{ marginTop: '20px' }}>
