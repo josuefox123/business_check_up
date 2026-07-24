@@ -33,7 +33,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
         <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
-              <div className="admin-stat-title">Trafic total (visiteurs)</div>
+              <div className="admin-stat-title">Sessions créées</div>
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--brand-blue)' }}><Activity size={20} /></div>
           </div>
@@ -196,25 +196,6 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Top Sectors / Regions */}
-        <div className="admin-card">
-          <div className="admin-card-header">
-            <h2>Top départements / régions</h2>
-            <Link to="/admin/utilisateurs" className="btn btn-ghost btn-sm">Prospects</Link>
-          </div>
-          <div style={{ padding: '8px 0 16px' }}>
-            {topSectors.length > 0 ? topSectors.map((s, idx) => (
-              <div key={s.sector} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 20px' }}>
-                <span style={{ fontWeight: 800, fontSize: '0.75rem', color: 'var(--adm-muted)', width: '18px', textAlign: 'right', flexShrink: 0 }}>#{idx + 1}</span>
-                <span style={{ flex: 1, fontSize: '0.875rem', fontWeight: 600, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.sector}</span>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-accent-dk)', background: 'rgba(13,148,136,0.08)', padding: '2px 8px', borderRadius: '99px', flexShrink: 0 }}>{s.count}</span>
-              </div>
-            )) : (
-              <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '24px 20px', fontSize: '0.875rem' }}>Aucune donnée géographique enregistrée</p>
-            )}
           </div>
         </div>
       </div>
