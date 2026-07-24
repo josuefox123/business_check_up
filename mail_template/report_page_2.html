@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Rapport de Diagnostic - Page 2</title>
+  <style>
+    :root {
+      --color-navy: #1e293b;
+      --color-teal: #0ea5e9;
+      --color-gray-50: #f9fafb;
+      --color-gray-100: #f3f4f6;
+      --color-gray-200: #e5e7eb;
+      --color-gray-400: #9ca3af;
+      --color-gray-500: #6b7280;
+      --color-gray-600: #4b5563;
+      --color-gray-700: #374151;
+      --color-gray-800: #1f2937;
+      --color-slate-50: #f8fafc;
+      --color-slate-100: #f1f5f9;
+      --color-slate-400: #94a3b8;
+      --color-slate-900: #0f172a;
+      --color-blue-50: #eff6ff;
+      --color-blue-100: #dbeafe;
+      --color-blue-500: #3b82f6;
+      --color-blue-600: #2563eb;
+      --color-blue-800: #1e40af;
+      --color-blue-900: #1e3a8a;
+      --color-teal-500: #14b8a6;
+      --color-teal-600: #0d9488;
+      --color-teal-700: #0f766e;
+      --color-red-50: #fef2f2;
+      --color-red-100: #fee2e2;
+      --color-red-500: #ef4444;
+      --color-red-600: #dc2626;
+      --color-red-700: #b91c1c;
+      --color-sky-700: #0369a1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-gray-100);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      padding: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 2rem;
+      }
+    }
+
+    .page-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 20px auto;
+      background-color: white;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      min-height: 1120px;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .page-container {
+        padding: 3rem;
+      }
+    }
+
+    .bg-accent-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(to bottom, var(--color-navy), var(--color-teal));
+      opacity: 0.2;
+    }
+
+    /* Typography */
+    .text-navy {
+      color: var(--color-navy);
+    }
+
+    .text-teal {
+      color: var(--color-teal);
+    }
+
+    .title-large {
+      font-size: 2.25rem;
+      line-height: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      text-transform: uppercase;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--color-gray-100);
+      padding-bottom: 1rem;
+    }
+
+    .header-logo {
+      width: 12rem;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: auto;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-subtitle {
+      font-size: 0.875rem;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      color: var(--color-gray-400);
+      text-transform: uppercase;
+    }
+
+    .page-number {
+      background-color: var(--color-slate-900);
+      color: white;
+      font-size: 1.25rem;
+      font-weight: bold;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.25rem;
+    }
+
+    /* Main Title */
+    .main-title-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .title-divider {
+      height: 0.25rem;
+      width: 4rem;
+      background-color: var(--color-teal-500);
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .title-desc {
+      color: var(--color-gray-600);
+      max-width: 32rem;
+    }
+
+    /* Analysis Content */
+    .analysis-content {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      flex-grow: 1;
+    }
+
+    @media (min-width: 1024px) {
+      .analysis-content {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+    }
+
+    /* Radar Chart Section */
+    .radar-section {
+      background-color: white;
+      border-radius: 0.75rem;
+      border: 1px solid var(--color-gray-100);
+      padding: 1.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    @media (min-width: 1024px) {
+      .radar-section {
+        grid-column: span 7 / span 7;
+      }
+    }
+
+    .radar-title {
+      font-size: 0.875rem;
+      font-weight: bold;
+      color: var(--color-gray-800);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .radar-subtitle {
+      font-size: 0.75rem;
+      color: var(--color-gray-400);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .radar-chart-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .radar-chart-svg {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      overflow: visible;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .radar-legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: bold;
+      color: var(--color-gray-500);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-line-solid {
+      width: 2rem;
+      height: 2px;
+      background-color: var(--color-blue-500);
+    }
+
+    .legend-line-dashed {
+      width: 2rem;
+      height: 2px;
+      border-top: 1px dashed var(--color-gray-400);
+    }
+
+    /* Side Cards */
+    .side-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    @media (min-width: 1024px) {
+      .side-cards {
+        grid-column: span 5 / span 5;
+      }
+    }
+
+    .card {
+      border-radius: 0.75rem;
+      padding: 1rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-icon-wrap {
+      padding: 0.25rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon {
+      width: 0.75rem;
+      height: 0.75rem;
+      color: white;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .card-list {
+      font-size: 0.75rem;
+      color: var(--color-gray-700);
+      list-style-type: disc;
+      padding-left: 1rem;
+    }
+
+    .card-list li {
+      margin-bottom: 0.5rem;
+    }
+
+    .card-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Card: Preuve */
+    .card-preuve {
+      background-color: rgba(239, 246, 255, 0.5);
+      /* blue-50/50 */
+      border: 1px solid var(--color-blue-100);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .card-preuve-icon-wrap {
+      background-color: white;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .card-preuve-icon {
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-blue-600);
+    }
+
+    .card-preuve-subtitle {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--color-gray-400);
+      text-transform: uppercase;
+    }
+
+    .card-preuve-title {
+      color: var(--color-blue-900);
+      font-weight: 900;
+      font-size: 1.125rem;
+    }
+
+    .card-preuve-desc {
+      font-size: 11px;
+      color: var(--color-blue-800);
+      line-height: 1.25;
+    }
+
+    /* Card: Appui */
+    .card-appui {
+      background-color: white;
+      border: 1px solid var(--color-gray-100);
+    }
+
+    .card-appui .card-icon-wrap {
+      background-color: var(--color-teal-600);
+    }
+
+    .card-appui .card-title {
+      color: var(--color-teal-700);
+    }
+
+    /* Card: Vigilances */
+    .card-vigilances {
+      background-color: rgba(254, 242, 242, 0.3);
+      /* red-50/30 */
+      border: 1px solid var(--color-red-100);
+    }
+
+    .card-vigilances .card-icon-wrap {
+      background-color: var(--color-red-600);
+    }
+
+    .card-vigilances .card-title {
+      color: var(--color-red-700);
+    }
+
+    /* Card: Facteurs Limitants */
+    .card-limitants {
+      background-color: white;
+      border: 1px solid var(--color-gray-100);
+    }
+
+    .card-limitants .card-icon-wrap {
+      background-color: var(--color-sky-700);
+      width: 1.25rem;
+      height: 1.25rem;
+      font-family: serif;
+      font-style: italic;
+      font-size: 10px;
+      color: white;
+    }
+
+    .card-limitants .card-title {
+      color: var(--color-sky-700);
+    }
+
+    .card-limitants p {
+      font-size: 0.75rem;
+      color: var(--color-gray-600);
+      font-style: italic;
+      line-height: 1.625;
+    }
+
+    /* Factors Grid */
+    .factors-section {
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .factors-title {
+      font-size: 10px;
+      font-weight: 900;
+      color: var(--color-gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--color-gray-100);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .factors-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .factors-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .factor-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .factor-icon-wrap {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      background-color: var(--color-slate-50);
+      border: 1px solid var(--color-slate-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-slate-400);
+    }
+
+    .factor-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .factor-name {
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--color-gray-800);
+      text-transform: uppercase;
+    }
+
+    .factor-desc {
+      font-size: 11px;
+      color: var(--color-gray-500);
+      line-height: 1.25;
+    }
+
+    /* Interpretation Notes */
+    .interpretation-notes {
+      margin-top: auto;
+      border-top: 1px solid var(--color-gray-100);
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .note-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background-color: rgba(249, 250, 251, 0.5);
+      /* gray-50/50 */
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+    }
+
+    .note-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--color-teal-500);
+      margin-top: 0.125rem;
+      flex-shrink: 0;
+    }
+
+    .note-text {
+      font-size: 10px;
+      color: var(--color-gray-500);
+      line-height: 1.25;
+    }
+
+    .note-title {
+      font-size: 10px;
+      font-weight: bold;
+      color: var(--color-gray-800);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-gray-200);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      color: var(--color-gray-400);
+      font-weight: 500;
+    }
+
+    @media (min-width: 768px) {
+      footer {
+        flex-direction: row;
+      }
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .footer-left {
+        margin-bottom: 0;
+      }
+    }
+
+    .footer-link {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .footer-icon {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+
+    .footer-confidential {
+      color: var(--color-red-500);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .footer-right {
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .footer-right {
+        text-align: right;
+      }
+    }
+
+    .footer-page-info {
+      margin-left: 1rem;
+      font-weight: bold;
+      color: var(--color-gray-800);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- BEGIN: MainReportPage -->
+  <main class="page-container">
+    <div class="bg-accent-bar"></div>
+    <!-- BEGIN: Header -->
+    <header>
+      <div class="header-logo">
+        <img alt="Business Check-up Logo"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHNls0nWxtYVo-PuKV9jxS7dvZnXCsEyY0hydlUqspq2BDdI5YGifPLh-gXfUoD4DsNlL-mtOUaT0b36Ra49dcluzwOI3d5NDoM6NwADS6KaRmP3FIdw5MKnq7ryTXvh3TTyV_WlgDXON6voELYIOfs0Oj_pyXTHwjTD6o9deCGn7Nriv7Sl8Pvhg6-EH579Lx131dpk-vCn5Th5MaM9WMR-RSejmMBqK54A1bqt4IyJzSuh8Hl9tkIb4NMu1YGbwohDyCko0gbsUh" />
+      </div>
+      <div class="header-right">
+        <span class="header-subtitle">Rapport de Diagnostic</span>
+        <div class="page-number">02</div>
+      </div>
+    </header>
+    <!-- END: Header -->
+    <!-- BEGIN: MainTitle -->
+    <section class="main-title-section">
+      <h1 class="title-large text-navy">Ce que révèle<br />votre diagnostic</h1>
+      <div class="title-divider"></div>
+      <p class="title-desc">
+        Analyse des forces, fragilités et facteurs clés qui influencent votre performance.
+      </p>
+    </section>
+    <!-- END: MainTitle -->
+    <!-- BEGIN: AnalysisContent -->
+    <div class="analysis-content">
+      <!-- Radar Chart Section -->
+      <section class="radar-section" data-purpose="radar-chart-container">
+        <h3 class="radar-title">Analyse Multidimensionnelle</h3>
+        <p class="radar-subtitle">Niveau de maturité par axe</p>
+        <!-- Radar Chart Placeholder -->
+        <div class="radar-chart-wrapper">
+          <svg class="radar-chart-svg" viewbox="-100 -100 600 600">
+            <!-- Background Polygons (the grid) -->
+            <polygon fill="none" points="200,40 338,120 338,280 200,360 62,280 62,120" stroke="#e2e8f0"
+              stroke-width="1"></polygon>
+            <polygon fill="none" points="200,80 304,140 304,260 200,320 96,260 96,140" stroke="#e2e8f0"
+              stroke-width="1"></polygon>
+            <polygon fill="none" points="200,120 269,160 269,240 200,280 131,240 131,160" stroke="#e2e8f0"
+              stroke-width="1"></polygon>
+            <!-- Axes Lines -->
+            <line stroke="#e2e8f0" x1="200" x2="200" y1="200" y2="40"></line>
+            <line stroke="#e2e8f0" x1="200" x2="338" y1="200" y2="120"></line>
+            <line stroke="#e2e8f0" x1="200" x2="338" y1="200" y2="280"></line>
+            <line stroke="#e2e8f0" x1="200" x2="200" y1="200" y2="360"></line>
+            <line stroke="#e2e8f0" x1="200" x2="62" y1="200" y2="280"></line>
+            <line stroke="#e2e8f0" x1="200" x2="62" y1="200" y2="120"></line>
+            <!-- Actual Data Polygon (Simulated) -->
+            <polygon fill="rgba(14, 165, 233, 0.2)" points="200,80 320,125 290,265 200,330 80,270 90,135"
+              stroke="#0ea5e9" stroke-width="3"></polygon>
+            <!-- Target Level (Dashed) -->
+            <polygon fill="none" points="200,60 325,130 325,270 200,340 75,270 75,130" stroke="#94a3b8"
+              stroke-dasharray="4" stroke-width="1"></polygon>
+            <!-- Labels -->
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="middle" x="200"
+              y="15">Finance &amp; Viabilité</text>
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="start" x="350"
+              y="115">Organisation &amp; Pilotage</text>
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="start" x="350"
+              y="295">Opérations &amp; Exécution</text>
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="middle" x="200"
+              y="395">Ressources Humaines</text>
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="end" x="50" y="295">Marché
+              &amp; Clients</text>
+            <text class="fill-gray-600 font-bold" fill="#4b5563" font-size="14" text-anchor="end" x="50" y="115">Offre
+              &amp; Positionnement</text>
+          </svg>
+        </div>
+        <!-- Legend -->
+        <div class="radar-legend">
+          <div class="legend-item">
+            <span class="legend-line-solid"></span>
+            <span>Votre niveau</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-line-dashed"></span>
+            <span>Niveau attendu</span>
+          </div>
+        </div>
+      </section>
+      <!-- Side Cards -->
+      <aside class="side-cards">
+        <!-- Niveau de preuve -->
+        <div class="card card-preuve">
+          <div class="card-preuve-icon-wrap">
+            <svg class="card-preuve-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 class="card-preuve-subtitle">Niveau de preuve</h4>
+            <p class="card-preuve-title">PARTIEL</p>
+            <p class="card-preuve-desc">4 éléments clés nécessitent des données ou preuves complémentaires.</p>
+          </div>
+        </div>
+        <!-- Points d'appui -->
+        <div class="card card-appui">
+          <div class="card-header">
+            <div class="card-icon-wrap"><svg class="card-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+              </svg></div>
+            <h4 class="card-title">Points d'appui</h4>
+          </div>
+          <ul class="card-list">
+            <li>Demande identifiée</li>
+            <li>Clientèle existante</li>
+            <li>Équipe engagée</li>
+            <li>Base opérationnelle disponible</li>
+          </ul>
+        </div>
+        <!-- Vigilances -->
+        <div class="card card-vigilances">
+          <div class="card-header">
+            <div class="card-icon-wrap"><svg class="card-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+              </svg></div>
+            <h4 class="card-title">Vigilances</h4>
+          </div>
+          <ul class="card-list">
+            <li>BFR non maîtrisé</li>
+            <li>Trésorerie sous tension</li>
+            <li>Processus non formalisés</li>
+            <li>Pilotage financier insuffisant</li>
+          </ul>
+        </div>
+        <!-- Facteurs Limitants -->
+        <div class="card card-limitants">
+          <div class="card-header">
+            <div class="card-icon-wrap">i</div>
+            <h4 class="card-title">Facteurs Limitants</h4>
+          </div>
+          <p>La faible visibilité sur les flux, les coûts et les délais limite la capacité de décision.</p>
+        </div>
+      </aside>
+    </div>
+    <!-- END: AnalysisContent -->
+    <!-- BEGIN: FactorsGrid -->
+    <section class="factors-section">
+      <h3 class="factors-title">Facteurs clés explicatifs</h3>
+      <div class="factors-grid">
+        <div data-purpose="factor-item">
+          <div class="factor-header">
+            <div class="factor-icon-wrap">
+              <svg class="factor-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+            <span class="factor-name">Trésorerie</span>
+          </div>
+          <p class="factor-desc">La pression sur la trésorerie limite la capacité à saisir les opportunités.</p>
+        </div>
+        <div data-purpose="factor-item">
+          <div class="factor-header">
+            <div class="factor-icon-wrap">
+              <svg class="factor-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+            <span class="factor-name">Organisation</span>
+          </div>
+          <p class="factor-desc">L'organisation actuelle ne permet pas un pilotage régulier et efficace.</p>
+        </div>
+        <div data-purpose="factor-item">
+          <div class="factor-header">
+            <div class="factor-icon-wrap">
+              <svg class="factor-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+            <span class="factor-name">Données financières</span>
+          </div>
+          <p class="factor-desc">Les données sont encore partielles ou non structurées.</p>
+        </div>
+        <div data-purpose="factor-item">
+          <div class="factor-header">
+            <div class="factor-icon-wrap">
+              <svg class="factor-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                <path
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+            <span class="factor-name">Ressources humaines</span>
+          </div>
+          <p class="factor-desc">Les rôles et responsabilités sont insuffisamment clarifiés et formalisés.</p>
+        </div>
+      </div>
+    </section>
+    <!-- END: FactorsGrid -->
+    <!-- BEGIN: InterpretationNotes -->
+    <section class="interpretation-notes">
+      <div class="note-item">
+        <svg class="note-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+            stroke-linejoin="round" stroke-width="2"></path>
+        </svg>
+        <p class="note-text">Le score synthétise les réponses ; le radar montre la lecture par axe ; le niveau de preuve
+          indique le degré de confiance dans cette lecture.</p>
+      </div>
+      <div class="note-item">
+        <svg class="note-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round"
+            stroke-width="2"></path>
+        </svg>
+        <div>
+          <h5 class="note-title">Limites de la lecture</h5>
+          <p class="note-text">Certaines analyses nécessitent des données complémentaires (BFR détaillé, marges par
+            activité, coûts par chantier...).</p>
+        </div>
+      </div>
+    </section>
+    <!-- END: InterpretationNotes -->
+    <!-- BEGIN: Footer -->
+    <footer>
+      <div class="footer-left">
+        <span class="footer-link"><svg class="footer-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+            <path
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg> checkup.business-assist.io</span>
+        <span class="footer-confidential">STRICTEMENT CONFIDENTIEL</span>
+      </div>
+      <div class="footer-right">
+        Document généré à partir des informations déclarées par l'utilisateur.
+        <span class="footer-page-info">PAGE 2 SUR 3</span>
+      </div>
+    </footer>
+    <!-- END: Footer -->
+  </main>
+  <!-- END: MainReportPage -->
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@source "../../../**/*.jsx";
+
+@theme {
+  --color-navy: #1a2332;
+  --color-teal-400: #38b2ac;
+}
+
+@layer base {
+  .pdf-template-wrapper {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+  .pdf-template-wrapper *,
+  .pdf-template-wrapper ::before,
+  .pdf-template-wrapper ::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+  }
+  .pdf-template-wrapper h1,
+  .pdf-template-wrapper h2,
+  .pdf-template-wrapper h3,
+  .pdf-template-wrapper h4,
+  .pdf-template-wrapper h5,
+  .pdf-template-wrapper h6 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+  .pdf-template-wrapper p {
+    margin: 0;
+  }
+  .pdf-template-wrapper img,
+  .pdf-template-wrapper svg {
+    display: block;
+  }
+}

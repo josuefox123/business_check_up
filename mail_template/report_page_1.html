@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Rapport de Diagnostic - Business Check-up</title>
+  <style>
+    /* Reset and Base Styles */
+    :root {
+      --navy: #1a2332;
+      --teal: #38b2ac;
+      --teal-light: #4fd1c5;
+      --teal-dark: #319795;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-800: #1f2937;
+      --red-500: #ef4444;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      /* Web-safe font as requested */
+      background-color: var(--gray-100);
+      color: var(--gray-800);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Layout Utilities */
+    .a4-page {
+      background-color: var(--white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+    }
+
+    @media (min-width: 1024px) {
+      .a4-page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 2rem auto;
+        padding: 3rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .bg-pattern {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-image: radial-gradient(var(--navy) 0.5px, transparent 0.5px);
+      background-size: 15px 15px;
+      opacity: 0.03;
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 3rem;
+    }
+
+    .header-logo {
+      width: 12rem;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--gray-500);
+      text-transform: uppercase;
+    }
+
+    .page-number {
+      background-color: var(--navy);
+      color: var(--white);
+      font-weight: 700;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 1.25rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    @media (min-width: 1024px) {
+      .hero {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+    }
+
+    .hero-content {
+      flex: 1;
+    }
+
+    .hero-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    @media (min-width: 1024px) {
+      .hero-title {
+        font-size: 3rem;
+      }
+    }
+
+    .hero-divider {
+      width: 4rem;
+      height: 0.375rem;
+      background-color: var(--teal-light);
+      margin-bottom: 2rem;
+    }
+
+    .hero-desc {
+      color: var(--gray-500);
+      font-size: 1.125rem;
+      line-height: 1.625;
+      max-width: 28rem;
+    }
+
+    /* Score Card */
+    .score-card {
+      width: 100%;
+      background-color: var(--white);
+      border: 1px solid var(--gray-100);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    @media (min-width: 1024px) {
+      .score-card {
+        width: 18rem;
+      }
+    }
+
+    .score-title {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--gray-400);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .circular-progress-container {
+      position: relative;
+      width: 8rem;
+      height: 8rem;
+      margin: 0 auto 1.5rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .circular-progress {
+      background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
+        conic-gradient(var(--navy) 62%, var(--gray-200) 0);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-value {
+      text-align: center;
+    }
+
+    .score-number {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .score-max {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gray-400);
+    }
+
+    .score-level {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-500);
+      margin-bottom: 0.75rem;
+    }
+
+    .score-level span {
+      color: var(--navy);
+    }
+
+    .score-interpretation {
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    .score-interpretation h4 {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--teal-dark);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .score-interpretation p {
+      font-size: 9px;
+      line-height: 1.2;
+      color: var(--gray-400);
+      font-style: italic;
+    }
+
+    /* Info Grid */
+    .info-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr;
+      column-gap: 3rem;
+      row-gap: 1.5rem;
+      background-color: rgba(249, 250, 251, 0.5);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      border: 1px solid var(--gray-100);
+    }
+
+    @media (min-width: 768px) {
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .info-icon {
+      color: var(--navy);
+      margin-top: 0.25rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .info-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-value {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    /* Banner */
+    .banner {
+      position: relative;
+      z-index: 10;
+      background-color: var(--navy);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .banner-watermark {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      opacity: 0.1;
+      pointer-events: none;
+      transform: translateX(25%);
+    }
+
+    .banner-watermark img {
+      height: 100%;
+      object-fit: contain;
+      filter: invert(1) grayscale(1);
+    }
+
+    .banner-content {
+      position: relative;
+      z-index: 10;
+      border-left: 4px solid var(--teal-light);
+      padding-left: 1.5rem;
+    }
+
+    .banner-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      color: var(--teal-light);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .banner-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    @media (min-width: 1024px) {
+      .banner-text {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Priorities Section */
+    .priorities {
+      position: relative;
+      z-index: 10;
+      flex-grow: 1;
+    }
+
+    .priorities-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .priorities-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(26, 35, 50, 0.1);
+      padding-bottom: 1rem;
+      display: inline-block;
+    }
+
+    .priorities-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .priorities-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .priority-item {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .priority-number {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      border: 1px solid var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+    }
+
+    .priority-icon {
+      color: var(--teal);
+      margin-bottom: 1rem;
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .priority-text {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.25;
+      padding: 0 1rem;
+    }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid var(--gray-100);
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      font-size: 10px;
+    }
+
+    @media (min-width: 640px) {
+      .footer {
+        flex-direction: row;
+      }
+    }
+
+    .footer-left,
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-right {
+      color: var(--gray-400);
+      text-align: center;
+    }
+
+    @media (min-width: 640px) {
+      .footer-right {
+        text-align: right;
+      }
+    }
+
+    .footer-link {
+      color: var(--teal);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    .footer-divider {
+      width: 1px;
+      height: 0.75rem;
+      background-color: var(--gray-200);
+    }
+
+    .footer-divider-tall {
+      height: 2rem;
+      display: none;
+    }
+
+    @media (min-width: 640px) {
+      .footer-divider-tall {
+        display: block;
+      }
+    }
+
+    .footer-confidential {
+      color: var(--red-500);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+
+    .footer-page {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- BEGIN: Main Page Container -->
+  <main class="a4-page">
+    <!-- Background Decor -->
+    <div class="bg-pattern"></div>
+    <!-- BEGIN: Header -->
+    <header class="header" data-purpose="main-header">
+      <div class="header-logo">
+        <img alt="Business Check-up Logo"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHwLEa29080tYf4acgI4XdzX1kq9fqq7441veFbgTJfucooobPRYQJLB39J4FsAe-Hd_jD_L1iQNgqvhlkQuw4D-juKlJmsMuWy-BXnaLBPJO_fcQsLPKnNy99XnB-XCxwdk6A9Dqi1Wnd_ulFPH1CsLw9QKZ6dz-9NZdQZEo5IGhAFVznVuxa-ao05Gj5FG7sjzBRcVHgAN1RzMetHKrV20l1E1fj4M-h4zRRFCI81PDRRZ6SyQxVhthrK2Eg8TBi5dWwQfk17-pw" />
+      </div>
+      <div class="header-info">
+        <span class="header-label">RAPPORT DE DIAGNOSTIC</span>
+        <div class="page-number" data-purpose="page-number">01</div>
+      </div>
+    </header>
+    <!-- END: Header -->
+    <!-- BEGIN: Hero Section -->
+    <section class="hero" data-purpose="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Votre situation<br />en bref
+        </h1>
+        <div class="hero-divider"></div>
+        <p class="hero-desc">
+          Voici une lecture synthétique de votre entreprise et des principaux enseignements de votre diagnostic.
+        </p>
+      </div>
+      <!-- Score Card -->
+      <div class="score-card" data-purpose="score-summary">
+        <h3 class="score-title">Score Indicatif</h3>
+        <!-- Circular Progress Chart -->
+        <div class="circular-progress-container">
+          <div class="circular-progress">
+            <div class="score-value">
+              <span class="score-number">62</span>
+              <span class="score-max">/100</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="score-level">Niveau de preuve : <span>partiel</span></p>
+          <div class="score-interpretation">
+            <h4>Interprétation</h4>
+            <p>Score indicatif à interpréter avec le niveau de preuve et les recommandations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- END: Hero Section -->
+    <!-- BEGIN: Info Grid -->
+    <section class="info-grid" data-purpose="business-info-grid">
+      <!-- Item 1: Entreprise -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Entreprise</p>
+          <p class="info-value">Excellence BTP Bénin</p>
+        </div>
+      </div>
+      <!-- Item 2: Module -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Module Réalisé</p>
+          <p class="info-value">Finance &amp; Viabilité</p>
+        </div>
+      </div>
+      <!-- Item 3: Secteur -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="1.5"></path>
+            <path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Secteur</p>
+          <p class="info-value">BTP &amp; Construction</p>
+        </div>
+      </div>
+      <!-- Item 4: Date -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Date du Diagnostic</p>
+          <p class="info-value">Juillet 2026</p>
+        </div>
+      </div>
+      <!-- Item 5: Zone -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+            <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"
+              stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Zone</p>
+          <p class="info-value">Littoral, Cotonou, Akpakpa</p>
+        </div>
+      </div>
+      <!-- Item 6: Référence -->
+      <div class="info-item">
+        <div class="info-icon">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+          </svg>
+        </div>
+        <div>
+          <p class="info-label">Référence</p>
+          <p class="info-value">BCU-2026-STRAT-001</p>
+        </div>
+      </div>
+    </section>
+    <!-- END: Info Grid -->
+    <!-- BEGIN: Banner Message -->
+    <section class="banner" data-purpose="summary-banner">
+      <!-- Decorative Logo Watermark in background -->
+      <div class="banner-watermark">
+        <img alt=""
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHwLEa29080tYf4acgI4XdzX1kq9fqq7441veFbgTJfucooobPRYQJLB39J4FsAe-Hd_jD_L1iQNgqvhlkQuw4D-juKlJmsMuWy-BXnaLBPJO_fcQsLPKnNy99XnB-XCxwdk6A9Dqi1Wnd_ulFPH1CsLw9QKZ6dz-9NZdQZEo5IGhAFVznVuxa-ao05Gj5FG7sjzBRcVHgAN1RzMetHKrV20l1E1fj4M-h4zRRFCI81PDRRZ6SyQxVhthrK2Eg8TBi5dWwQfk17-pw" />
+      </div>
+      <div class="banner-content">
+        <p class="banner-label">Lecture Générale</p>
+        <p class="banner-text">
+          Base opérationnelle existante,<br />mais trajectoire encore insuffisamment pilotée.
+        </p>
+      </div>
+    </section>
+    <!-- END: Banner Message -->
+    <!-- BEGIN: Priorities Section -->
+    <section class="priorities" data-purpose="priorities-section">
+      <div class="priorities-header">
+        <h2 class="priorities-title">
+          Vos 3 priorités immédiates
+        </h2>
+      </div>
+      <div class="priorities-grid">
+        <!-- Priority 1 -->
+        <div class="priority-item">
+          <div class="priority-number">01</div>
+          <div class="priority-icon">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+            </svg>
+          </div>
+          <p class="priority-text">Sécuriser le besoin en fonds de roulement</p>
+        </div>
+        <!-- Priority 2 -->
+        <div class="priority-item">
+          <div class="priority-number">02</div>
+          <div class="priority-icon">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="1.5"></path>
+            </svg>
+          </div>
+          <p class="priority-text">Renforcer la visibilité financière et la trésorerie</p>
+        </div>
+        <!-- Priority 3 -->
+        <div class="priority-item">
+          <div class="priority-number">03</div>
+          <div class="priority-icon">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+            </svg>
+          </div>
+          <p class="priority-text">Structurer l'organisation et le pilotage</p>
+        </div>
+      </div>
+    </section>
+    <!-- END: Priorities Section -->
+    <!-- BEGIN: Footer -->
+    <footer class="footer" data-purpose="page-footer">
+      <div class="footer-left">
+        <a class="footer-link" href="https://checkup.business-assist.io">checkup.business-assist.io</a>
+        <div class="footer-divider"></div>
+        <span class="footer-confidential">STRICTEMENT CONFIDENTIEL</span>
+      </div>
+      <div class="footer-right">
+        <p>Document généré à partir des informations<br />déclarées par l'utilisateur.</p>
+        <div class="footer-divider footer-divider-tall"></div>
+        <p class="footer-page">PAGE 1 SUR 3</p>
+      </div>
+    </footer>
+    <!-- END: Footer -->
+  </main>
+  <!-- END: Main Page Container -->
+</body>
+
+</html>

@@ -1,13 +1,26 @@
-import React from 'react';
-import { Compass, Users, Target, Calendar, TrendingUp, FileText, AlertOctagon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Compass, Users, Target, Calendar, TrendingUp, FileText, AlertOctagon, Loader2 } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
+import { generateReportPDF } from '../../../utils/generateReportPDF.js';
 
 export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog, restitution, onBack }) => {
   const isCritical = score < 40;
   const isMedium = score >= 40 && score < 70;
   const isHigh = score >= 70;
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleDownload = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      await generateReportPDF();
+    } catch (err) {
+      console.error('Erreur génération PDF:', err);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   const nextModuleCode = restitution?.next_module;
   const moduleLabels = {
@@ -87,8 +100,17 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
 
           <div style={{ height: '1px', background: 'var(--slate-200)', margin: '12px 0' }} />
 
-          <Button variant="teal" onClick={onDownload} style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff' }}>
-            <FileText size={18} /> Télécharger mon résumé PDF
+          <Button
+            variant="teal"
+            onClick={handleDownload}
+            disabled={isGeneratingPDF}
+            style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff', opacity: isGeneratingPDF ? 0.7 : 1 }}
+          >
+            {isGeneratingPDF ? (
+              <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Génération en cours...</>
+            ) : (
+              <><FileText size={18} /> Télécharger mon rapport PDF</>
+            )}
           </Button>
           <Button variant="outline" onClick={onRestart} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>
             <Compass size={18} /> Recommencer un autre diagnostic

@@ -21,12 +21,6 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Identifiez ce qui fonctionne, ce qui fragilise votre progression et les actions prioritaires à engager d’abord.
             </p>
 
-            {/* Value Pills / Badges (Sans icônes) */}
-            <div className="lp-pills-row">
-              <span className="lp-pill">Résultat immédiat</span>
-              <span className="lp-pill">Sans compte</span>
-            </div>
-
             {/* Action Buttons (Sans icônes devant) */}
             <div className="lp-hero-actions">
               <button className="lp-btn-primary" onClick={onStart}>

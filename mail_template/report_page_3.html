@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Plan de Travail Prioritaire - Excellence BTP Bénin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap"
+    rel="stylesheet" />
+  <style>
+    /* Reset & Base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      /* slate-50 */
+      color: #0f172a;
+      /* slate-900 */
+      line-height: 1.5;
+      padding: 1rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Colors */
+    :root {
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+      --cyan-50: #ecfeff;
+      --cyan-100: #cffafe;
+      --cyan-500: #06b6d4;
+      --cyan-600: #0891b2;
+      --cyan-700: #0e7490;
+      --orange-50: #fff7ed;
+      --orange-100: #ffedd5;
+      --orange-500: #f97316;
+      --orange-600: #ea580c;
+      --orange-700: #c2410c;
+      --indigo-900: #312e81;
+      --blue-50: #eff6ff;
+      --blue-100: #dbeafe;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+      --blue-800: #1e40af;
+      --red-500: #ef4444;
+      --white: #ffffff;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 2rem;
+      }
+    }
+
+    /* Layout */
+    .a4-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--white);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      min-height: 1131px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .a4-container {
+        padding: 2.5rem;
+      }
+    }
+
+    .watermark-top-right {
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(34, 150, 189, 0.05) 0%, rgba(34, 150, 189, 0) 70%);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 3rem;
+    }
+
+    .logo-container {
+      width: 12rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-align: right;
+    }
+
+    .header-subtitle {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .page-indicator {
+      background-color: var(--slate-900);
+      color: var(--white);
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.125rem;
+      border-radius: 0.375rem;
+    }
+
+    /* Title Section */
+    .section-title {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-title h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 768px) {
+      .section-title h1 {
+        font-size: 3rem;
+      }
+    }
+
+    .title-divider {
+      width: 4rem;
+      height: 0.375rem;
+      background-color: var(--cyan-500);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title p {
+      color: var(--slate-600);
+      font-size: 1.125rem;
+    }
+
+    /* Priorities Grid */
+    .priority-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      flex-grow: 1;
+    }
+
+    @media (min-width: 768px) {
+      .priority-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .priority-card {
+      border: 1px solid var(--slate-100);
+      border-radius: 0.75rem;
+      background-color: var(--white);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--slate-50);
+    }
+
+    .card-badge-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .badge-number {
+      color: var(--white);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+
+    .badge-number.cyan {
+      background-color: var(--cyan-600);
+    }
+
+    .badge-number.orange {
+      background-color: var(--orange-500);
+    }
+
+    .badge-number.indigo {
+      background-color: var(--indigo-900);
+    }
+
+    .card-subtitle {
+      font-weight: 700;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle.cyan {
+      color: var(--cyan-700);
+    }
+
+    .card-subtitle.orange {
+      color: var(--orange-600);
+    }
+
+    .card-subtitle.indigo {
+      color: var(--indigo-900);
+    }
+
+    .card-icon-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-icon.cyan {
+      background-color: var(--cyan-50);
+    }
+
+    .card-icon.cyan svg {
+      color: var(--cyan-600);
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .card-icon.orange {
+      background-color: var(--orange-50);
+    }
+
+    .card-icon.orange svg {
+      color: var(--orange-500);
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .card-icon.slate {
+      background-color: var(--slate-100);
+    }
+
+    .card-icon.slate svg {
+      color: var(--slate-700);
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--slate-800);
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .card-desc {
+      color: var(--slate-500);
+      font-size: 0.875rem;
+      line-height: 1.625;
+    }
+
+    .card-body {
+      padding: 1.25rem;
+      flex-grow: 1;
+    }
+
+    .actions-title {
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .actions-title.cyan {
+      color: var(--cyan-600);
+    }
+
+    .actions-title.orange {
+      color: var(--orange-500);
+    }
+
+    .actions-title.slate {
+      color: var(--slate-800);
+    }
+
+    .actions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .actions-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--slate-700);
+    }
+
+    .bullet {
+      font-weight: bold;
+    }
+
+    .bullet.cyan {
+      color: var(--cyan-500);
+    }
+
+    .bullet.orange {
+      color: var(--orange-500);
+    }
+
+    .bullet.slate {
+      color: var(--slate-800);
+    }
+
+    .card-footer {
+      padding: 1.25rem;
+      border-radius: 0 0 0.75rem 0.75rem;
+      border-top-width: 1px;
+      border-top-style: solid;
+    }
+
+    .card-footer.cyan {
+      background-color: var(--cyan-50);
+      border-top-color: var(--cyan-100);
+    }
+
+    .card-footer.orange {
+      background-color: var(--orange-50);
+      border-top-color: var(--orange-100);
+    }
+
+    .card-footer.slate {
+      background-color: var(--slate-50);
+      border-top-color: var(--slate-200);
+    }
+
+    .footer-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-title-row svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .footer-title-row span {
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .footer-title-row.cyan {
+      color: var(--cyan-700);
+    }
+
+    .footer-title-row.orange {
+      color: var(--orange-700);
+    }
+
+    .footer-title-row.slate {
+      color: var(--slate-700);
+    }
+
+    .card-footer p {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+      font-style: italic;
+    }
+
+    /* Banners Section */
+    .banners-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .banners-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .banner-box {
+      display: flex;
+      gap: 1rem;
+      padding: 1.25rem;
+      border-radius: 0.75rem;
+      border-width: 1px;
+      border-style: solid;
+    }
+
+    .banner-box.cyan {
+      background-color: var(--slate-50);
+      border-color: var(--slate-100);
+    }
+
+    .banner-box.blue {
+      background-color: var(--blue-50);
+      border-color: var(--blue-100);
+    }
+
+    .banner-icon-container {
+      flex-shrink: 0;
+    }
+
+    .banner-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 9999px;
+      border-width: 2px;
+      border-style: solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .banner-icon.cyan {
+      border-color: var(--cyan-500);
+    }
+
+    .banner-icon.cyan svg {
+      color: var(--cyan-600);
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .banner-icon.blue {
+      border-color: var(--blue-600);
+    }
+
+    .banner-icon.blue svg {
+      color: var(--blue-700);
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .banner-title {
+      font-weight: 700;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .banner-title.cyan {
+      color: var(--cyan-700);
+    }
+
+    .banner-title.blue {
+      color: var(--blue-800);
+    }
+
+    .banner-desc {
+      font-size: 0.75rem;
+      color: var(--slate-600);
+      line-height: 1.625;
+    }
+
+    /* Main Footer */
+    .main-footer {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.625rem;
+      /* 10px */
+      color: var(--slate-400);
+      font-weight: 500;
+      gap: 1rem;
+    }
+
+    .footer-left,
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .footer-link {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .footer-link svg {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+
+    .confidential {
+      color: var(--red-500);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .footer-right {
+      gap: 1.5rem;
+    }
+
+    .footer-note {
+      font-style: italic;
+      max-width: 200px;
+      text-align: right;
+    }
+
+    .page-badge {
+      background-color: var(--slate-100);
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.25rem;
+      color: var(--slate-600);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+
+      .a4-container {
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+        max-width: none;
+        border: none;
+        padding: 0;
+      }
+
+      .watermark-top-right {
+        display: none;
+      }
+
+      /* Usually background graphics are disabled in print, but let's hide it just in case */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- BEGIN: MainContainer -->
+  <main class="a4-container">
+    <!-- Watermark Elements -->
+    <div class="watermark-top-right"></div>
+    <!-- BEGIN: MainHeader -->
+    <header class="header">
+      <div class="logo-container" data-purpose="logo-container">
+        <img alt="Business Check-up Logo"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2JCfhNgM1Tru3g9H7tvI6i4qccl_MSeCmgreDvJ9PKr11GTpvaDtHJgcMAA2xfel_T1MwrVNVaLPA1ZI_ut3c37REpfoRDKrz3mCY1b823Bt-2uGuWNoTpV0a1s3Iekc7KQ07_kYt_9u2p_y8FHkV4U25fodGOtIct-vZZyuTqaWG2uHpu_XuIe-kL9o-q9BMFtfFDft4If1P0YKKZ6mp27Ak6CN9Nm58TyMSoWtIBt0Euu83rpSdPLS8i2LN180A-JvKkgpLnySL" />
+      </div>
+      <div class="header-right">
+        <span class="header-subtitle">Rapport de Diagnostic</span>
+        <div class="page-indicator" data-purpose="page-indicator">03</div>
+      </div>
+    </header>
+    <!-- END: MainHeader -->
+    <!-- BEGIN: SectionTitle -->
+    <section class="section-title">
+      <h1>VOTRE PLAN DE TRAVAIL PRIORITAIRE</h1>
+      <div class="title-divider"></div>
+      <p>Des actions concrètes pour améliorer votre performance et renforcer votre trajectoire.</p>
+    </section>
+    <!-- END: SectionTitle -->
+    <!-- BEGIN: PriorityColumns -->
+    <section class="priority-grid" data-purpose="priority-grid">
+      <!-- Priority 01: Immediate -->
+      <article class="priority-card">
+        <div class="card-header">
+          <div class="card-badge-row">
+            <span class="badge-number cyan">01</span>
+            <h3 class="card-subtitle cyan">Priorité immédiate</h3>
+          </div>
+          <div class="card-icon-container">
+            <div class="card-icon cyan">
+              <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+          </div>
+          <h2 class="card-title">Sécuriser le besoin en fonds de roulement</h2>
+          <p class="card-desc">Améliorer la visibilité sur les entrées/sorties de trésorerie et réduire les tensions.
+          </p>
+        </div>
+        <div class="card-body">
+          <h4 class="actions-title cyan">Actions clés</h4>
+          <ul class="actions-list">
+            <li>
+              <span class="bullet cyan">•</span>
+              Chiffrer le BFR par activité / chantier
+            </li>
+            <li>
+              <span class="bullet cyan">•</span>
+              Mettre en place un suivi hebdomadaire de trésorerie
+            </li>
+            <li>
+              <span class="bullet cyan">•</span>
+              Négocier les délais fournisseurs
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer cyan">
+          <div class="footer-title-row cyan">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+            <span>Données / preuves à préparer</span>
+          </div>
+          <p>Tableau BFR, encours chantiers, relevés bancaires récents, conditions fournisseurs.</p>
+        </div>
+      </article>
+      <!-- Priority 02: Important -->
+      <article class="priority-card">
+        <div class="card-header">
+          <div class="card-badge-row">
+            <span class="badge-number orange">02</span>
+            <h3 class="card-subtitle orange">Priorité importante</h3>
+          </div>
+          <div class="card-icon-container">
+            <div class="card-icon orange">
+              <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"></path>
+              </svg>
+            </div>
+          </div>
+          <h2 class="card-title">Renforcer la visibilité financière et la trésorerie</h2>
+          <p class="card-desc">Mettre en place des outils simples qui améliorent la qualité des décisions.</p>
+        </div>
+        <div class="card-body">
+          <h4 class="actions-title orange">Actions clés</h4>
+          <ul class="actions-list">
+            <li>
+              <span class="bullet orange">•</span>
+              Construire un tableau de bord financier mensuel
+            </li>
+            <li>
+              <span class="bullet orange">•</span>
+              Suivre les marges par chantier / activité
+            </li>
+            <li>
+              <span class="bullet orange">•</span>
+              Prévoir le cash-flow sur 3 mois
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer orange">
+          <div class="footer-title-row orange">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+            <span>Données / preuves à préparer</span>
+          </div>
+          <p>États financiers, détail des coûts, prévisions de trésorerie, portefeuille de commandes.</p>
+        </div>
+      </article>
+      <!-- Priority 03: Structural -->
+      <article class="priority-card">
+        <div class="card-header">
+          <div class="card-badge-row">
+            <span class="badge-number indigo">03</span>
+            <h3 class="card-subtitle indigo">Priorité structurante</h3>
+          </div>
+          <div class="card-icon-container">
+            <div class="card-icon slate">
+              <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+              </svg>
+            </div>
+          </div>
+          <h2 class="card-title">Structurer l'organisation et le pilotage</h2>
+          <p class="card-desc">Clarifier les rôles, formaliser les processus et renforcer le suivi opérationnel.</p>
+        </div>
+        <div class="card-body">
+          <h4 class="actions-title slate">Actions clés</h4>
+          <ul class="actions-list">
+            <li>
+              <span class="bullet slate">•</span>
+              Formaliser les processus clés (achats, exécution, reporting)
+            </li>
+            <li>
+              <span class="bullet slate">•</span>
+              Définir des indicateurs de suivi par responsable
+            </li>
+            <li>
+              <span class="bullet slate">•</span>
+              Mettre en place des réunions de pilotage
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer slate">
+          <div class="footer-title-row slate">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+            <span>Données / preuves à préparer</span>
+          </div>
+          <p>Organigramme, fiches de poste, processus existants, indicateurs actuels.</p>
+        </div>
+      </article>
+    </section>
+    <!-- END: PriorityColumns -->
+    <!-- BEGIN: NextStepsBanner -->
+    <section class="banners-grid">
+      <!-- Recommendation Box -->
+      <div class="banner-box cyan" data-purpose="step-recommendation">
+        <div class="banner-icon-container">
+          <div class="banner-icon cyan">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              </path>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h4 class="banner-title cyan">Prochaine étape recommandée</h4>
+          <p class="banner-desc">Approfondir votre diagnostic sur Finance &amp; Viabilité pour obtenir une analyse plus
+            détaillée et un plan d'action chiffré.</p>
+        </div>
+      </div>
+      <!-- Expert Box -->
+      <div class="banner-box blue" data-purpose="expert-call">
+        <div class="banner-icon-container">
+          <div class="banner-icon blue">
+            <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+                stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h4 class="banner-title blue">Besoin d'un échange avec un expert ?</h4>
+          <p class="banner-desc">Nous pouvons vous accompagner pour prioriser vos actions et sécuriser vos décisions.
+          </p>
+        </div>
+      </div>
+    </section>
+    <!-- END: NextStepsBanner -->
+    <!-- BEGIN: MainFooter -->
+    <footer class="main-footer">
+      <div class="footer-left">
+        <div class="footer-link">
+          <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+              stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+          </svg>
+          <span>checkup.business-assist.io</span>
+        </div>
+        <span class="confidential">STRICTEMENT CONFIDENTIEL</span>
+      </div>
+      <div class="footer-right">
+        <span class="footer-note">Document généré à partir des informations déclarées par l'utilisateur.</span>
+        <span class="page-badge">Page 3 sur 3</span>
+      </div>
+    </footer>
+    <!-- END: MainFooter -->
+  </main>
+  <!-- END: MainContainer -->
+</body>
+
+</html>

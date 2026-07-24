@@ -296,15 +296,28 @@ export function useDiagnosticFlow() {
 
   const onS00 = (val) => {
     setTA('s00', val);
-    if (val === 'assisted') {
-      setTriageStep(4);
-    } else if (val === 'direct' || val === 'direct_catalog') {
-      onGoToCatalog();
-    } else if (val === 'learn' || val === 'learn_more') {
-      onLearnMore();
-    } else if (val === 'institutional') {
-      navigate('/a-propos');
-    }
+    setTriageStep(4);
+  };
+
+  const onTriageProfileSubmit = (profileData) => {
+    const updated = {
+      ...triageAnswers,
+      s05: {
+        ...(triageAnswers?.s05 || {}),
+        business_name: profileData.business_name || null,
+        region: profileData.region,
+        commune: profileData.commune || null,
+        secteur: profileData.sector,
+        soussecteur: profileData.sub_sector || null,
+        creation_year: profileData.year_created || null,
+      },
+      name: profileData.full_name || null,
+      phone: profileData.phone_number || null,
+      email: profileData.email || null,
+    };
+    setTriageAnswers(updated);
+
+    setTriageStep(5);
   };
 
   const onS05 = (val) => {
@@ -847,6 +860,22 @@ export function useDiagnosticFlow() {
     setTriageAnswers(updatedTriageAnswers);
 
     let sessionId = localStorage.getItem('bc_session_id');
+
+    // Cas où l'utilisateur vient de passer le profil après ChoixEntreeScreen (sans Triage)
+    if (!currentModule) {
+      const choice = updatedTriageAnswers.s00;
+      if (choice === 'assisted') {
+        await submitTriageToBackend(updatedTriageAnswers);
+      } else if (choice === 'institutional') {
+        navigate('/a-propos');
+      } else if (choice === 'learn' || choice === 'learn_more') {
+        onLearnMore();
+      } else {
+        onGoToCatalog();
+      }
+      return;
+    }
+
     if (sessionId && currentModule) {
       const recommendedCode = localStorage.getItem('bc_recommended_module_code');
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
@@ -993,6 +1022,7 @@ export function useDiagnosticFlow() {
     onGoHome,
     onConsent,
     onS00,
+    onTriageProfileSubmit,
     onS03,
     onS04,
     onS05,
