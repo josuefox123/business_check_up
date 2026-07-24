@@ -569,37 +569,7 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       if (isEnrichmentMode) {
-        const triageDone = triageAnswers && triageAnswers.s03;
-        if (!triageDone) {
-          navigate('/diagnostic/profil');
-        } else {
-          // Triage déjà fait : on soumet le triage avec ces réponses pour l'enregistrement et le mail final
-          const sessionId = localStorage.getItem('bc_session_id');
-          if (sessionId) {
-            submitTriageToBackendApi(sessionId, triageAnswers)
-              .then(() => {
-                if (currentModule) {
-                  DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null, score);
-                }
-                clearState();
-                setTriageAnswers({});
-                setConsentAnswers({ diag: false, stats: false, contact: false });
-                setCurrentModule(null);
-                setModuleAnswers({});
-                setQuestionIndex(0);
-                setCurrentRunId(null);
-                setRestitution(null);
-                setIsEnrichmentMode(false);
-                navigate('/diagnostic/fin');
-              })
-              .catch(err => {
-                console.error('Error auto-submitting triage at end of enrichment:', err);
-                navigate('/diagnostic/fin');
-              });
-          } else {
-            navigate('/diagnostic/fin');
-          }
-        }
+        navigate('/diagnostic/profil');
       } else {
         navigate('/diagnostic/calcul');
       }
@@ -610,7 +580,11 @@ export function useDiagnosticFlow() {
 
   const onQuestionBack = () => {
     if (questionIndex === 0) {
-      navigate('/diagnostic/intro');
+      if (isEnrichmentMode) {
+        navigate('/diagnostic/enrichissement-consent');
+      } else {
+        navigate('/diagnostic/intro');
+      }
     } else {
       setQuestionIndex(p => p - 1);
     }
@@ -812,7 +786,11 @@ export function useDiagnosticFlow() {
     navigate('/diagnostic/fin');
   };
 
-  const onEnrichment = async () => {
+  const onEnrichment = () => {
+    navigate('/diagnostic/enrichissement-consent');
+  };
+
+  const onStartEnrichmentQuestions = async () => {
     if (!currentModule) return;
     try {
       const qList = await questionsApi.getByModule(currentModule.id, 'enrichment');
@@ -822,17 +800,25 @@ export function useDiagnosticFlow() {
         setIsEnrichmentMode(true);
         navigate('/diagnostic/question');
       } else {
-        // Pas de questions d'enrichissement pour ce module, aller directement au profil ou à la fin
-        const triageDone = triageAnswers && triageAnswers.s03;
-        if (!triageDone) {
-          navigate('/diagnostic/profil');
-        } else {
-          navigate('/diagnostic/fin');
-        }
+        // Pas de questions d'enrichissement pour ce module, aller directement au profil
+        navigate('/diagnostic/profil');
       }
     } catch (err) {
       console.error('Error loading enrichment questions:', err);
-      navigate('/diagnostic/fin');
+      navigate('/diagnostic/profil');
+    }
+  };
+
+  const onEnrichmentCancel = () => {
+    navigate('/diagnostic/resultats');
+  };
+
+  const onProfileBack = () => {
+    if (isEnrichmentMode && questions.length > 0) {
+      setQuestionIndex(questions.length - 1);
+      navigate('/diagnostic/question');
+    } else {
+      navigate('/diagnostic/enrichissement-consent');
     }
   };
 
@@ -843,11 +829,12 @@ export function useDiagnosticFlow() {
       return;
     }
 
-    // Convertir les réponses du formulaire au format de triage attendu par le backend
     const formattedAnswers = {
+      ...triageAnswers,
       s03: profileData.user_profile_type,
       s04: profileData.activity_stage,
       s05: {
+        ...(triageAnswers?.s05 || {}),
         business_name: profileData.business_name || null,
         region: profileData.region,
         commune: profileData.commune || null,
@@ -857,28 +844,32 @@ export function useDiagnosticFlow() {
       },
       name: profileData.full_name || null,
       phone: profileData.phone_number || null,
+      whatsapp_number: profileData.whatsapp_number || null,
       email: profileData.email || null,
-      // Valeurs par défaut indispensables au triage
-      s00: 'direct',
-      s06: 'global_understanding',
-      s07: [],
-      s08: 'none',
-      s09: 'full_360'
+      ca_n_1: profileData.ca_n_1 || null,
+      ca_m_1: profileData.ca_m_1 || null,
+      employee_count_range: profileData.employee_count_range || null,
+      s00: triageAnswers?.s00 || 'direct',
+      s06: triageAnswers?.s06 || 'global_understanding',
+      s07: triageAnswers?.s07 || [],
+      s08: triageAnswers?.s08 || 'none',
+      s09: triageAnswers?.s09 || 'full_360'
     };
 
     try {
       await submitTriageToBackendApi(sessionId, formattedAnswers);
-      
-      // Soumettre les réponses finales du diagnostic
+
+      const userObj = {
+        name: profileData.full_name || 'Anonyme',
+        email: profileData.email || '',
+        phone: profileData.phone_number || '',
+        companyName: profileData.business_name || ''
+      };
+
       if (currentModule) {
-        await DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, {
-          name: profileData.full_name || 'Anonyme',
-          email: profileData.email || '',
-          phone: profileData.phone_number || '',
-          companyName: profileData.business_name || ''
-        }, score);
+        await DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, userObj, score);
       }
-      
+
       clearState();
       setTriageAnswers({});
       setConsentAnswers({ diag: false, stats: false, contact: false });
@@ -890,7 +881,7 @@ export function useDiagnosticFlow() {
       setIsEnrichmentMode(false);
       navigate('/diagnostic/fin');
     } catch (err) {
-      console.error('Error submitting profile triage at end:', err);
+      console.error('Error submitting profile triage:', err);
       throw err;
     }
   };
@@ -981,7 +972,10 @@ export function useDiagnosticFlow() {
     restoreState,
     isEnrichmentMode,
     onEnrichment,
+    onStartEnrichmentQuestions,
+    onEnrichmentCancel,
     onProfileSubmit,
-    onProfileSkip
+    onProfileSkip,
+    onProfileBack
   };
 }

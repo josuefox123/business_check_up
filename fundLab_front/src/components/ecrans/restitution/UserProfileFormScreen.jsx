@@ -1,35 +1,98 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { AlertOctagon, User, Briefcase, MapPin, TrendingUp } from 'lucide-react';
+import { AlertOctagon, User, Briefcase, MapPin, TrendingUp, ArrowLeft } from 'lucide-react';
 import { REGIONS, DEPARTMENT_COMMUNES, SECTORS } from '../../../constants/locationData.js';
 
-export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
-  const [form, setForm] = useState({
-    // Profil utilisateur
-    user_profile_type: 'active_entrepreneur',
-    full_name: '',
-    phone_number: '',
-    whatsapp_number: '',
-    email: '',
+const COUNTRIES = [
+  { code: 'BJ', name: 'Bénin', prefix: '+229', length: 8, extra: '01' },
+  { code: 'CI', name: 'Côte d’Ivoire', prefix: '+225', length: 10 },
+  { code: 'SN', name: 'Sénégal', prefix: '+221', length: 9 },
+  { code: 'TG', name: 'Togo', prefix: '+228', length: 8 },
+  { code: 'CM', name: 'Cameroun', prefix: '+237', length: 9 },
+  { code: 'NE', name: 'Niger', prefix: '+227', length: 8 },
+  { code: 'BF', name: 'Burkina Faso', prefix: '+226', length: 8 },
+  { code: 'ML', name: 'Mali', prefix: '+223', length: 8 },
+  { code: 'GA', name: 'Gabon', prefix: '+241', length: 9 },
+  { code: 'CD', name: 'Congo (RDC)', prefix: '+243', length: 9 },
+  { code: 'CG', name: 'Congo (Brazzaville)', prefix: '+242', length: 9 },
+  { code: 'GN', name: 'Guinée', prefix: '+224', length: 9 },
+  { code: 'FR', name: 'France', prefix: '+33', length: 9 },
+];
 
-    // Profil business
-    business_name: '',
-    region: 'Atlantique',
-    commune: '',
-    sector: 'Services',
-    sub_sector: '',
-    year_created: new Date().getFullYear().toString(),
-    ca_n_1: '',
-    ca_m_1: '',
-    activity_stage: 'regular_sales',
-    years_in_activity: '',
-    employee_count_range: '1-10'
+export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers }) => {
+  const parsePhoneNumber = (num) => {
+    if (!num) return { countryCode: 'BJ', suffix: '' };
+    const clean = num.replace(/[\s\-\(\)]/g, '');
+    
+    if (clean.startsWith('+22901')) return { countryCode: 'BJ', suffix: clean.slice(6) };
+    if (clean.startsWith('22901')) return { countryCode: 'BJ', suffix: clean.slice(5) };
+    
+    for (const c of COUNTRIES) {
+      if (clean.startsWith(c.prefix)) {
+        return { countryCode: c.code, suffix: clean.slice(c.prefix.length) };
+      }
+      const rawPrefix = c.prefix.slice(1);
+      if (clean.startsWith(rawPrefix)) {
+        return { countryCode: c.code, suffix: clean.slice(rawPrefix.length) };
+      }
+    }
+    
+    if (clean.startsWith('01') && clean.length === 10) return { countryCode: 'BJ', suffix: clean.slice(2) };
+    if (clean.length === 8) return { countryCode: 'BJ', suffix: clean };
+    
+    return { countryCode: 'BJ', suffix: clean };
+  };
+
+  const [form, setForm] = useState(() => {
+    const s05 = triageAnswers?.s05 || {};
+    const parsedPhone = parsePhoneNumber(triageAnswers?.phone || triageAnswers?.phone_number || '');
+    const parsedWA = parsePhoneNumber(triageAnswers?.whatsapp_number || '');
+    
+    return {
+      // Profil utilisateur
+      user_profile_type: triageAnswers?.s03 || 'active_entrepreneur',
+      full_name: triageAnswers?.name || '',
+      phone_country: parsedPhone.countryCode || 'BJ',
+      phone_suffix: parsedPhone.suffix || '',
+      whatsapp_country: parsedWA.countryCode || 'BJ',
+      whatsapp_suffix: parsedWA.suffix || '',
+      email: triageAnswers?.email || '',
+
+      // Profil business
+      business_name: s05.business_name || '',
+      region: s05.region || 'Atlantique',
+      commune: s05.commune || '',
+      sector: s05.secteur || 'Services',
+      sub_sector: s05.soussecteur || '',
+      year_created: s05.creation_year ? s05.creation_year.toString() : new Date().getFullYear().toString(),
+      ca_n_1: triageAnswers?.ca_n_1 || '',
+      ca_m_1: triageAnswers?.ca_m_1 || '',
+      activity_stage: triageAnswers?.s04 || 'regular_sales',
+      years_in_activity: '',
+      employee_count_range: triageAnswers?.employee_count_range || '1-10'
+    };
   });
 
   const [communes, setCommunes] = useState([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errors, setErrors] = useState({});
+  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
+  const [whatsappDropdownOpen, setWhatsappDropdownOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const currentYear = new Date().getFullYear();
+  const yearsList = [];
+  for (let y = currentYear; y >= 1960; y--) {
+    yearsList.push(y);
+  }
 
   // Mettre à jour les communes quand la région change
   useEffect(() => {
@@ -48,27 +111,72 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setErrors({});
+
+    const newErrors = {};
 
     // Validations requises par la validation backend
     if (!form.user_profile_type) {
-      setErrorMsg('Le type de profil utilisateur est requis.');
-      return;
+      newErrors.user_profile_type = "Le type de profil utilisateur est requis.";
     }
     if (!form.region) {
-      setErrorMsg('La région / département est requise.');
-      return;
+      newErrors.region = "La région / département est requise.";
     }
     if (!form.sector) {
-      setErrorMsg('Le secteur d\'activité est requis.');
-      return;
+      newErrors.sector = "Le secteur d'activité est requis.";
     }
-    if (!form.year_created || isNaN(Number(form.year_created))) {
-      setErrorMsg('L\'année de création doit être une année valide.');
-      return;
+    if (!form.year_created) {
+      newErrors.year_created = "L'année de création est requise.";
     }
+
+    // Configs de pays
+    const phoneCountryConfig = COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0];
+    const waCountryConfig = COUNTRIES.find(c => c.code === form.whatsapp_country) || COUNTRIES[0];
+
+    // Validation du numéro de téléphone
+    if (form.phone_suffix && form.phone_suffix.trim()) {
+      if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
+        newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
+      }
+    }
+
+    // Validation du WhatsApp (facultatif)
+    if (form.whatsapp_suffix && form.whatsapp_suffix.trim()) {
+      if (form.whatsapp_suffix.trim().length !== waCountryConfig.length) {
+        newErrors.whatsapp_number = `Le numéro WhatsApp doit comporter exactement ${waCountryConfig.length} chiffres.`;
+      }
+    }
+
+    // Validation de l'email (facultatif)
+    if (form.email && form.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        newErrors.email = "L'adresse e-mail n'est pas valide (ex: contact@entreprise.com).";
+      }
+    }
+
+    // Validation du CA annuel (facultatif)
+    if (form.ca_n_1 && form.ca_n_1.trim()) {
+      const cleanTurnover = form.ca_n_1.replace(/[\s\.FCAfca]/g, '');
+      if (isNaN(Number(cleanTurnover))) {
+        newErrors.ca_n_1 = "Le chiffre d'affaires annuel doit être un nombre.";
+      }
+    }
+
+    // Validation du CA mensuel (facultatif)
+    if (form.ca_m_1 && form.ca_m_1.trim()) {
+      const cleanTurnover = form.ca_m_1.replace(/[\s\.FCAfca]/g, '');
+      if (isNaN(Number(cleanTurnover))) {
+        newErrors.ca_m_1 = "Le chiffre d'affaires mensuel doit être un nombre.";
+      }
+    }
+
     if (!form.activity_stage) {
-      setErrorMsg('Le stade d\'activité est requis.');
+      newErrors.activity_stage = "Le stade d'activité est requis.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -81,13 +189,18 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
         calculatedYears = Math.max(0, new Date().getFullYear() - year);
       }
 
+      const finalPhonePrefix = phoneCountryConfig.code === 'BJ' ? '+22901' : phoneCountryConfig.prefix;
+      const finalWAPrefix = waCountryConfig.code === 'BJ' ? '+22901' : waCountryConfig.prefix;
+
       await onSubmit({
         ...form,
+        phone_number: form.phone_suffix ? `${finalPhonePrefix}${form.phone_suffix}` : '',
+        whatsapp_number: form.whatsapp_suffix ? `${finalWAPrefix}${form.whatsapp_suffix}` : '',
         years_in_activity: calculatedYears !== '' ? calculatedYears : null
       });
     } catch (err) {
       console.error('Submit error:', err);
-      setErrorMsg(err.message || 'Une erreur est survenue lors de l\'enregistrement de votre profil.');
+      setErrors({ global: err.message || "Une erreur est survenue lors de l'enregistrement de votre profil." });
     } finally {
       setIsSubmitting(false);
     }
@@ -95,9 +208,27 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
 
   return (
     <ScreenWrapper>
-      <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px' }}>
-        <div style={{ marginBottom: '28px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>
+      <style>{`
+        .profile-form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        .profile-form-span-2 {
+          grid-column: span 2;
+        }
+        @media (max-width: 640px) {
+          .profile-form-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .profile-form-span-2 {
+            grid-column: span 1 !important;
+          }
+        }
+      `}</style>
+      <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
+        <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
+          <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>
             Finalisez votre profil
           </h1>
           <p style={{ fontSize: '0.92rem', color: 'var(--slate-500)', lineHeight: 1.6 }}>
@@ -105,12 +236,12 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
           </p>
         </div>
 
-        <form onSubmit={handleFormSubmit} style={{ background: 'var(--bg-white)', border: '1px solid var(--slate-200)', padding: '28px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <form onSubmit={handleFormSubmit} style={{ background: 'var(--bg-white)', border: '1px solid var(--slate-200)', padding: isMobile ? '16px' : '28px', borderRadius: isMobile ? '12px' : '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px' }}>
           
-          {errorMsg && (
+          {errors.global && (
             <div className="alert alert-danger" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', background: 'var(--color-danger-bg)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
               <AlertOctagon size={16} />
-              <span>{errorMsg}</span>
+              <span>{errors.global}</span>
             </div>
           )}
 
@@ -121,8 +252,8 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
               <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#070E24' }}>Profil Utilisateur</h2>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', flexWrap: 'wrap' }}>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="profile-form-grid">
+              <div className="form-group profile-form-span-2">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Vous êtes... <span style={{ color: 'var(--color-danger)' }}>*</span></label>
                 <select 
                   className="form-input" 
@@ -136,6 +267,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                   <option value="opportunity_seeker">En recherche d'opportunités de marché / Investissement</option>
                   <option value="institutional_curious">Partenaire / Institutionnel / Curieux</option>
                 </select>
+                {errors.user_profile_type && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.user_profile_type}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -158,28 +294,243 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                   value={form.email}
                   onChange={e => handleChange('email', e.target.value)}
                 />
+                {errors.email && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.email}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Téléphone</label>
-                <input
-                  type="tel"
-                  className="form-input"
-                  placeholder="Ex: +229 01 90 90 90 90"
-                  value={form.phone_number}
-                  onChange={e => handleChange('phone_number', e.target.value)}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPhoneDropdownOpen(!phoneDropdownOpen)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'var(--slate-50)',
+                        border: '1px solid var(--slate-300)',
+                        borderRight: 'none',
+                        padding: '0 12px',
+                        borderTopLeftRadius: '8px',
+                        borderBottomLeftRadius: '8px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: 'var(--slate-700)',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        width: '105px',
+                        height: '42px',
+                        boxSizing: 'border-box',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <img 
+                          src={`https://flagcdn.com/w20/${form.phone_country.toLowerCase()}.png`} 
+                          alt="" 
+                          style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
+                        />
+                        <span>{COUNTRIES.find(c => c.code === form.phone_country)?.prefix}</span>
+                      </div>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
+                    </button>
+                    {phoneDropdownOpen && (
+                      <>
+                        <div 
+                          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} 
+                          onClick={() => setPhoneDropdownOpen(false)} 
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          zIndex: 1000,
+                          background: 'white',
+                          border: '1px solid var(--slate-200)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          maxHeight: '200px',
+                          overflowY: 'auto',
+                          width: '240px',
+                          marginTop: '4px'
+                        }}>
+                          {COUNTRIES.map(c => (
+                            <div
+                              key={c.code}
+                              onClick={() => {
+                                handleChange('phone_country', c.code);
+                                handleChange('phone_suffix', '');
+                                setPhoneDropdownOpen(false);
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '10px 12px',
+                                cursor: 'pointer',
+                                fontSize: '0.88rem',
+                                fontWeight: 500,
+                                color: 'var(--slate-700)',
+                                background: form.phone_country === c.code ? 'var(--slate-50)' : 'transparent',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-100)'}
+                              onMouseLeave={e => e.currentTarget.style.background = form.phone_country === c.code ? 'var(--slate-50)' : 'transparent'}
+                            >
+                              <img 
+                                src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                alt="" 
+                                style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
+                              />
+                              <span style={{ flex: 1 }}>{c.name}</span>
+                              <span style={{ color: 'var(--slate-400)', fontWeight: 600 }}>{c.prefix}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {form.phone_country === 'BJ' && (
+                    <div style={{ background: 'var(--slate-100)', border: '1px solid var(--slate-300)', borderRight: 'none', padding: '10px 14px', fontSize: '0.9rem', color: 'var(--slate-600)', fontWeight: 700, userSelect: 'none', height: '42px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+                      01
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    maxLength={form.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === form.phone_country)?.length || 10)}
+                    className="form-input"
+                    placeholder={form.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"}
+                    value={form.phone_suffix}
+                    onChange={e => handleChange('phone_suffix', e.target.value.replace(/[^0-9]/g, ''))}
+                    style={{ borderTopLeftRadius: '0', borderBottomLeftRadius: '0', flex: 1, height: '42px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                {errors.phone_number && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.phone_number}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Numéro WhatsApp <span style={{ color: 'var(--slate-400)', fontWeight: 400 }}>(facultatif)</span></label>
-                <input
-                  type="tel"
-                  className="form-input"
-                  placeholder="Ex: +229 01 90 90 90 90"
-                  value={form.whatsapp_number}
-                  onChange={e => handleChange('whatsapp_number', e.target.value)}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      onClick={() => setWhatsappDropdownOpen(!whatsappDropdownOpen)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'var(--slate-50)',
+                        border: '1px solid var(--slate-300)',
+                        borderRight: 'none',
+                        padding: '0 12px',
+                        borderTopLeftRadius: '8px',
+                        borderBottomLeftRadius: '8px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: 'var(--slate-700)',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        width: '105px',
+                        height: '42px',
+                        boxSizing: 'border-box',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <img 
+                          src={`https://flagcdn.com/w20/${form.whatsapp_country.toLowerCase()}.png`} 
+                          alt="" 
+                          style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
+                        />
+                        <span>{COUNTRIES.find(c => c.code === form.whatsapp_country)?.prefix}</span>
+                      </div>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
+                    </button>
+                    {whatsappDropdownOpen && (
+                      <>
+                        <div 
+                          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }} 
+                          onClick={() => setWhatsappDropdownOpen(false)} 
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          zIndex: 1000,
+                          background: 'white',
+                          border: '1px solid var(--slate-200)',
+                          borderRadius: '8px',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                          maxHeight: '200px',
+                          overflowY: 'auto',
+                          width: '240px',
+                          marginTop: '4px'
+                        }}>
+                          {COUNTRIES.map(c => (
+                            <div
+                              key={c.code}
+                              onClick={() => {
+                                handleChange('whatsapp_country', c.code);
+                                handleChange('whatsapp_suffix', '');
+                                setWhatsappDropdownOpen(false);
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                padding: '10px 12px',
+                                cursor: 'pointer',
+                                fontSize: '0.88rem',
+                                fontWeight: 500,
+                                color: 'var(--slate-700)',
+                                background: form.whatsapp_country === c.code ? 'var(--slate-50)' : 'transparent',
+                                transition: 'background 0.2s'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'var(--slate-100)'}
+                              onMouseLeave={e => e.currentTarget.style.background = form.whatsapp_country === c.code ? 'var(--slate-50)' : 'transparent'}
+                            >
+                              <img 
+                                src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                alt="" 
+                                style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
+                              />
+                              <span style={{ flex: 1 }}>{c.name}</span>
+                              <span style={{ color: 'var(--slate-400)', fontWeight: 600 }}>{c.prefix}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {form.whatsapp_country === 'BJ' && (
+                    <div style={{ background: 'var(--slate-100)', border: '1px solid var(--slate-300)', borderRight: 'none', padding: '10px 14px', fontSize: '0.9rem', color: 'var(--slate-600)', fontWeight: 700, userSelect: 'none', height: '42px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+                      01
+                    </div>
+                  )}
+                  <input
+                    type="text"
+                    maxLength={form.whatsapp_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === form.whatsapp_country)?.length || 10)}
+                    className="form-input"
+                    placeholder={form.whatsapp_country === 'BJ' ? "XXXXXXXX" : "Numéro WhatsApp"}
+                    value={form.whatsapp_suffix}
+                    onChange={e => handleChange('whatsapp_suffix', e.target.value.replace(/[^0-9]/g, ''))}
+                    style={{ borderTopLeftRadius: '0', borderBottomLeftRadius: '0', flex: 1, height: '42px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                {errors.whatsapp_number && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.whatsapp_number}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -191,8 +542,8 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
               <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#070E24' }}>Profil de l'entreprise / activité</h2>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <div className="profile-form-grid">
+              <div className="form-group profile-form-span-2">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Nom de l'entreprise / projet</label>
                 <input
                   type="text"
@@ -214,6 +565,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
+                {errors.region && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.region}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -241,6 +597,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+                {errors.sector && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.sector}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -256,15 +617,21 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
 
               <div className="form-group">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Année de création <span style={{ color: 'var(--color-danger)' }}>*</span></label>
-                <input
-                  type="number"
+                <select
                   className="form-input"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                  placeholder="Ex: 2022"
                   value={form.year_created}
                   onChange={e => handleChange('year_created', e.target.value)}
-                />
+                >
+                  <option value="">Sélectionnez l'année</option>
+                  {yearsList.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                {errors.year_created && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.year_created}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
@@ -284,7 +651,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Chiffre d'affaires N-1 <span style={{ color: 'var(--slate-400)', fontWeight: 400 }}>(facultatif)</span></label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Chiffre d'affaires de l'année dernière (FCFA) <span style={{ color: 'var(--slate-400)', fontWeight: 400 }}>(facultatif)</span></label>
                 <input
                   type="text"
                   className="form-input"
@@ -292,10 +659,15 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                   value={form.ca_n_1}
                   onChange={e => handleChange('ca_n_1', e.target.value)}
                 />
+                {errors.ca_n_1 && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.ca_n_1}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Chiffre d'affaires moyen mensuel <span style={{ color: 'var(--slate-400)', fontWeight: 400 }}>(facultatif)</span></label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Chiffre d'affaires du mois dernier (FCFA) <span style={{ color: 'var(--slate-400)', fontWeight: 400 }}>(facultatif)</span></label>
                 <input
                   type="text"
                   className="form-input"
@@ -303,9 +675,14 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                   value={form.ca_m_1}
                   onChange={e => handleChange('ca_m_1', e.target.value)}
                 />
+                {errors.ca_m_1 && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.ca_m_1}
+                  </div>
+                )}
               </div>
 
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+              <div className="form-group profile-form-span-2">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Stade d'activité <span style={{ color: 'var(--color-danger)' }}>*</span></label>
                 <select 
                   className="form-input" 
@@ -318,27 +695,36 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip }) => {
                   <option value="structured_activity">Activité structurée avec équipe / Locaux</option>
                   <option value="declining_sales">Activité en baisse de régime / Restructuration nécessaire</option>
                 </select>
+                {errors.activity_stage && (
+                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                    {errors.activity_stage}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
-            <Button
-              type="submit"
-              variant="primary"
-              style={{ width: '100%', justifyContent: 'center' }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Enregistrement...' : 'Enregistrer et terminer'}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onSkip}
-              style={{ width: '100%', justifyContent: 'center', border: 'none', color: 'var(--slate-500)', textDecoration: 'underline' }}
-            >
-              Ignorer et terminer
-            </Button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              {onBack && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  style={{ flex: isMobile ? '1 1 100%' : '1', order: isMobile ? 2 : 1, justifyContent: 'center', height: '42px' }}
+                >
+                  Retour
+                </Button>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                style={{ flex: isMobile ? '1 1 100%' : '2', order: isMobile ? 1 : 2, justifyContent: 'center', height: '42px' }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Enregistrement...' : 'Enregistrer et terminer'}
+              </Button>
+            </div>
           </div>
 
         </form>

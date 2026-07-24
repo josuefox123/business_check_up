@@ -205,9 +205,10 @@ export async function submitTriageToBackendApi(sessionId, answers) {
 
   const payload = {
     user_profile_type,
-    full_name: answers.name || null,
-    phone_number: answers.phone || null,
-    email: answers.email || null,
+    full_name: answers.name || answers.full_name || (answers.s05 && answers.s05.full_name) || null,
+    phone_number: answers.phone || answers.phone_number || (answers.s05 && answers.s05.phone_number) || null,
+    whatsapp_number: answers.whatsapp_number || (answers.s05 && answers.s05.whatsapp_number) || null,
+    email: answers.email || (answers.s05 && answers.s05.email) || null,
     business_name: s05.business_name || null,
     region,
     commune: normalizedCommune,
@@ -221,10 +222,13 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     dominant_topic,
     time_available: 'start_short',
     years_in_activity,
-    year_created: s05.creation_year || null,
+    year_created: s05.creation_year || new Date().getFullYear().toString(),
+    ca_n_1: answers.ca_n_1 || (answers.s05 && (answers.s05.ca_n_1 || answers.s05.last_year_turnover)) || null,
+    ca_m_1: answers.ca_m_1 || (answers.s05 && (answers.s05.ca_m_1 || answers.s05.last_month_turnover)) || null,
+    employee_count_range: answers.employee_count_range || (answers.s05 && answers.s05.employee_count_range) || null,
     main_offer_type: (() => {
       const val = answers.s10 || null;
-      if (!val) return null;
+      if (!val) return 'not_defined';
       const translationMap = {
         'main_product': 'physical_product',
         'physical_product': 'physical_product',

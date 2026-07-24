@@ -30,7 +30,8 @@ import {
   ContactSuiviScreen,
   FinParcoursScreen,
   InstitutionnelleScreen,
-  UserProfileFormScreen
+  UserProfileFormScreen,
+  EnrichmentConsentScreen
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
 
 
@@ -437,8 +438,16 @@ function DiagnosticApp() {
         <Route path="/diagnostic/contact" element={
           <ContactSuiviScreen onSubmit={flow.onContactSubmit} onSkip={flow.onContactSkip} />
         } />
+        <Route path="/diagnostic/enrichissement-consent" element={
+          <EnrichmentConsentScreen onConfirm={flow.onStartEnrichmentQuestions} onCancel={flow.onEnrichmentCancel} />
+        } />
         <Route path="/diagnostic/profil" element={
-          <UserProfileFormScreen onSubmit={flow.onProfileSubmit} onSkip={flow.onProfileSkip} />
+          <UserProfileFormScreen 
+            onSubmit={flow.onProfileSubmit} 
+            onSkip={flow.onProfileSkip} 
+            onBack={flow.onProfileBack} 
+            triageAnswers={flow.triageAnswers}
+          />
         } />
         <Route path="/diagnostic/fin" element={
           <FinParcoursScreen onRestart={flow.onRestartFin} onShare={flow.onShare} />
