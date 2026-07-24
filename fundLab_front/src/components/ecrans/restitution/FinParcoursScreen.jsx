@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Calendar, Clock, CheckCircle2 } from 'lucide-react';
+import { Award, Calendar, Clock, CheckCircle2, X } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 
@@ -8,6 +8,7 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   useEffect(() => {
@@ -64,10 +65,10 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
     const whatsapp = localStorage.getItem('last_user_whatsapp') || phone;
 
     if (!runId) {
-      // Si pas de runId, on simule le succès de manière transparente
       setTimeout(() => {
         setIsSubmitting(false);
         setBooked(true);
+        setShowModal(false);
       }, 800);
       return;
     }
@@ -93,10 +94,12 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
       }
 
       setBooked(true);
+      setShowModal(false);
     } catch (err) {
       console.error('Error booking appointment:', err);
-      // En cas d'erreur de réseau, on passe quand même au succès pour ne pas bloquer l'utilisateur
+      // En cas d'erreur de réseau, on simule le succès de manière transparente
       setBooked(true);
+      setShowModal(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -145,23 +148,98 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
                 <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.8rem)', fontWeight: 800, color: 'var(--color-primary)', letterSpacing: '-0.025em', marginBottom: '10px' }}>
                   Merci d'avoir réalisé votre diagnostic !
                 </h1>
-                <p style={{ fontSize: '0.92rem', color: 'var(--slate-500)', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto' }}>
-                  Votre rapport détaillé vous a été envoyé par e-mail. Pour aller plus loin, nous vous proposons un <strong>échange gratuit de 30 minutes</strong> avec l'un de nos experts pour approfondir vos résultats.
+                <p style={{ fontSize: '0.94rem', color: 'var(--slate-500)', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto' }}>
+                  Votre rapport détaillé vous a été envoyé par e-mail. Pour aller plus loin, nous vous proposons un échange avec l'un de nos experts pour approfondir vos résultats.
                 </p>
               </div>
             </div>
 
-            {/* Sélecteur de créneaux */}
-            <div style={{ background: 'var(--bg-white)', border: '1px solid var(--slate-200)', borderRadius: '16px', padding: isMobile ? '16px 12px' : '20px', textAlign: 'left', boxShadow: '0 4px 20px rgba(0,0,0,0.01)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--slate-100)', paddingBottom: '10px' }}>
-                <Calendar size={18} style={{ color: 'var(--color-teal)' }} />
-                <h3 style={{ fontSize: '0.94rem', fontWeight: 700, margin: 0, color: '#070E24' }}>
-                  Choisissez votre créneau de rendez-vous
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '380px', margin: '30px auto 0' }}>
+              <Button
+                variant="primary"
+                size="lg"
+                full
+                onClick={() => setShowModal(true)}
+                style={{ justifyContent: 'center', height: '46px', gap: '8px' }}
+              >
+                <Calendar size={18} />
+                Prendre rendez-vous avec un expert
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                full
+                onClick={handleFinish}
+                style={{ justifyContent: 'center', border: 'none', color: 'var(--slate-500)', textDecoration: 'underline', background: 'none' }}
+              >
+                Retourner à l'accueil
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal - Sélecteur de créneaux avec calendrier */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(7, 14, 36, 0.5)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 1100,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '16px'
+        }}>
+          {/* Background overlay click closure */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onClick={() => setShowModal(false)} />
+          
+          <div className="animate-scale-in" style={{
+            position: 'relative',
+            background: 'white',
+            borderRadius: '20px',
+            padding: isMobile ? '20px 16px' : '24px',
+            width: '100%',
+            maxWidth: '480px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            zIndex: 1101
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--slate-100)', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Calendar size={20} style={{ color: 'var(--color-teal)' }} />
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#070E24' }}>
+                  Prendre rendez-vous
                 </h3>
               </div>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--slate-400)', cursor: 'pointer', padding: 0 }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              {/* Jours - Onglets */}
-              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '16px', WebkitOverflowScrolling: 'touch' }}>
+            {/* Content */}
+            <p style={{ fontSize: '0.85rem', color: 'var(--slate-500)', margin: 0, lineHeight: 1.5 }}>
+              Veuillez sélectionner la date et l'heure du créneau qui vous convient le mieux pour échanger avec notre expert.
+            </p>
+
+            {/* Jours - Onglets */}
+            <div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px', fontWeight: 600 }}>1. Sélectionnez un jour :</p>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
                 {daysList.map((day, idx) => (
                   <button
                     key={day.date}
@@ -186,65 +264,62 @@ export const FinParcoursScreen = ({ onRestart, onShare }) => {
                   </button>
                 ))}
               </div>
+            </div>
 
-              {/* Heures du jour sélectionné */}
-              <div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '10px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={12} /> Heures disponibles pour le {daysList[selectedDayIndex]?.label.toLowerCase()} :
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px' }}>
-                  {daysList[selectedDayIndex]?.slots.map(slot => (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      onClick={() => setSelectedSlot(slot)}
-                      style={{
-                        padding: '10px 0',
-                        borderRadius: '8px',
-                        fontSize: '0.88rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        border: '1px solid',
-                        borderColor: selectedSlot?.id === slot.id ? 'var(--color-teal)' : 'var(--slate-200)',
-                        background: selectedSlot?.id === slot.id ? 'var(--color-teal)' : 'white',
-                        color: selectedSlot?.id === slot.id ? 'white' : 'var(--slate-700)',
-                        transition: 'all 0.2s',
-                        outline: 'none'
-                      }}
-                    >
-                      {slot.time}
-                    </button>
-                  ))}
-                </div>
+            {/* Heures du jour sélectionné */}
+            <div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--slate-400)', marginBottom: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={12} /> 2. Sélectionnez une heure ({daysList[selectedDayIndex]?.label.toLowerCase()}) :
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px' }}>
+                {daysList[selectedDayIndex]?.slots.map(slot => (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    onClick={() => setSelectedSlot(slot)}
+                    style={{
+                      padding: '10px 0',
+                      borderRadius: '8px',
+                      fontSize: '0.88rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      border: '1px solid',
+                      borderColor: selectedSlot?.id === slot.id ? 'var(--color-teal)' : 'var(--slate-200)',
+                      background: selectedSlot?.id === slot.id ? 'var(--color-teal)' : 'white',
+                      color: selectedSlot?.id === slot.id ? 'white' : 'var(--slate-700)',
+                      transition: 'all 0.2s',
+                      outline: 'none'
+                    }}
+                  >
+                    {slot.time}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '380px', margin: '0 auto' }}>
-              <Button
-                variant="primary"
-                size="lg"
-                full
-                disabled={!selectedSlot || isSubmitting}
-                onClick={handleBookAppointment}
-                style={{ justifyContent: 'center' }}
-              >
-                {isSubmitting ? 'Réservation...' : 'Confirmer le rendez-vous'}
-              </Button>
+            {/* Footer actions inside Modal */}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
               <Button
                 variant="outline"
-                size="lg"
-                full
-                onClick={handleFinish}
-                style={{ justifyContent: 'center', border: 'none', color: 'var(--slate-500)', textDecoration: 'underline', background: 'none' }}
+                onClick={() => setShowModal(false)}
+                style={{ flex: 1, justifyContent: 'center', height: '42px' }}
               >
-                Passer et retourner à l'accueil
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!selectedSlot || isSubmitting}
+                onClick={handleBookAppointment}
+                style={{ flex: 2, justifyContent: 'center', height: '42px' }}
+              >
+                {isSubmitting ? 'Réservation...' : 'Confirmer'}
               </Button>
             </div>
+
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </ScreenWrapper>
   );
 };
