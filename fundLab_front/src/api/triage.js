@@ -223,8 +223,22 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     time_available: 'start_short',
     years_in_activity,
     year_created: s05.creation_year || new Date().getFullYear().toString(),
-    ca_n_1: answers.ca_n_1 || (answers.s05 && (answers.s05.ca_n_1 || answers.s05.last_year_turnover)) || null,
-    ca_m_1: answers.ca_m_1 || (answers.s05 && (answers.s05.ca_m_1 || answers.s05.last_month_turnover)) || null,
+    ca_n_1: (() => {
+      const raw = answers.ca_n_1 || (answers.s05 && (answers.s05.ca_n_1 || answers.s05.last_year_turnover)) || null;
+      if (!raw) return null;
+      const cleaned = String(raw).replace(/[\s\.FCAfca]/g, '');
+      const num = Number(cleaned);
+      if (isNaN(num)) return null;
+      return Math.min(999999.99, num).toString();
+    })(),
+    ca_m_1: (() => {
+      const raw = answers.ca_m_1 || (answers.s05 && (answers.s05.ca_m_1 || answers.s05.last_month_turnover)) || null;
+      if (!raw) return null;
+      const cleaned = String(raw).replace(/[\s\.FCAfca]/g, '');
+      const num = Number(cleaned);
+      if (isNaN(num)) return null;
+      return Math.min(999999.99, num).toString();
+    })(),
     employee_count_range: answers.employee_count_range || (answers.s05 && answers.s05.employee_count_range) || null,
     main_offer_type: (() => {
       const val = answers.s10 || null;
