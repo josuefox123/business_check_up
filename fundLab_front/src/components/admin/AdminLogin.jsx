@@ -35,11 +35,6 @@ export const AdminLogin = ({ onLogin }) => {
       setPasswordError("Le mot de passe est requis.");
       return false;
     }
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(val)) {
-      setPasswordError("Doit faire au moins 8 caractères, une majuscule et un chiffre.");
-      return false;
-    }
     setPasswordError('');
     return true;
   };
@@ -82,7 +77,11 @@ export const AdminLogin = ({ onLogin }) => {
 
     setError('');
     
-    const loginUrl = `${API_BASE_URL.replace('/api/bc', '')}/auth/login`;
+    // Extrait le domaine pour pointer précisément vers /api/auth/login
+    const loginUrl = API_BASE_URL.includes('/api') 
+      ? `${API_BASE_URL.split('/api')[0]}/api/auth/login`
+      : '/api/auth/login';
+
     apiFetch(loginUrl, {
       method: 'POST',
       body: JSON.stringify({ email, password })
