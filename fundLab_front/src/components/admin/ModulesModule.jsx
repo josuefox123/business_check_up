@@ -60,7 +60,6 @@ export const ModulesModule = () => {
                 <tr>
                   <th>Code</th>
                   <th>Nom du module</th>
-                  <th>Famille / Catégorie</th>
                   <th>Durée estimée</th>
                   <th>Questions</th>
                   <th>Statut</th>
@@ -74,9 +73,6 @@ export const ModulesModule = () => {
                     </td>
                     <td>
                       <div style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{m.name}</div>
-                    </td>
-                    <td>
-                      <span style={{ textTransform: 'capitalize', fontSize: '0.85rem' }}>{m.family}</span>
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem' }}>
@@ -96,7 +92,7 @@ export const ModulesModule = () => {
                 ))}
                 {modules.length === 0 && (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>Aucun module enregistré</td>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>Aucun module enregistré</td>
                   </tr>
                 )}
               </tbody>
