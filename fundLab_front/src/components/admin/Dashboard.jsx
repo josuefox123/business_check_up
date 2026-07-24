@@ -213,7 +213,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
                 <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--adm-accent-dk)', background: 'rgba(13,148,136,0.08)', padding: '2px 8px', borderRadius: '99px', flexShrink: 0 }}>{s.count}</span>
               </div>
             )) : (
-              <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '24px 20px', fontSize: '0.875rem' }}>Aucun secteur enregistré</p>
+              <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '24px 20px', fontSize: '0.875rem' }}>Aucune donnée géographique enregistrée</p>
             )}
           </div>
         </div>
