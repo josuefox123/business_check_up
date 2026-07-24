@@ -165,7 +165,7 @@ export const QuestionnairesModule = () => {
                         {q.choices.map((c, i) => (
                           <span key={i} style={{ fontSize: '0.78rem', padding: '3px 8px', background: 'white', border: '1px solid var(--slate-200)', borderRadius: '6px' }}>
                             {c.icon && <span style={{ marginRight: '4px' }}>{c.icon}</span>}
-                            {c.label} <strong style={{ color: 'var(--color-blue)' }}>({c.score} pts)</strong>
+                            {c.label}
                           </span>
                         ))}
                       </div>
