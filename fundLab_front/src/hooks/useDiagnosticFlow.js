@@ -573,7 +573,14 @@ export function useDiagnosticFlow() {
     }
 
     if (questionIndex + 1 >= questions.length) {
-      navigate('/diagnostic/profil');
+      // Profil déjà collecté en début de parcours
+      // Mode enrichissement → rendez-vous directement
+      // Mode diagnostic normal → calcul du score
+      if (isEnrichmentMode) {
+        navigate('/diagnostic/fin');
+      } else {
+        navigate('/diagnostic/calcul');
+      }
     } else {
       setQuestionIndex(p => p + 1);
     }
@@ -659,7 +666,7 @@ export function useDiagnosticFlow() {
     }
   };
 
-  const onDetail = () => navigate('/diagnostic/orientation');
+  const onDetail = () => navigate('/diagnostic/fin');
   const onFFNext = () => navigate('/diagnostic/priorites');
   const onPrioNext = () => navigate('/diagnostic/orientation');
   const onContact = () => navigate('/diagnostic/contact');
@@ -801,11 +808,12 @@ export function useDiagnosticFlow() {
         setIsEnrichmentMode(true);
         navigate('/diagnostic/question');
       } else {
-        navigate('/diagnostic/profil');
+        // Profil déjà collecté en début de parcours — on va directement au rendezvous
+        navigate('/diagnostic/fin');
       }
     } catch (err) {
       console.error('Error loading enrichment questions:', err);
-      navigate('/diagnostic/profil');
+      navigate('/diagnostic/fin');
     }
   };
 
