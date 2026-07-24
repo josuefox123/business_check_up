@@ -1,24 +1,116 @@
 import React, { useState } from 'react';
-import { Search, Eye, Trash2, X } from 'lucide-react';
+import { Search, Eye, Trash2, X, Mail, Send, Check } from 'lucide-react';
+import { apiFetch } from '../../api/config.js';
 
 export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState('');
   const [selectedDiag, setSelectedDiag] = useState(null);
+  
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState([]);
+  
+  // Email sending modal states
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [sendToSelf, setSendToSelf] = useState(true); // true = send to entrepreneurs, false = send to specific email
+  const [customEmail, setCustomEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState('');
 
   // Search & Filter
   const filtered = diagnostics.filter(d => {
     const matchesSearch = (d.userName && d.userName.toLowerCase().includes(searchTerm.toLowerCase())) || 
-                          (d.id && d.id.toLowerCase().includes(searchTerm.toLowerCase()));
+                          (d.userEmail && d.userEmail.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesModule = selectedModule ? d.moduleId === selectedModule : true;
     return matchesSearch && matchesModule;
   });
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(filtered.map(d => d.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectRow = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(x => x !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const handleSendEmailsSubmit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setSendSuccess('');
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Lancer tous les envois d'emails en parallèle
+    await Promise.all(
+      selectedIds.map(async (id) => {
+        const diag = diagnostics.find(d => d.id === id);
+        if (!diag) return;
+
+        const targetEmail = sendToSelf ? diag.userEmail : customEmail;
+        if (!targetEmail) {
+          failCount++;
+          return;
+        }
+
+        try {
+          await apiFetch(`/diagnostics/${diag.id}/report/email`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: targetEmail,
+              full_name: diag.userName || 'Entrepreneur'
+            })
+          });
+          successCount++;
+        } catch (err) {
+          console.error(`Error sending email for diagnostic ${diag.id}:`, err);
+          failCount++;
+        }
+      })
+    );
+
+    setSending(false);
+    if (failCount === 0) {
+      setSendSuccess(`${successCount} rapport(s) envoyé(s) avec succès !`);
+    } else {
+      setSendSuccess(`${successCount} envoyé(s) avec succès, ${failCount} échec(s).`);
+    }
+    
+    // Vider la sélection après envoi
+    setTimeout(() => {
+      setSelectedIds([]);
+      setShowEmailModal(false);
+      setSendSuccess('');
+    }, 2500);
+  };
+
   return (
     <div className="admin-page animate-fade-up">
-      <div className="admin-page-header">
-        <h1 className="admin-page-title">Historique des Diagnostics</h1>
-        <p className="admin-page-sub">Consultez et inspectez tous les rapports de diagnostics soumis par les entrepreneurs</p>
+      <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h1 className="admin-page-title">Historique des Diagnostics</h1>
+          <p className="admin-page-sub">Consultez et inspectez tous les rapports de diagnostics soumis par les entrepreneurs</p>
+        </div>
+        <button
+          className="btn btn-teal"
+          disabled={selectedIds.length === 0}
+          onClick={() => {
+            setSendSuccess('');
+            setCustomEmail('');
+            setShowEmailModal(true);
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: selectedIds.length === 0 ? 0.5 : 1, transition: 'all 0.25s ease' }}
+        >
+          <Mail size={16} /> Envoyer par mail ({selectedIds.length})
+        </button>
       </div>
 
       <div className="admin-actions-bar">
@@ -26,7 +118,7 @@ export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
           <div style={{ position: 'relative', flex: 1, maxWidth: '280px' }}>
             <input 
               type="text" 
-              placeholder="Rechercher par nom ou ID..." 
+              placeholder="Rechercher par nom ou e-mail..." 
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="admin-filter-input"
@@ -57,7 +149,13 @@ export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th style={{ width: '40px', paddingLeft: '20px' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedIds.length === filtered.length && filtered.length > 0} 
+                    onChange={handleSelectAll} 
+                  />
+                </th>
                 <th>Entrepreneur</th>
                 <th>Module</th>
                 <th>Score</th>
@@ -67,8 +165,14 @@ export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
             </thead>
             <tbody>
               {filtered.map(d => (
-                <tr key={d.id}>
-                  <td style={{ fontWeight: 700 }}>#{d.id}</td>
+                <tr key={d.id} style={{ background: selectedIds.includes(d.id) ? 'rgba(52, 190, 213, 0.04)' : '' }}>
+                  <td style={{ paddingLeft: '20px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.includes(d.id)} 
+                      onChange={() => handleSelectRow(d.id)} 
+                    />
+                  </td>
                   <td>
                     <div>
                       <div style={{ fontWeight: 600 }}>{d.userName}</div>
@@ -108,12 +212,83 @@ export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
         </div>
       </div>
 
+      {/* Email sending modal */}
+      {showEmailModal && (
+        <div className="admin-modal-backdrop" onClick={() => !sending && setShowEmailModal(false)}>
+          <div className="admin-modal" onClick={e => e.stopPropagation()}>
+            <form onSubmit={handleSendEmailsSubmit}>
+              <div className="admin-modal-header">
+                <h3>Envoyer les diagnostics par e-mail</h3>
+                <button className="admin-close-btn" type="button" disabled={sending} onClick={() => setShowEmailModal(false)}><X size={18} /></button>
+              </div>
+              <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {sendSuccess && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(52, 190, 213, 0.1)', border: '1px solid rgba(52, 190, 213, 0.2)', borderRadius: '8px', padding: '12px', color: 'var(--color-accent-dark, #1A9DB8)', fontSize: '0.86rem', fontWeight: 600 }}>
+                    <Check size={16} />
+                    <span>{sendSuccess}</span>
+                  </div>
+                )}
+                
+                <p style={{ fontSize: '0.88rem', color: 'var(--slate-600)', margin: 0 }}>
+                  Vous avez sélectionné <strong>{selectedIds.length}</strong> diagnostic(s). Choisissez l'adresse d'envoi :
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}>
+                    <input 
+                      type="radio" 
+                      name="emailDest" 
+                      checked={sendToSelf} 
+                      onChange={() => setSendToSelf(true)} 
+                      disabled={sending}
+                    />
+                    Envoyer directement aux entrepreneurs correspondants
+                  </label>
+                  
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}>
+                    <input 
+                      type="radio" 
+                      name="emailDest" 
+                      checked={!sendToSelf} 
+                      onChange={() => setSendToSelf(false)}
+                      disabled={sending}
+                    />
+                    Envoyer à une adresse e-mail spécifique
+                  </label>
+                </div>
+
+                {!sendToSelf && (
+                  <div className="admin-form-group animate-fade-in" style={{ marginTop: '4px' }}>
+                    <label className="admin-form-label">Adresse e-mail de destination</label>
+                    <input 
+                      type="email" 
+                      placeholder="cci@direction.com" 
+                      value={customEmail} 
+                      onChange={e => setCustomEmail(e.target.value)} 
+                      className="admin-form-input" 
+                      required={!sendToSelf}
+                      disabled={sending}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="admin-modal-footer">
+                <button className="btn btn-ghost" type="button" disabled={sending} onClick={() => setShowEmailModal(false)}>Annuler</button>
+                <button className="btn btn-teal" type="submit" disabled={sending || (!sendToSelf && !customEmail)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Send size={14} /> {sending ? 'Envoi...' : 'Envoyer par mail'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Diagnostics Detail Modal */}
       {selectedDiag && (
         <div className="admin-modal-backdrop" onClick={() => setSelectedDiag(null)}>
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>Détails du Diagnostic #{selectedDiag.id}</h3>
+              <h3>Détails du Diagnostic</h3>
               <button className="admin-close-btn" onClick={() => setSelectedDiag(null)}><X size={18} /></button>
             </div>
             <div className="admin-modal-body">
