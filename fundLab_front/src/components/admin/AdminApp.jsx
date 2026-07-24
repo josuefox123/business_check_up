@@ -120,7 +120,7 @@ export const AdminApp = () => {
         <Route path="/rendezvous" element={
           <RendezVousModule users={users} />
         } />
-        <Route path="/parametres" element={<ParametresModule />} />
+        {/* <Route path="/parametres" element={<ParametresModule />} /> */}
       </Routes>
     </AdminLayout>
   );
