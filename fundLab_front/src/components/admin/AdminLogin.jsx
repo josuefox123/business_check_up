@@ -24,9 +24,9 @@ export const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // Détermine l'URL correcte en production ou local sans doubler le préfixe /bc
-    const loginUrl = API_BASE_URL.startsWith('http')
-      ? API_BASE_URL.replace('/bc', '') + '/auth/login'
+    // Utilise l'origine courante de la fenêtre pour cibler précisément /api/auth/login dans tous les environnements
+    const loginUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/api/auth/login`
       : '/api/auth/login';
 
     apiFetch(loginUrl, {
