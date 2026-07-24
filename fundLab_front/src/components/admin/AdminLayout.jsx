@@ -5,7 +5,7 @@ import {
   FileText, ChevronRight, Bell, Search, Menu, X, Layers
 } from 'lucide-react';
 
-import logoImg from '../../assets/logo_compact.png';
+import logoImg from '../../assets/white_logo.png';
 
 export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
   const location = useLocation();
@@ -28,8 +28,8 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
-          <div className="admin-logo" style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
-            <img src={logoImg} alt="Logo" style={{ height: '34px', width: 'auto' }} />
+          <div className="admin-logo" style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+            <img src={logoImg} alt="Logo" style={{ height: '42px', width: 'auto' }} />
           </div>
         </div>
 
