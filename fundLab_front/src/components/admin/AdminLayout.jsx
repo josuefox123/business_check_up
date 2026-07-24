@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, ClipboardList, Settings, Users, 
+  LayoutDashboard, ClipboardList, Settings, Users, User,
   FileText, ChevronRight, Bell, Search, Menu, X, Layers, Calendar
 } from 'lucide-react';
 
@@ -82,7 +82,9 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
             </div>
           </div>
           <div className="admin-topbar-right" style={{ position: 'relative' }}>
-            <div className="admin-avatar">AD</div>
+            <div className="admin-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#64748b' }}>
+              <User size={18} />
+            </div>
           </div>
         </header>
 
