@@ -5,6 +5,8 @@ import {
   FileText, ChevronRight, Bell, Search, Menu, X, Layers
 } from 'lucide-react';
 
+import logoImg from '../../assets/logo_compact.png';
+
 export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,9 +28,8 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
-          <div className="admin-logo">
-            <div className="admin-logo-icon">F</div>
-            <span className="admin-logo-text">FUND<span>.admin</span></span>
+          <div className="admin-logo" style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
+            <img src={logoImg} alt="Logo" style={{ height: '34px', width: 'auto' }} />
           </div>
         </div>
 
@@ -55,13 +56,6 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
 
         {/* Sidebar user profile footer */}
         <div className="admin-sidebar-bottom">
-          <div className="admin-sidebar-user">
-            <div className="admin-sidebar-avatar">AD</div>
-            <div className="admin-sidebar-user-info">
-              <div className="admin-sidebar-user-name">Administrateur</div>
-              <div className="admin-sidebar-user-role">CCI Bénin</div>
-            </div>
-          </div>
           <button 
             onClick={onLogout} 
             className="admin-nav-item"
