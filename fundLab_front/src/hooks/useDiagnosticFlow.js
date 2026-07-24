@@ -795,7 +795,8 @@ export function useDiagnosticFlow() {
   };
 
   const onEnrichment = () => {
-    navigate('/diagnostic/fin');
+    // Mène vers l'écran de consentement enrichissement → puis questions enrichissement → /diagnostic/fin
+    navigate('/diagnostic/enrichissement-consent');
   };
 
   const onStartEnrichmentQuestions = async () => {
