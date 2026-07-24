@@ -6,7 +6,6 @@ import { Dashboard } from './Dashboard.jsx';
 import { DiagnosticsModule } from './DiagnosticsModule.jsx';
 import { QuestionnairesModule } from './QuestionnairesModule.jsx';
 import { UtilisateursModule } from './UtilisateursModule.jsx';
-import { NotificationsModule } from './NotificationsModule.jsx';
 import { ParametresModule } from './ParametresModule.jsx';
 import { AdminLogin } from './AdminLogin.jsx';
 import './admin.css';
@@ -113,13 +112,6 @@ export const AdminApp = () => {
             users={users} 
             onDelete={handleDeleteUser} 
             onAdd={handleAddUser}
-          />
-        } />
-        <Route path="/notifications" element={
-          <NotificationsModule 
-            notifications={notifications} 
-            onMarkRead={handleMarkReadNotif}
-            onDelete={handleDeleteNotif}
           />
         } />
         <Route path="/parametres" element={<ParametresModule />} />

@@ -51,8 +51,7 @@ export const UtilisateursModule = ({ users, onDelete, onAdd }) => {
   return (
     <div className="admin-page animate-fade-up">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Prospects &amp; Utilisateurs</h1>
-        <p className="admin-page-sub">Gérez la liste des entrepreneurs ayant complété une évaluation ou demandé un suivi CCI</p>
+        <h1 className="admin-page-title">Utilisateurs</h1>
       </div>
 
       <div className="admin-actions-bar">
@@ -81,7 +80,7 @@ export const UtilisateursModule = ({ users, onDelete, onAdd }) => {
           </select>
         </div>
         <button className="btn btn-teal btn-sm" onClick={() => setShowAddModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Plus size={16} /> Ajouter un prospect
+          <Plus size={16} /> Ajouter un utilisateur
         </button>
       </div>
 
@@ -147,7 +146,7 @@ export const UtilisateursModule = ({ users, onDelete, onAdd }) => {
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
             <form onSubmit={handleAddSubmit}>
               <div className="admin-modal-header">
-                <h3>Ajouter un nouveau prospect</h3>
+                <h3>Ajouter un nouvel utilisateur</h3>
                 <button className="admin-close-btn" type="button" onClick={() => setShowAddModal(false)}><X size={18} /></button>
               </div>
               <div className="admin-modal-body">
