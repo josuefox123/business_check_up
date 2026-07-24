@@ -61,41 +61,54 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
   const qCount = backendModule?.question_count || moduleData?.question_count || null;
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper className="intro-screen-wrapper">
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="intro-wrap animate-fade-up">
         {/* Animated custom PNG icon inside a premium card wrapper */}
-        <div className="intro-module-card">
-          <img src={activeIcon} alt={title} className="intro-module-icon" />
+        <div className="intro-module-card-wrapper">
+          <div className="intro-module-card">
+            <img src={activeIcon} alt={title} className="intro-module-icon" />
+          </div>
         </div>
 
-        <h1 className="screen-title" style={{ textAlign: 'center' }}>{title}</h1>
+        <h1 className="screen-title">{title}</h1>
 
-        <div className="intro-meta-row" style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {/* Hero duration element for mobile only, shown prominently like in the screenshot */}
+        {duration && (
+          <div className="intro-hero-duration">
+            <div className="duration-value-row">
+              <span className="duration-value">{duration.replace(' min', '').replace(' MIN', '')}</span>
+              <span className="duration-unit">MIN</span>
+            </div>
+            <span className="duration-label">Durée estimée</span>
+          </div>
+        )}
+
+        <div className="intro-meta-row">
           {duration && (
-            <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Clock size={14} style={{ color: 'var(--slate-500)' }} />
+            <span className="intro-meta-chip duration-chip">
+              <Clock size={14} className="meta-icon" />
               {duration}
             </span>
           )}
           {qCount && (
-            <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FileText size={14} style={{ color: 'var(--slate-500)' }} />
+            <span className="intro-meta-chip">
+              <FileText size={14} className="meta-icon" />
               {qCount} questions
             </span>
           )}
-          <span className="intro-meta-chip" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <BarChart2 size={14} style={{ color: 'var(--slate-500)' }} />
+          <span className="intro-meta-chip">
+            <BarChart2 size={14} className="meta-icon" />
             Score + Forces + Fragilités + Priorités
           </span>
         </div>
 
-        <div className="alert alert-info" style={{ margin: 'var(--space-6) 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Lightbulb size={18} className="text-blue" />
-          <span>Répondez le plus simplement possible. Si vous ne connaissez pas une information, choisissez "Je ne sais pas".</span>
+        <div className="alert alert-info">
+          <Lightbulb size={18} className="alert-icon" />
+          <span>Répondez le plus simplement possible.</span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <div className="intro-actions">
           <Button variant="primary" size="lg" full onClick={onStart}>Commencer le diagnostic →</Button>
           <Button variant="outline" onClick={onCatalog}>Voir les autres diagnostics</Button>
         </div>

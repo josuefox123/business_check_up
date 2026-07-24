@@ -83,13 +83,13 @@ export const Navbar = ({ onGoHome }) => {
   );
 };
 
-export const ScreenWrapper = ({ children, wide = false }) => {
+export const ScreenWrapper = ({ children, wide = false, className = '' }) => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
   return (
-    <div className={`screen-wrapper${wide ? ' wide' : ''}`}>
+    <div className={`screen-wrapper ${className}${wide ? ' wide' : ''}`}>
       <div className={wide ? 'screen-inner-wide' : 'screen-inner'}>
         {children}
       </div>
