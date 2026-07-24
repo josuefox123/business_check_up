@@ -493,8 +493,13 @@ export function useDiagnosticFlow() {
       return;
     }
 
+    const triageId = localStorage.getItem('bc_triage_id');
+    if (!triageId) {
+      navigate('/diagnostic/profil-initial');
+      return;
+    }
+
     if (sessionId && currentModule) {
-      const triageId = localStorage.getItem('bc_triage_id');
       const recommendedCode = localStorage.getItem('bc_recommended_module_code');
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
       const isOverride = !isRecommended;
@@ -568,11 +573,7 @@ export function useDiagnosticFlow() {
     }
 
     if (questionIndex + 1 >= questions.length) {
-      if (isEnrichmentMode) {
-        navigate('/diagnostic/profil');
-      } else {
-        navigate('/diagnostic/calcul');
-      }
+      navigate('/diagnostic/profil');
     } else {
       setQuestionIndex(p => p + 1);
     }
@@ -787,7 +788,7 @@ export function useDiagnosticFlow() {
   };
 
   const onEnrichment = () => {
-    navigate('/diagnostic/enrichissement-consent');
+    navigate('/diagnostic/fin');
   };
 
   const onStartEnrichmentQuestions = async () => {
@@ -800,7 +801,6 @@ export function useDiagnosticFlow() {
         setIsEnrichmentMode(true);
         navigate('/diagnostic/question');
       } else {
-        // Pas de questions d'enrichissement pour ce module, aller directement au profil
         navigate('/diagnostic/profil');
       }
     } catch (err) {
@@ -813,23 +813,8 @@ export function useDiagnosticFlow() {
     navigate('/diagnostic/resultats');
   };
 
-  const onProfileBack = () => {
-    if (isEnrichmentMode && questions.length > 0) {
-      setQuestionIndex(questions.length - 1);
-      navigate('/diagnostic/question');
-    } else {
-      navigate('/diagnostic/enrichissement-consent');
-    }
-  };
-
-  const onProfileSubmit = async (profileData) => {
-    const sessionId = localStorage.getItem('bc_session_id');
-    if (!sessionId) {
-      navigate('/diagnostic/fin');
-      return;
-    }
-
-    const formattedAnswers = {
+  const onProfileInitialSubmit = async (profileData) => {
+    const updatedTriageAnswers = {
       ...triageAnswers,
       s03: profileData.user_profile_type,
       s04: profileData.activity_stage,
@@ -844,8 +829,79 @@ export function useDiagnosticFlow() {
       },
       name: profileData.full_name || null,
       phone: profileData.phone_number || null,
-      whatsapp_number: profileData.whatsapp_number || null,
       email: profileData.email || null,
+      s00: triageAnswers?.s00 || 'direct',
+      s06: triageAnswers?.s06 || 'global_understanding',
+      s07: triageAnswers?.s07 || [],
+      s08: triageAnswers?.s08 || 'none',
+      s09: triageAnswers?.s09 || 'full_360'
+    };
+    setTriageAnswers(updatedTriageAnswers);
+
+    let sessionId = localStorage.getItem('bc_session_id');
+    if (sessionId && currentModule) {
+      const recommendedCode = localStorage.getItem('bc_recommended_module_code');
+      const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
+      const isOverride = !isRecommended;
+      try {
+        const res = await apiFetch(`/sessions/${sessionId}/diagnostics`, {
+          method: 'POST',
+          body: JSON.stringify({
+            module_code: currentModule.id,
+            triage_id: null,
+            is_recommended: isRecommended,
+            is_override: isOverride
+          })
+        });
+        const runId = res?.data?.diagnostic_run_id || res?.diagnostic_run_id;
+        if (runId) {
+          setCurrentRunId(runId);
+          await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
+            .catch(err => console.error('Error tracking session intro stage:', err));
+        }
+      } catch (err) {
+        console.error('Error starting diagnostic run in initial profile:', err);
+      }
+    }
+
+    navigate('/diagnostic/question');
+  };
+
+  const onProfileInitialBack = () => {
+    navigate('/diagnostic/intro');
+  };
+
+  const onProfileBack = () => {
+    if (questions.length > 0) {
+      setQuestionIndex(questions.length - 1);
+    }
+    navigate('/diagnostic/question');
+  };
+
+  const onProfileSubmit = async (profileData) => {
+    const sessionId = localStorage.getItem('bc_session_id');
+    if (!sessionId) {
+      navigate('/diagnostic/fin');
+      return;
+    }
+
+    const formattedAnswers = {
+      ...triageAnswers,
+      s03: profileData.user_profile_type || triageAnswers.s03,
+      s04: profileData.activity_stage || triageAnswers.s04,
+      s05: {
+        ...(triageAnswers?.s05 || {}),
+        business_name: profileData.business_name || triageAnswers?.s05?.business_name || null,
+        region: profileData.region || triageAnswers?.s05?.region || 'Atlantique',
+        commune: profileData.commune || triageAnswers?.s05?.commune || null,
+        secteur: profileData.sector || triageAnswers?.s05?.secteur || 'Services',
+        soussecteur: profileData.sub_sector || triageAnswers?.s05?.soussecteur || null,
+        creation_year: profileData.year_created || triageAnswers?.s05?.creation_year || null,
+      },
+      name: profileData.full_name || triageAnswers.name || null,
+      phone: profileData.phone_number || triageAnswers.phone || null,
+      whatsapp_number: '',
+      email: profileData.email || triageAnswers.email || null,
       ca_n_1: profileData.ca_n_1 || null,
       ca_m_1: profileData.ca_m_1 || null,
       employee_count_range: profileData.employee_count_range || null,
@@ -860,10 +916,10 @@ export function useDiagnosticFlow() {
       await submitTriageToBackendApi(sessionId, formattedAnswers);
 
       const userObj = {
-        name: profileData.full_name || 'Anonyme',
-        email: profileData.email || '',
-        phone: profileData.phone_number || '',
-        companyName: profileData.business_name || ''
+        name: formattedAnswers.name || 'Anonyme',
+        email: formattedAnswers.email || '',
+        phone: formattedAnswers.phone || '',
+        companyName: formattedAnswers.s05?.business_name || ''
       };
 
       if (currentModule) {
@@ -873,23 +929,14 @@ export function useDiagnosticFlow() {
       if (currentRunId) {
         localStorage.setItem('last_run_id', currentRunId);
       }
-      if (profileData) {
-        localStorage.setItem('last_user_name', profileData.full_name || '');
-        localStorage.setItem('last_user_email', profileData.email || '');
-        localStorage.setItem('last_user_phone', profileData.phone_number || '');
-        localStorage.setItem('last_user_whatsapp', profileData.whatsapp_number || '');
+      if (formattedAnswers) {
+        localStorage.setItem('last_user_name', formattedAnswers.name || '');
+        localStorage.setItem('last_user_email', formattedAnswers.email || '');
+        localStorage.setItem('last_user_phone', formattedAnswers.phone || '');
+        localStorage.setItem('last_user_whatsapp', '');
       }
 
-      clearState();
-      setTriageAnswers({});
-      setConsentAnswers({ diag: false, stats: false, contact: false });
-      setCurrentModule(null);
-      setModuleAnswers({});
-      setQuestionIndex(0);
-      setCurrentRunId(null);
-      setRestitution(null);
-      setIsEnrichmentMode(false);
-      navigate('/diagnostic/fin');
+      navigate('/diagnostic/calcul');
     } catch (err) {
       console.error('Error submitting profile triage:', err);
       throw err;
@@ -897,19 +944,7 @@ export function useDiagnosticFlow() {
   };
 
   const onProfileSkip = () => {
-    if (currentModule) {
-      DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, null, score);
-    }
-    clearState();
-    setTriageAnswers({});
-    setConsentAnswers({ diag: false, stats: false, contact: false });
-    setCurrentModule(null);
-    setModuleAnswers({});
-    setQuestionIndex(0);
-    setCurrentRunId(null);
-    setRestitution(null);
-    setIsEnrichmentMode(false);
-    navigate('/diagnostic/fin');
+    navigate('/diagnostic/calcul');
   };
 
   const onRestartFin = () => onGoHome();
@@ -986,6 +1021,8 @@ export function useDiagnosticFlow() {
     onEnrichmentCancel,
     onProfileSubmit,
     onProfileSkip,
-    onProfileBack
+    onProfileBack,
+    onProfileInitialSubmit,
+    onProfileInitialBack
   };
 }

@@ -441,8 +441,17 @@ function DiagnosticApp() {
         <Route path="/diagnostic/enrichissement-consent" element={
           <EnrichmentConsentScreen onConfirm={flow.onStartEnrichmentQuestions} onCancel={flow.onEnrichmentCancel} />
         } />
+        <Route path="/diagnostic/profil-initial" element={
+          <UserProfileFormScreen 
+            mode="initial"
+            onSubmit={flow.onProfileInitialSubmit} 
+            onBack={flow.onProfileInitialBack} 
+            triageAnswers={flow.triageAnswers}
+          />
+        } />
         <Route path="/diagnostic/profil" element={
           <UserProfileFormScreen 
+            mode="final"
             onSubmit={flow.onProfileSubmit} 
             onSkip={flow.onProfileSkip} 
             onBack={flow.onProfileBack} 
