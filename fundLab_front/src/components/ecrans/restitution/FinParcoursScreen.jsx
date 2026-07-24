@@ -262,10 +262,10 @@ export const FinParcoursScreen = ({ onRestart }) => {
           Parcours terminé
         </span>
         <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.9rem)', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: '12px' }}>
-          Votre diagnostic est prêt !
+          Votre rapport a été envoyé !
         </h1>
         <p style={{ fontSize: '0.93rem', color: '#64748B', lineHeight: 1.7, maxWidth: '420px', margin: '0 auto 36px' }}>
-          Pour aller plus loin, échangez avec un expert FUND.lab qui analysera vos résultats et vous guidera vers les meilleures décisions.
+          Un rapport PDF complet et personnalisé vient de vous être transmis par e-mail. Pour l'analyser avec un conseiller FUND.lab et définir vos priorités d'action, planifiez un échange dès maintenant.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '340px', margin: '0 auto' }}>
