@@ -73,7 +73,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
             onClick={onConfirm}
             style={{ width: '100%', justifyContent: 'center', gap: '8px', height: '48px', fontSize: '0.95rem', fontWeight: 600 }}
           >
-            Accepter et commencer <ArrowRight size={16} />
+            Accepter et continuer <ArrowRight size={16} />
           </Button>
           
           <Button
