@@ -77,8 +77,8 @@ export const AdminLogin = ({ onLogin }) => {
 
     setError('');
     
-    // Conserve le préfixe complet de l'API /api/bc
-    const loginUrl = `${API_BASE_URL}/auth/login`;
+    // Utilise simplement le chemin relatif par rapport à apiFetch qui prepend le bon base URL
+    const loginUrl = '/auth/login';
 
     apiFetch(loginUrl, {
       method: 'POST',
