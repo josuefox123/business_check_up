@@ -72,7 +72,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
         <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
-              <div className="admin-stat-title">Demandes d'accompagnement</div>
+              <div className="admin-stat-title">Rendez-vous pris</div>
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-warning)' }}><Award size={20} /></div>
           </div>
