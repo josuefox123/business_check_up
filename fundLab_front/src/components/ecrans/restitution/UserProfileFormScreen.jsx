@@ -233,7 +233,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
         <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
           <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>
-            {isInitial && initialStep === 1 && "Commençons par faire connaissance"}
+            {isInitial && initialStep === 1 && "Peut-on en savoir plus sur vous ?"}
             {isInitial && initialStep === 2 && "Parlez-nous de votre activité"}
             {!isInitial && "Finalisez votre profil"}
           </h1>
