@@ -34,6 +34,8 @@ import {
   EnrichmentConsentScreen
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
 import { EmailVerificationModal } from './components/ecrans/triage/EmailVerificationModal.jsx';
+import { EnrichmentCompletionModal } from './components/ecrans/questionnaire/EnrichmentCompletionModal.jsx';
+import { TriageCompletionModal } from './components/ecrans/triage/TriageCompletionModal.jsx';
 import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
 
@@ -234,6 +236,16 @@ function DiagnosticApp() {
           title={flow.errorModal.title}
           message={flow.errorModal.message}
           onClose={() => flow.setErrorModal(null)}
+        />
+      )}
+      {flow.showEnrichmentCompletionModal && (
+        <EnrichmentCompletionModal
+          onConfirm={flow.onConfirmEnrichmentCompletion}
+        />
+      )}
+      {flow.showTriageCompletionModal && (
+        <TriageCompletionModal
+          onConfirm={flow.onConfirmTriageCompletion}
         />
       )}
 

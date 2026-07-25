@@ -64,6 +64,8 @@ export function useDiagnosticFlow() {
   const [pendingProfileData, setPendingProfileData] = useState(null);
   const [emailVerificationError, setEmailVerificationError] = useState('');
   const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [showEnrichmentCompletionModal, setShowEnrichmentCompletionModal] = useState(false);
+  const [showTriageCompletionModal, setShowTriageCompletionModal] = useState(false);
   const lastSubmittedQuestionIdRef = useRef(null);
 
   useEffect(() => {
@@ -532,7 +534,13 @@ export function useDiagnosticFlow() {
   const onS10 = (val) => {
     setTA('s10', val);
     const answersWithS10 = { ...triageAnswers, s10: val };
-    submitTriageToBackend(answersWithS10);
+    setTriageAnswers(answersWithS10);
+    setShowTriageCompletionModal(true);
+  };
+
+  const onConfirmTriageCompletion = () => {
+    setShowTriageCompletionModal(false);
+    navigate('/diagnostic/profil');
   };
 
   const onRouteStart = () => navigate('/diagnostic/intro');
@@ -684,16 +692,21 @@ export function useDiagnosticFlow() {
     }
 
     if (questionIndex + 1 >= questions.length) {
-      // Mode enrichissement → profil déjà complet → rendez-vous directement
+      // Mode enrichissement → Afficher la modal de confirmation d'envoi du rapport
       // Mode diagnostic normal → calcul direct du score sans afficher UserProfileFormScreen
       if (isEnrichmentMode) {
-        navigate('/diagnostic/fin');
+        setShowEnrichmentCompletionModal(true);
       } else {
         navigate('/diagnostic/calcul');
       }
     } else {
       setQuestionIndex(p => p + 1);
     }
+  };
+
+  const onConfirmEnrichmentCompletion = () => {
+    setShowEnrichmentCompletionModal(false);
+    navigate('/diagnostic/fin');
   };
 
   const onQuestionBack = () => {
@@ -1047,31 +1060,17 @@ export function useDiagnosticFlow() {
       s09: triageAnswers?.s09 || 'full_360'
     };
 
+    setTriageAnswers(formattedAnswers);
+
     try {
-      await submitTriageToBackendApi(sessionId, formattedAnswers);
+      await submitTriageToBackend(formattedAnswers);
 
-      const userObj = {
-        name: formattedAnswers.name || 'Anonyme',
-        email: formattedAnswers.email || '',
-        phone: formattedAnswers.phone || '',
-        companyName: formattedAnswers.s05?.business_name || ''
-      };
-
-      if (currentModule) {
-        await DiagnosticService.submitDiagnostic(currentModule.id, moduleAnswers, userObj, score);
-      }
-
-      if (currentRunId) {
-        localStorage.setItem('last_run_id', currentRunId);
-      }
       if (formattedAnswers) {
         localStorage.setItem('last_user_name', formattedAnswers.name || '');
         localStorage.setItem('last_user_email', formattedAnswers.email || '');
         localStorage.setItem('last_user_phone', formattedAnswers.phone || '');
         localStorage.setItem('last_user_whatsapp', '');
       }
-
-      navigate('/diagnostic/calcul');
     } catch (err) {
       console.error('Error submitting profile triage:', err);
       throw err;
@@ -1167,6 +1166,16 @@ export function useDiagnosticFlow() {
     emailVerificationError, setEmailVerificationError,
     isEmailLoading,
     handleInitiateEmailVerification,
-    handleConfirmEmailCode
+    handleConfirmEmailCode,
+
+    // Enrichment Completion Modal
+    showEnrichmentCompletionModal,
+    setShowEnrichmentCompletionModal,
+    onConfirmEnrichmentCompletion,
+
+    // Triage Completion Modal
+    showTriageCompletionModal,
+    setShowTriageCompletionModal,
+    onConfirmTriageCompletion
   };
 }
