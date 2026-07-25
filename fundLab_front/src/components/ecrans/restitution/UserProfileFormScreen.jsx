@@ -5,6 +5,7 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { AlertOctagon, User, Briefcase, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { REGIONS, DEPARTMENT_COMMUNES, SECTORS } from '../../../constants/locationData.js';
+import { BACKEND_REFERENCES } from '../../../constants/referenceData.js';
 
 const COUNTRIES = [
   { code: 'BJ', name: 'Bénin', prefix: '+229', length: 8, extra: '01' },
@@ -21,27 +22,24 @@ const COUNTRIES = [
   { code: 'FR', name: 'France', prefix: '+33', length: 9 },
 ];
 
-const PROFILE_TYPES = [
-  { id: 'active_entrepreneur', label: 'Entrepreneur en activité' },
-  { id: 'project_holder', label: 'Porteur de projet / Futur créateur' },
-  { id: 'freelance_consultant', label: 'Consultant / Indépendant' },
-  { id: 'other', label: 'Autre profil' },
-];
-
-const ACTIVITY_STAGES = [
-  { id: 'idea_phase', label: 'Phase d’idée / Étude de marché' },
-  { id: 'first_sales', label: 'Premières ventes / Démarrage' },
-  { id: 'regular_sales', label: 'Activité régulière / En croissance' },
-  { id: 'restructuring', label: 'En restructuration / Phase de relance' },
-];
+const PROFILE_TYPES = BACKEND_REFERENCES.user_profile_type || [];
+const ACTIVITY_STAGES = BACKEND_REFERENCES.activity_stage || [];
 
 const EMPLOYEE_RANGES = [
-  { id: 'sole_trader', label: 'Seul (0 employé)' },
-  { id: '1-5', label: '1 à 5 employés' },
-  { id: '6-10', label: '6 à 10 employés' },
+  { id: '1-10', label: '1 à 10 employés' },
   { id: '11-50', label: '11 à 50 employés' },
-  { id: '50+', label: 'Plus de 50 employés' },
+  { id: '51-100', label: '51 à 100 employés' },
+  { id: '101-250', label: '101 à 250 employés' },
+  { id: '251-500', label: '251 à 500 employés' },
+  { id: '501+', label: 'Plus de 500 employés (501+)' }
 ];
+
+const formatCustomText = (text) => {
+  if (!text) return '';
+  const clean = text.trimStart();
+  if (clean.length === 0) return '';
+  return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+};
 
 export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers, mode = 'final' }) => {
   const parsePhoneNumber = (num) => {
@@ -72,7 +70,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     const parsedPhone = parsePhoneNumber(triageAnswers?.phone || triageAnswers?.phone_number || '');
 
     return {
-      user_profile_type: triageAnswers?.s03 || 'active_entrepreneur',
+      user_profile_type: triageAnswers?.s03 || triageAnswers?.user_profile_type || (PROFILE_TYPES[0]?.value || ''),
       full_name: triageAnswers?.name || '',
       phone_country: parsedPhone.countryCode || 'BJ',
       phone_suffix: parsedPhone.suffix || '',
@@ -84,13 +82,16 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       activity_description: s05.activity_description || triageAnswers?.activity_description || '',
       region: s05.region || 'Atlantique',
       commune: s05.commune || '',
+      other_commune: '',
       sector: s05.secteur || 'Services',
+      other_sector: '',
       sub_sector: s05.soussecteur || '',
       year_created: s05.creation_year ? s05.creation_year.toString() : new Date().getFullYear().toString(),
       ca_n_1: triageAnswers?.ca_n_1 || '',
       ca_m_1: triageAnswers?.ca_m_1 || '',
-      activity_stage: triageAnswers?.s04 || 'regular_sales',
-      employee_count_range: triageAnswers?.employee_count_range || '1-5'
+      activity_stage: triageAnswers?.s04 || triageAnswers?.activity_stage || (ACTIVITY_STAGES[0]?.value || ''),
+      employee_count_range: triageAnswers?.employee_count_range || '1-10',
+      other_employee_count_range: ''
     };
   });
 
@@ -135,9 +136,9 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     yearsList.push(y.toString());
   }
 
-  // Mettre à jour les communes quand la région change
+  // Mettre à jour les communes quand la région change (en incluant 'Autre')
   useEffect(() => {
-    const list = DEPARTMENT_COMMUNES[form.region] || [];
+    const list = DEPARTMENT_COMMUNES[form.region] ? [...DEPARTMENT_COMMUNES[form.region], 'Autre'] : ['Autre'];
     setCommunes(list);
     if (list.length > 0 && !list.includes(form.commune)) {
       setForm(prev => ({ ...prev, commune: list[0] }));
@@ -175,7 +176,14 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     } else {
       if (!form.sector) {
         newErrors.sector = "Veuillez sélectionner un secteur d'activité.";
+      } else if (form.sector === 'Autre' && !form.other_sector.trim()) {
+        newErrors.sector = "Veuillez préciser votre secteur d'activité.";
       }
+
+      if (form.commune === 'Autre' && !form.other_commune.trim()) {
+        newErrors.commune = "Veuillez préciser votre commune.";
+      }
+
       if (!form.region) {
         newErrors.region = "Veuillez sélectionner un département / région.";
       }
@@ -197,8 +205,15 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       const phoneCountryConfig = COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0];
       const finalPhonePrefix = phoneCountryConfig.code === 'BJ' ? '+22901' : phoneCountryConfig.prefix;
 
+      const finalSector = form.sector === 'Autre' ? formatCustomText(form.other_sector) : form.sector;
+      const finalCommune = form.commune === 'Autre' ? formatCustomText(form.other_commune) : form.commune;
+      const finalEmpRange = form.employee_count_range === 'Autre' ? formatCustomText(form.other_employee_count_range) : form.employee_count_range;
+
       await onSubmit({
         ...form,
+        sector: finalSector,
+        commune: finalCommune,
+        employee_count_range: finalEmpRange,
         phone_number: form.phone_suffix ? `${finalPhonePrefix}${form.phone_suffix}` : '',
         whatsapp_number: '',
         years_in_activity: calculatedYears !== '' ? calculatedYears : null
@@ -210,6 +225,8 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       setIsSubmitting(false);
     }
   };
+
+  const sectorOptions = SECTORS.includes('Autre') ? SECTORS : [...SECTORS, 'Autre'];
 
   return (
     <ScreenWrapper wide>
@@ -509,16 +526,28 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                 </div>
 
                 <div className="pg-form-grid">
+                  {/* Secteur d'activité */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Secteur d'activité <span style={{ color: '#DC2626' }}>*</span>
                     </label>
                     <CustomSelect
-                      options={SECTORS}
+                      options={sectorOptions}
                       value={form.sector}
                       onChange={val => handleChange('sector', val)}
                       error={errors.sector}
                     />
+                    {form.sector === 'Autre' && (
+                      <div style={{ marginTop: '8px' }}>
+                        <input
+                          type="text"
+                          className="pg-field-input"
+                          placeholder="Précisez votre secteur d'activité..."
+                          value={form.other_sector}
+                          onChange={e => handleChange('other_sector', formatCustomText(e.target.value))}
+                        />
+                      </div>
+                    )}
                     {errors.sector && (
                       <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
                         {errors.sector}
@@ -526,6 +555,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     )}
                   </div>
 
+                  {/* Sous-secteur */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Sous-secteur d'activité
@@ -539,6 +569,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     />
                   </div>
 
+                  {/* Stade d'activité */}
                   <div className="pg-field-group pg-span-2">
                     <label className="pg-field-label">
                       Stade actuel de votre activité
@@ -550,6 +581,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     />
                   </div>
 
+                  {/* Description d'activité */}
                   <div className="pg-field-group pg-span-2">
                     <label className="pg-field-label">
                       Description de votre activité & objectifs principaux
@@ -575,6 +607,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                 </div>
 
                 <div className="pg-form-grid">
+                  {/* Région */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Département / Région <span style={{ color: '#DC2626' }}>*</span>
@@ -586,6 +619,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     />
                   </div>
 
+                  {/* Commune */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Commune
@@ -595,8 +629,25 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                       value={form.commune}
                       onChange={val => handleChange('commune', val)}
                     />
+                    {form.commune === 'Autre' && (
+                      <div style={{ marginTop: '8px' }}>
+                        <input
+                          type="text"
+                          className="pg-field-input"
+                          placeholder="Précisez votre commune..."
+                          value={form.other_commune}
+                          onChange={e => handleChange('other_commune', formatCustomText(e.target.value))}
+                        />
+                      </div>
+                    )}
+                    {errors.commune && (
+                      <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                        {errors.commune}
+                      </span>
+                    )}
                   </div>
 
+                  {/* Année de création */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Année de création
@@ -608,6 +659,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     />
                   </div>
 
+                  {/* Tranche d'effectifs */}
                   <div className="pg-field-group">
                     <label className="pg-field-label">
                       Tranche d'effectifs (employés)

@@ -36,13 +36,13 @@ export const questionsApi = {
             hint: q.helper_text || null,
             type: type,
             choices: choices,
-            requireProof: !!q.evidence_required
           };
         });
       })
       .catch(err => {
-        console.error(`Error loading questions for ${moduleId} from backend:`, err);
-        throw err;
+        console.warn(`[questionsApi] Backend endpoint for module ${moduleId} unavailable (${err.message}). Using local questions.`);
+        const localData = LocalStoreRepository.getQuestionsByModule(targetModuleId);
+        return localData || [];
       });
   },
   

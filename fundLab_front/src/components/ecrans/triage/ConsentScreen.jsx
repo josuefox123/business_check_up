@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 
 export const ConsentScreen = ({ onContinue, onBack }) => {
-  const handleSubmit = () => {
-    onContinue({ diag: true, stats: true, contact: true });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onContinue({ diag: true, stats: true, contact: true });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -53,10 +63,11 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
         </div>
       </div>
 
-      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
       <div className="screen-nav">
-        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
-        <Button variant="primary" onClick={handleSubmit}>Accepter et continuer</Button>
+        {onBack && <Button variant="outline" onClick={onBack} disabled={isSubmitting}>Retour</Button>}
+        <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? 'Validation...' : 'Accepter et continuer'}
+        </Button>
       </div>
     </ScreenWrapper>
   );

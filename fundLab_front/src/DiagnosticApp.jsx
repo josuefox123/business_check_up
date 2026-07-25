@@ -14,6 +14,7 @@ import { useDiagnosticFlow } from './hooks/useDiagnosticFlow.js';
 
 import {
   ConsentScreen,
+  TriageStartLoadingScreen,
   ChoixEntreeScreen,
   S03Screen, S04Screen, S05Screen,
   TriageScreen,
@@ -281,6 +282,14 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
+            {(flow.triageStep === 1 || flow.triageStep === 2 || !flow.triageStep) && (
+              <TriageStartLoadingScreen
+                onComplete={() => {
+                  const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+                  flow.setTriageStep(hasEntry ? 3 : 4);
+                }}
+              />
+            )}
             {flow.triageStep === 3 && (
               <ChoixEntreeScreen
                 question={getTriageQuestion('entry_choice')}

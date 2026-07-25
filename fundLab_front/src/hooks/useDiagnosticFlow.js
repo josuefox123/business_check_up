@@ -208,6 +208,10 @@ export function useDiagnosticFlow() {
           } else {
             setQuestions([]);
           }
+        })
+        .catch(err => {
+          console.warn(`[useDiagnosticFlow] Unable to load questions for ${currentModule.id}:`, err);
+          setQuestions([]);
         });
     } else {
       setQuestions([]);
@@ -242,55 +246,52 @@ export function useDiagnosticFlow() {
   };
 
   const onConsent = async () => {
-    setTriageStep(3);
-    try {
-      const res = await createSessionApi();
-      const sessionId = res?.data?.session_id || res?.session_id;
-      if (!sessionId) throw new Error('Aucun identifiant de session renvoyé par le serveur.');
-
-      localStorage.setItem('bc_session_id', sessionId);
-      saveState({
-        triageStep: 3,
-        triageAnswers: {},
-        consentAnswers: { diag: true, stats: false, contact: false },
-        currentModule: null,
-        routeKey: null,
-        questionIndex: 0,
-        moduleAnswers: {},
-        score: 0,
-        chosenForVerif: null,
-        currentRunId: null,
-        restitution: null,
-        currentPath: currentModule ? '/diagnostic/intro' : '/triage/wizard',
-        sessionId: sessionId
-      });
-
-      submitConsentApi(sessionId, true)
-        .then(() => {
-          updateSessionApi(sessionId, 'in_progress', 'S01_consent')
-            .catch(err => console.error('Error tracking session consent stage:', err));
-        })
-        .catch(err => console.error('Error submitting consent:', err));
-
-      if (currentModule) {
-        navigate('/diagnostic/intro');
+    // 1. Navigation immédiate pour un temps de réponse instantané (0ms)
+    if (currentModule) {
+      navigate('/diagnostic/intro');
+    } else {
+      const hasEntryChoice = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+      if (triageQuestions.length > 0 && !hasEntryChoice) {
+        setTriageStep(4);
       } else {
-        const hasEntryChoice = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
-        if (triageQuestions.length > 0 && !hasEntryChoice) {
-          setTriageStep(4);
-        } else {
-          setTriageStep(3);
-        }
-        navigate('/triage/wizard');
+        setTriageStep(3);
       }
-    } catch (err) {
-      console.error('Error creating session on consent:', err);
-      setIsOffline(true);
-      setErrorModal({
-        title: 'Serveur temporairement indisponible',
-        message: 'Impossible de démarrer le diagnostic sans connexion avec le serveur. Veuillez vérifier votre connexion internet ou réessayer plus tard.'
-      });
+      navigate('/triage/wizard');
     }
+
+    // 2. Création et enregistrement du consentement en arrière-plan sans bloquer l'UI
+    createSessionApi()
+      .then(res => {
+        const sessionId = res?.data?.session_id || res?.session_id;
+        if (sessionId) {
+          localStorage.setItem('bc_session_id', sessionId);
+          saveState({
+            triageStep: 3,
+            triageAnswers: {},
+            consentAnswers: { diag: true, stats: false, contact: false },
+            currentModule: null,
+            routeKey: null,
+            questionIndex: 0,
+            moduleAnswers: {},
+            score: 0,
+            chosenForVerif: null,
+            currentRunId: null,
+            restitution: null,
+            currentPath: currentModule ? '/diagnostic/intro' : '/triage/wizard',
+            sessionId: sessionId
+          });
+
+          submitConsentApi(sessionId, true)
+            .then(() => {
+              updateSessionApi(sessionId, 'in_progress', 'S01_consent')
+                .catch(err => console.error('Error tracking session consent stage:', err));
+            })
+            .catch(err => console.error('Error submitting consent:', err));
+        }
+      })
+      .catch(err => {
+        console.error('Error creating session on consent:', err);
+      });
   };
 
   const setTA = (key, val) => setTriageAnswers(p => ({ ...p, [key]: val }));
@@ -505,14 +506,12 @@ export function useDiagnosticFlow() {
 
       navigate('/diagnostic/route');
     } catch (err) {
-      console.error('Error submitting triage to backend:', err, err.data);
-      let details = '';
-      if (err.data && err.data.errors) {
-        details = ' Détails: ' + JSON.stringify(err.data.errors);
-      }
+      console.error('Error submitting triage to backend:', err, err.data || err.errors);
+      const errObj = err.data?.errors || err.errors || {};
+      let details = Object.keys(errObj).length > 0 ? ' (Champs non valides : ' + Object.keys(errObj).join(', ') + ')' : '';
       setErrorModal({
         title: 'Erreur de validation du serveur',
-        message: `Le serveur a rejeté la soumission : ${err.message}.${details}`
+        message: `Le serveur a rejeté la soumission : ${err.message || 'Données non valides'}.${details}`
       });
     }
   };

@@ -1,22 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export const CustomSelect = ({ options, value, onChange, placeholder = 'Sélectionner...', error }) => {
+export const CustomSelect = ({ options = [], value, onChange, placeholder = 'Sélectionner...', error }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
-  const selectedOption = options.find(o => 
+  const hasOptions = Array.isArray(options) && options.length > 0;
+
+  const selectedOption = hasOptions ? options.find(o => 
     typeof o === 'object' ? o.id === value || o.value === value : o === value
-  );
+  ) : null;
 
   const getLabel = (opt) => {
-    if (!opt) return placeholder;
-    if (typeof opt === 'object') return opt.label || opt.name || opt.id;
+    if (!opt) return hasOptions ? placeholder : 'Aucune valeur';
+    if (typeof opt === 'object') return opt.label || opt.name || opt.id || opt.value;
     return opt;
   };
 
   const getValue = (opt) => {
-    if (typeof opt === 'object') return opt.id !== undefined ? opt.id : opt.value;
+    if (typeof opt === 'object') return opt.value !== undefined ? opt.value : opt.id;
     return opt;
   };
 

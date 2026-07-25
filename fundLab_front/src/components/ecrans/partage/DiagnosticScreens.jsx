@@ -3,6 +3,7 @@
  */
 
 export { ConsentScreen } from '../triage/ConsentScreen.jsx';
+export { TriageStartLoadingScreen } from '../triage/TriageStartLoadingScreen.jsx';
 export { ChoixEntreeScreen } from '../triage/ChoixEntreeScreen.jsx';
 export { S03Screen } from '../triage/S03Screen.jsx';
 export { S04Screen, AnswerConfirmModal, S04SubQuestionModal } from '../triage/S04Screen.jsx';
