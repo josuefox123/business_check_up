@@ -92,6 +92,10 @@ export function useDiagnosticFlow() {
             choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
           }));
           setTriageQuestions(filtered);
+          const hasEntryChoice = filtered.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+          if (!hasEntryChoice) {
+            setTriageStep(prev => prev === 3 ? 4 : prev);
+          }
         }
       })
       .catch(err => console.error('Error fetching triage questions from backend:', err));
@@ -261,11 +265,15 @@ export function useDiagnosticFlow() {
         })
         .catch(err => console.error('Error submitting consent:', err));
 
-      setIsOffline(false);
-      // Si un module est déjà sélectionné (venu du catalogue), retourner à l'intro du diagnostic
       if (currentModule) {
         navigate('/diagnostic/intro');
       } else {
+        const hasEntryChoice = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+        if (triageQuestions.length > 0 && !hasEntryChoice) {
+          setTriageStep(4);
+        } else {
+          setTriageStep(3);
+        }
         navigate('/triage/wizard');
       }
     } catch (err) {

@@ -280,7 +280,14 @@ function DiagnosticApp() {
               <UserProfileFormScreen
                 mode="initial"
                 onSubmit={flow.onTriageProfileSubmit}
-                onBack={() => flow.setTriageStep(3)}
+                onBack={() => {
+                  const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+                  if (hasEntry) {
+                    flow.setTriageStep(3);
+                  } else {
+                    navigate('/triage/consent');
+                  }
+                }}
                 triageAnswers={flow.triageAnswers}
               />
             )}
