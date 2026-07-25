@@ -551,3 +551,158 @@ textarea.form-input {
   /* Section */
   .section { padding: var(--space-8) var(--content-padding); }
 }
+
+/* ============================================
+   FUND.lab — Derived Diagnostic Themes
+   ============================================ */
+
+/* ── 1. Theme 360 & Flash (Turquoise Canonique FUND.lab #34BED5) ── */
+.theme-360 {
+  --color-accent:        #34BED5;
+  --color-accent-dark:   #1A9DB8;
+  --color-accent-light:  rgba(52, 190, 213, 0.12);
+  --color-blue-ring:     rgba(52, 190, 213, 0.25);
+  --theme-bg-gradient:   linear-gradient(180deg, #121C28 0%, #091018 100%);
+  --theme-header-bg:     #0B121C;
+  --theme-card-border:   #34BED5;
+  --theme-glow:          rgba(52, 190, 213, 0.25);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(52, 190, 213, 0.12);
+  --theme-chip-border:   rgba(52, 190, 213, 0.30);
+  --theme-chip-text:     #5FD4E7;
+}
+
+/* ── 2. Theme Porteur de Projet (Turquoise Givré Lumineux #5CCBE0) ── */
+.theme-prj {
+  --color-accent:        #0F7F90;
+  --color-accent-dark:   #095663;
+  --color-accent-light:  rgba(15, 127, 144, 0.12);
+  --color-blue-ring:     rgba(92, 203, 224, 0.35);
+  --theme-bg-gradient:   linear-gradient(180deg, #FFFFFF 0%, #E8F8FA 100%);
+  --theme-header-bg:     #D4F3F8;
+  --theme-card-border:   #34BED5;
+  --theme-glow:          rgba(52, 190, 213, 0.35);
+  --theme-text-color:    #0B2538;
+  --theme-chip-bg:       rgba(52, 190, 213, 0.12);
+  --theme-chip-border:   rgba(52, 190, 213, 0.30);
+  --theme-chip-text:     #0A5866;
+}
+
+/* ── 3. Theme Opportunité & Croissance (Cyan Vif Électrique #12B3CD) ── */
+.theme-opp {
+  --color-accent:        #12B3CD;
+  --color-accent-dark:   #0F96AD;
+  --color-accent-light:  rgba(18, 179, 205, 0.15);
+  --color-blue-ring:     rgba(18, 179, 205, 0.35);
+  --theme-bg-gradient:   linear-gradient(180deg, #0A7085 0%, #004E5D 100%);
+  --theme-header-bg:     #003843;
+  --theme-card-border:   #5FD4E7;
+  --theme-glow:          rgba(95, 212, 231, 0.35);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(255, 255, 255, 0.18);
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+}
+
+/* ── 4. Theme Difficulté & Stabilisation (Bleu Crépuscule Dark #17212D) ── */
+.theme-dif {
+  --color-accent:        #4A607A;
+  --color-accent-dark:   #304154;
+  --color-accent-light:  rgba(74, 96, 122, 0.15);
+  --color-blue-ring:     rgba(74, 96, 122, 0.25);
+  --theme-bg-gradient:   linear-gradient(180deg, #17212D 0%, #0B1119 100%);
+  --theme-header-bg:     #080C12;
+  --theme-card-border:   #7D95B3;
+  --theme-glow:          rgba(125, 149, 179, 0.25);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(255, 255, 255, 0.08);
+  --theme-chip-border:   rgba(255, 255, 255, 0.18);
+  --theme-chip-text:     #CBD5E1;
+}
+
+/* ── 5. Theme Financement & Trésorerie (Bleu Acier Cobalt #253346) ── */
+.theme-fin {
+  --color-accent:        #374960;
+  --color-accent-dark:   #253346;
+  --color-accent-light:  rgba(55, 73, 96, 0.15);
+  --color-blue-ring:     rgba(95, 212, 231, 0.30);
+  --theme-bg-gradient:   linear-gradient(180deg, #253346 0%, #151F2C 100%);
+  --theme-header-bg:     #121A26;
+  --theme-card-border:   #5FD4E7;
+  --theme-glow:          rgba(95, 212, 231, 0.30);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(95, 212, 231, 0.15);
+  --theme-chip-border:   rgba(95, 212, 231, 0.35);
+  --theme-chip-text:     #5FD4E7;
+}
+
+/* ── 6. Theme Offre Produit (Aqua Océan #02596C) ── */
+.theme-pro {
+  --color-accent:        #02596C;
+  --color-accent-dark:   #013D4B;
+  --color-accent-light:  rgba(2, 89, 108, 0.12);
+  --color-blue-ring:     rgba(151, 228, 240, 0.30);
+  --theme-bg-gradient:   linear-gradient(180deg, #02596C 0%, #013743 100%);
+  --theme-header-bg:     #01262F;
+  --theme-card-border:   #97E4F0;
+  --theme-glow:          rgba(151, 228, 240, 0.30);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(255, 255, 255, 0.15);
+  --theme-chip-border:   rgba(255, 255, 255, 0.30);
+  --theme-chip-text:     #97E4F0;
+}
+
+/* ── 7. Theme Commercial (Cyan Marché Solaire #008CA5) ── */
+.theme-com {
+  --color-accent:        #008CA5;
+  --color-accent-dark:   #006A7E;
+  --color-accent-light:  rgba(0, 140, 165, 0.12);
+  --color-blue-ring:     rgba(52, 190, 213, 0.30);
+  --theme-bg-gradient:   linear-gradient(180deg, #008CA5 0%, #004D5C 100%);
+  --theme-header-bg:     #00333E;
+  --theme-card-border:   #34BED5;
+  --theme-glow:          rgba(52, 190, 213, 0.35);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(255, 255, 255, 0.18);
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+}
+
+/* ── 8. Theme Organisation & Gouvernance (Slate Dark #344356) ── */
+.theme-gov {
+  --color-accent:        #344356;
+  --color-accent-dark:   #232D3B;
+  --color-accent-light:  rgba(52, 67, 86, 0.12);
+  --color-blue-ring:     rgba(125, 149, 179, 0.30);
+  --theme-bg-gradient:   linear-gradient(180deg, #344356 0%, #1B232E 100%);
+  --theme-header-bg:     #131922;
+  --theme-card-border:   #7D95B3;
+  --theme-glow:          rgba(125, 149, 179, 0.30);
+  --theme-text-color:    #ffffff;
+  --theme-chip-bg:       rgba(255, 255, 255, 0.12);
+  --theme-chip-border:   rgba(255, 255, 255, 0.25);
+  --theme-chip-text:     #E2E8F0;
+}
+
+/* ── Textarea Character Counter ── */
+.text-area-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.text-area-counter {
+  display: flex;
+  justify-content: flex-end;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--slate-400);
+  margin-top: 2px;
+}
+
+.text-area-counter.limit-reached {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+

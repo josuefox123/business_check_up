@@ -587,11 +587,11 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       // Mode enrichissement → profil déjà complet → rendez-vous directement
-      // Mode diagnostic normal → formulaire complémentaire (CA, employés) avant le calcul
+      // Mode diagnostic normal → calcul direct du score sans afficher UserProfileFormScreen
       if (isEnrichmentMode) {
         navigate('/diagnostic/fin');
       } else {
-        navigate('/diagnostic/profil');
+        navigate('/diagnostic/calcul');
       }
     } else {
       setQuestionIndex(p => p + 1);

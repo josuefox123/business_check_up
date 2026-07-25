@@ -221,9 +221,10 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
         .profile-card-container {
           background: #ffffff !important;
           border: 1px solid #E2E8F0 !important;
+          border-top: 4px solid var(--color-accent, #34BED5) !important;
           padding: 32px !important;
           border-radius: 20px !important;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.02) !important;
+          box-shadow: 0 16px 40px rgba(7, 14, 36, 0.05) !important;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -244,11 +245,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       `}</style>
       <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
         <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.6rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '10px' }}>
+          <h1 style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '6px', letterSpacing: '-0.02em' }}>
             {isInitial ? "Informations générales" : "Finalisez votre profil"}
           </h1>
-          <p style={{ fontSize: '0.92rem', color: 'var(--slate-500)', lineHeight: 1.6 }}>
-            {isInitial ? "Informations générales" : "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
+          <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
+            {isInitial ? "Veuillez renseigner les éléments ci-dessous pour démarrer votre évaluation." : "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
           </p>
         </div>
 
@@ -261,9 +262,13 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
             </div>
           )}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--slate-100)', paddingBottom: '8px', marginBottom: '16px' }}>
-              <User size={18} style={{ color: 'var(--color-accent)' }} />
-              <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#070E24' }}>Informations Générales</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(52, 190, 213, 0.12)', color: '#1A9DB8' }}>
+                <User size={18} />
+              </div>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-600)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                Coordonnées & Structure
+              </span>
             </div>
 
             <div className="profile-form-grid">
@@ -341,10 +346,10 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
               <Button
                 type="submit"
                 variant="primary"
-                style={{ flex: isMobile ? '1 1 100%' : '2', order: isMobile ? 1 : 2, justifyContent: 'center', height: '42px' }}
+                style={{ flex: isMobile ? '1 1 100%' : '2', order: isMobile ? 1 : 2, justifyContent: 'center', height: '46px', fontSize: '0.95rem', fontWeight: 750 }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Enregistrement...' : (isInitial ? 'Lancer le diagnostic' : 'Valider et voir mon résultat')}
+                {isSubmitting ? 'Enregistrement...' : (isInitial ? 'Lancer le diagnostic →' : 'Valider et voir mon résultat →')}
               </Button>
             </div>
           </div>

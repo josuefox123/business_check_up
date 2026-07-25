@@ -5,6 +5,7 @@ import {
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
+import { getModuleThemeClass } from '../../../utils/themeUtils.js';
 
 import iconFinanceStrategy from '../../../assets/icone diagnostique/Icon_strategy,-strategics,-finance-strategy,-chess,-horse.png';
 import iconFlashCustom from '../../../assets/icone diagnostique/flash.png';
@@ -31,6 +32,7 @@ const MODULE_STYLE_MAP = {
 export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, onBack }) => {
   const [backendModule, setBackendModule] = useState(null);
   const activeIcon = MODULE_STYLE_MAP[moduleId] || icon360Custom;
+  const themeClass = getModuleThemeClass(moduleId || moduleData);
 
   useEffect(() => {
     if (moduleData?.name && moduleData?.question_count) {
@@ -61,7 +63,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
   const qCount = backendModule?.question_count || moduleData?.question_count || null;
 
   return (
-    <ScreenWrapper className="intro-screen-wrapper">
+    <ScreenWrapper className={`intro-screen-wrapper ${themeClass}`}>
       {onBack && <TopBackLink onClick={onBack} />}
       <div className="intro-wrap animate-fade-up">
         {/* Animated custom PNG icon inside a premium card wrapper */}

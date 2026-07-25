@@ -3,8 +3,7 @@ import { AlertTriangle, MessageSquare } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-
-
+import { getModuleThemeClass } from '../../../utils/themeUtils.js';
 
 export const QuitConfirmModal = ({ onConfirm, onCancel }) => (
   <div style={{
@@ -79,6 +78,8 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const isMulti = questionData.type === 'multi';
   const isScale = questionData.type === 'scale_1_5';
   const isText = questionData.type === 'short_text';
+  const maxLength = questionData.maxLength || 500;
+  const themeClass = getModuleThemeClass(moduleId || questionData?.moduleId);
 
   const [answer, setAnswer] = useState(
     (!isMulti && !isText && savedAnswer !== null) ? savedAnswer : null
@@ -113,7 +114,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   };
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper className={themeClass}>
       {onBack && <TopBackLink onClick={onBack} />}
       {showQuitModal && (
         <QuitConfirmModal
@@ -138,14 +139,20 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         )}
 
         {isText ? (
-          <textarea
-            className="form-input"
-            rows={4}
-            placeholder={questionData.placeholder || 'Votre réponse...'}
-            value={textVal}
-            onChange={e => setTextVal(e.target.value)}
-            style={{ resize: 'vertical' }}
-          />
+          <div className="text-area-wrapper">
+            <textarea
+              className="form-input"
+              rows={4}
+              maxLength={maxLength}
+              placeholder={questionData.placeholder || 'Votre réponse...'}
+              value={textVal}
+              onChange={e => setTextVal(e.target.value)}
+              style={{ resize: 'vertical' }}
+            />
+            <div className={`text-area-counter ${textVal.length >= maxLength ? 'limit-reached' : ''}`}>
+              {textVal.length} / {maxLength} caractères
+            </div>
+          </div>
         ) : isScale ? (
           <div className="choices-list">
             {SCALE_LABELS.map((l, i) => (

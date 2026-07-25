@@ -783,7 +783,7 @@
 /* ── Mobile Arched Layout ── */
 @media (max-width: 768px) {
   .screen-wrapper.intro-screen-wrapper {
-    background: var(--color-primary) !important;
+    background: var(--theme-header-bg, var(--color-primary)) !important;
     padding-bottom: 0 !important;
     min-height: 100vh;
   }
@@ -798,8 +798,8 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .intro-wrap {
-    background: linear-gradient(180deg, var(--color-primary-mid) 0%, var(--color-primary-light) 100%);
-    border-top: 2px solid var(--color-accent);
+    background: var(--theme-bg-gradient, linear-gradient(180deg, var(--color-primary-mid) 0%, var(--color-primary-light) 100%)) !important;
+    border-top: 3px solid var(--theme-card-border, var(--color-accent)) !important;
     border-radius: 48px 48px 0 0;
     padding: 48px 24px 32px 24px;
     margin-top: 80px;
@@ -827,12 +827,12 @@
     width: 110px;
     height: 110px;
     border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    border: 3px solid var(--theme-card-border, rgba(255, 255, 255, 0.25)) !important;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 
       0 8px 24px rgba(0, 0, 0, 0.25),
-      0 0 0 10px rgba(255, 255, 255, 0.08),
-      0 0 0 20px rgba(255, 255, 255, 0.04);
+      0 0 0 10px var(--theme-glow, rgba(255, 255, 255, 0.08)),
+      0 0 0 20px rgba(255, 255, 255, 0.04) !important;
     margin: 0 auto 16px auto;
   }
 
@@ -891,9 +891,9 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .intro-meta-chip {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--slate-200);
+    background: var(--theme-chip-bg, rgba(255, 255, 255, 0.12)) !important;
+    border: 1px solid var(--theme-chip-border, rgba(255, 255, 255, 0.25)) !important;
+    color: var(--theme-chip-text, #ffffff) !important;
     font-size: 0.75rem;
     padding: 5px 12px;
   }
@@ -903,9 +903,9 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .alert-info {
-    background: rgba(52, 190, 213, 0.08) !important;
-    border: 1px solid rgba(52, 190, 213, 0.2) !important;
-    color: #ffffff !important;
+    background: var(--theme-chip-bg, rgba(52, 190, 213, 0.12)) !important;
+    border: 1px solid var(--theme-chip-border, rgba(52, 190, 213, 0.25)) !important;
+    color: var(--theme-text-color, #ffffff) !important;
     margin: 20px 0 !important;
     display: flex;
     align-items: center;
