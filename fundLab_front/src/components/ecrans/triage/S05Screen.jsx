@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { Button } from '../../ui/index.jsx';
+import { Button, CustomSelect } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { REGIONS, SECTORS, DEPARTMENT_COMMUNES } from '../../../constants/locationData.js';
 import { AlertOctagon } from 'lucide-react';
@@ -181,38 +181,39 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
 
           <div className="form-group">
             <label className="form-label">Département <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select className="form-select" value={data.region} onChange={e=>handleRegionChange(e.target.value)}>
-              <option value="">Sélectionnez votre département</option>
-              {REGIONS.map(r=><option key={r} value={r}>{r}</option>)}
-            </select>
+            <CustomSelect
+              value={data.region}
+              onChange={val => handleRegionChange(val)}
+              options={REGIONS}
+              placeholder="Sélectionnez votre département"
+            />
           </div>
 
           <div className="form-group">
             <label className="form-label">Commune <span style={{color:'var(--slate-400)',fontWeight:400}}>(recommandé)</span></label>
-            <select 
-              className="form-select" 
+            <CustomSelect 
               value={data.commune} 
-              onChange={e=>setData({...data,commune:e.target.value})}
+              onChange={val => setData({...data, commune: val})}
+              options={filteredCommunes}
               disabled={!data.region || data.region === 'Autre'}
-            >
-              <option value="">
-                {!data.region 
+              placeholder={
+                !data.region 
                   ? 'Sélectionnez d’abord un département' 
                   : data.region === 'Autre'
                     ? 'Non applicable'
                     : 'Sélectionnez votre commune'
-                }
-              </option>
-              {filteredCommunes.map(c=><option key={c} value={c}>{c}</option>)}
-            </select>
+              }
+            />
           </div>
 
           <div className="form-group">
             <label className="form-label">Secteur d'activité <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select className="form-select" value={data.secteur} onChange={e=>setData({...data,secteur:e.target.value})}>
-              <option value="">Sélectionnez un secteur</option>
-              {SECTORS.map(s=><option key={s} value={s}>{s}</option>)}
-            </select>
+            <CustomSelect
+              value={data.secteur}
+              onChange={val => setData({...data, secteur: val})}
+              options={SECTORS}
+              placeholder="Sélectionnez un secteur"
+            />
           </div>
 
           <div className="form-group">
@@ -222,14 +223,13 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
 
           <div className="form-group">
             <label className="form-label">Année de création <span style={{color:'var(--color-danger)'}}>*</span></label>
-            <select 
-              className="form-select" 
+            <CustomSelect 
               value={data.creation_year} 
-              onChange={e=>setData({...data,creation_year:e.target.value})} 
-            >
-              <option value="">Sélectionnez l'année</option>
-              {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+              onChange={val => setData({...data, creation_year: val})}
+              options={yearsList}
+              placeholder="Sélectionnez l'année"
+              error={!!errors.creation_year}
+            />
             {errors.creation_year && (
               <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
                 {errors.creation_year}

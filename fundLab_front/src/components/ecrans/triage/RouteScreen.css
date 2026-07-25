@@ -1,0 +1,205 @@
+/* ============================================
+   ROUTE SCREEN — Diagnostic Recommendation Page
+   ============================================ */
+
+.route-recommendation-container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 16px 12px 32px 12px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .route-recommendation-container {
+    padding: 28px 20px 40px 20px;
+  }
+}
+
+.route-recommendation-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Circle Icon Badge */
+.route-header-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2DD4BF 0%, #0D9488 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  box-shadow: 0 8px 24px rgba(45, 212, 191, 0.28);
+}
+
+/* Title & Subtitle */
+.route-main-title {
+  font-size: clamp(1.3rem, 4vw, 1.6rem);
+  font-weight: 800;
+  color: #0F172A;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+}
+
+.route-main-subtitle {
+  font-size: 0.92rem;
+  color: #64748B;
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: 24px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 4 Recommendation Info Cards List */
+.route-info-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.route-info-card {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.route-info-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  border-color: #CBD5E1;
+}
+
+.route-info-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #EFF6FF;
+  color: #3B82F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.route-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  text-align: left;
+}
+
+.route-info-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.route-info-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.route-info-value-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+
+/* Actions Section */
+.route-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.route-btn-primary {
+  height: 52px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  border-radius: 14px !important;
+  background: #1E293B !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.2) !important;
+  border: none !important;
+}
+
+.route-btn-primary:hover {
+  background: #0F172A !important;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.3) !important;
+}
+
+.route-btn-secondary {
+  height: 48px !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  border-radius: 14px !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E293B !important;
+  background: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.route-btn-secondary:hover {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+.route-btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-top: 4px;
+  transition: color 0.15s ease;
+}
+
+.route-btn-link:hover {
+  color: #0F172A;
+  text-decoration: underline;
+}
+
+.route-footer-caption {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 500;
+}

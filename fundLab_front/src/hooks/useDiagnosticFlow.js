@@ -14,6 +14,7 @@ import { DiagnosticService } from '../services/DiagnosticService.js';
 import { UtilisateurService } from '../services/UtilisateurService.js';
 import { apiFetch, formatDurationSeconds } from '../api/config.js';
 import { questionsApi } from '../api/questionsApi.js';
+import { requestEmailVerificationApi, confirmEmailVerificationApi } from '../api/authApi.js';
 
 
 
@@ -59,6 +60,10 @@ export function useDiagnosticFlow() {
   const [references, setReferences] = useState(null);
   const [triageQuestions, setTriageQuestions] = useState([]);
   const [isEnrichmentMode, setIsEnrichmentMode] = useState(false);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [pendingProfileData, setPendingProfileData] = useState(null);
+  const [emailVerificationError, setEmailVerificationError] = useState('');
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
   const lastSubmittedQuestionIdRef = useRef(null);
 
   useEffect(() => {
@@ -326,6 +331,91 @@ export function useDiagnosticFlow() {
     setTriageAnswers(updated);
 
     setTriageStep(5);
+  };
+
+  const handleInitiateEmailVerification = async (profileData) => {
+    setPendingProfileData(profileData);
+
+    // Save profileData to triageAnswers immediately so UserProfileFormScreen retains all values on Back
+    const updated = {
+      ...triageAnswers,
+      s05: {
+        ...(triageAnswers?.s05 || {}),
+        business_name: profileData.business_name || null,
+        activity_description: profileData.activity_description || null,
+        region: profileData.region,
+        commune: profileData.commune || null,
+        secteur: profileData.sector,
+        soussecteur: profileData.sub_sector || null,
+        creation_year: profileData.year_created || null,
+      },
+      name: profileData.full_name || null,
+      phone: profileData.phone_number || null,
+      email: profileData.email || null,
+      activity_description: profileData.activity_description || null
+    };
+    setTriageAnswers(updated);
+
+    setEmailVerificationError('');
+    setIsEmailLoading(true);
+    setIsVerifyingEmail(true);
+
+    try {
+      await requestEmailVerificationApi({
+        email: profileData.email,
+        full_name: profileData.full_name,
+        business_name: profileData.business_name
+      });
+    } catch (err) {
+      console.error('Error requesting email verification code:', err);
+      setEmailVerificationError(err.message || 'Impossible d’envoyer le code de vérification.');
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
+  const handleConfirmEmailCode = async (code) => {
+    if (!pendingProfileData?.email) return;
+    setEmailVerificationError('');
+    setIsEmailLoading(true);
+
+    try {
+      const res = await confirmEmailVerificationApi({
+        email: pendingProfileData.email,
+        code
+      });
+
+      if (res?.is_returning_user && res?.resume_data) {
+        // Utilisateur existant → Reprise directe du dernier module et de la dernière question
+        const resume = res.resume_data;
+        if (resume.session_id) {
+          localStorage.setItem('bc_session_id', resume.session_id);
+        }
+        
+        setIsVerifyingEmail(false);
+        onTriageProfileSubmit(pendingProfileData);
+
+        const targetModule = modulesList.find(m => m.id === resume.module_id || m.code === resume.module_id);
+        if (targetModule) {
+          onSelectModule(targetModule);
+          if (typeof resume.question_index === 'number') {
+            setQuestionIndex(resume.question_index);
+          }
+          navigate('/diagnostic/intro');
+        } else {
+          setTriageStep(5);
+        }
+      } else {
+        // Nouvel utilisateur → Suite du parcours de triage classique (Étape 5)
+        setIsVerifyingEmail(false);
+        onTriageProfileSubmit(pendingProfileData);
+      }
+    } catch (err) {
+      console.error('Error confirming email verification code:', err);
+      setEmailVerificationError(err.message || 'Code de vérification invalide ou expiré.');
+    } finally {
+      setIsEmailLoading(false);
+    }
   };
 
   const onS05 = (val) => {
@@ -1069,6 +1159,14 @@ export function useDiagnosticFlow() {
     onProfileSkip,
     onProfileBack,
     onProfileInitialSubmit,
-    onProfileInitialBack
+    onProfileInitialBack,
+
+    // Email Verification State & Actions
+    isVerifyingEmail, setIsVerifyingEmail,
+    pendingProfileData, setPendingProfileData,
+    emailVerificationError, setEmailVerificationError,
+    isEmailLoading,
+    handleInitiateEmailVerification,
+    handleConfirmEmailCode
   };
 }

@@ -33,6 +33,7 @@ import {
   UserProfileFormScreen,
   EnrichmentConsentScreen
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
+import { EmailVerificationModal } from './components/ecrans/triage/EmailVerificationModal.jsx';
 import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
 
@@ -277,19 +278,30 @@ function DiagnosticApp() {
               />
             )}
             {flow.triageStep === 4 && (
-              <UserProfileFormScreen
-                mode="initial"
-                onSubmit={flow.onTriageProfileSubmit}
-                onBack={() => {
-                  const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
-                  if (hasEntry) {
-                    flow.setTriageStep(3);
-                  } else {
-                    navigate('/triage/consent');
-                  }
-                }}
-                triageAnswers={flow.triageAnswers}
-              />
+              flow.isVerifyingEmail ? (
+                <EmailVerificationModal
+                  email={flow.pendingProfileData?.email}
+                  onVerify={flow.handleConfirmEmailCode}
+                  onResendCode={() => flow.handleInitiateEmailVerification(flow.pendingProfileData)}
+                  onEditEmail={() => flow.setIsVerifyingEmail(false)}
+                  isLoading={flow.isEmailLoading}
+                  errorMsg={flow.emailVerificationError}
+                />
+              ) : (
+                <UserProfileFormScreen
+                  mode="initial"
+                  onSubmit={flow.handleInitiateEmailVerification}
+                  onBack={() => {
+                    const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+                    if (hasEntry) {
+                      flow.setTriageStep(3);
+                    } else {
+                      navigate('/triage/consent');
+                    }
+                  }}
+                  triageAnswers={flow.triageAnswers}
+                />
+              )
             )}
             {flow.triageStep === 5 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
             {flow.triageStep === 6 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(5)} initialAnswer={flow.triageAnswers.s04 ?? null} />}

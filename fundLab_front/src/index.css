@@ -195,7 +195,7 @@ p {
    ============================================ */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -203,15 +203,15 @@ p {
 }
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(30px); }
-  to   { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-30px); }
-  to   { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.93); }
-  to   { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes pulseDot {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -386,10 +386,34 @@ p {
   color: var(--slate-800); background: var(--bg-white);
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
+}
+.form-select, select {
+  height: 48px;
+  padding: 0 40px 0 16px;
+  font-weight: 500;
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+.form-select option, select option {
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #0F172A;
+  background-color: #FFFFFF;
+  padding: 10px 14px;
+}
+.form-select option:hover, select option:hover, select option:checked {
+  background-color: #F1F5F9;
+  color: var(--color-blue);
 }
 .form-input::placeholder { color: var(--slate-400); }
-.form-input:focus, .form-select:focus {
+.form-input:focus, .form-select:focus, select:focus {
   border-color: var(--color-blue);
   box-shadow: 0 0 0 4px var(--color-blue-ring);
 }
@@ -567,25 +591,31 @@ textarea.form-input {
   --theme-card-border:   #34BED5;
   --theme-glow:          rgba(52, 190, 213, 0.25);
   --theme-text-color:    #ffffff;
-  --theme-chip-bg:       rgba(52, 190, 213, 0.12);
-  --theme-chip-border:   rgba(52, 190, 213, 0.30);
-  --theme-chip-text:     #5FD4E7;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(52, 190, 213, 0.15);
+  --theme-chip-border:   rgba(52, 190, 213, 0.35);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
-/* ── 2. Theme Porteur de Projet (Turquoise Givré Lumineux #5CCBE0) ── */
+/* ── 2. Theme Porteur de Projet (Turquoise Givré Vibrant #0F7F90) ── */
 .theme-prj {
-  --color-accent:        #0F7F90;
-  --color-accent-dark:   #095663;
-  --color-accent-light:  rgba(15, 127, 144, 0.12);
-  --color-blue-ring:     rgba(92, 203, 224, 0.35);
-  --theme-bg-gradient:   linear-gradient(180deg, #FFFFFF 0%, #E8F8FA 100%);
-  --theme-header-bg:     #D4F3F8;
+  --color-accent:        #34BED5;
+  --color-accent-dark:   #0F7F90;
+  --color-accent-light:  rgba(52, 190, 213, 0.15);
+  --color-blue-ring:     rgba(52, 190, 213, 0.35);
+  --theme-bg-gradient:   linear-gradient(180deg, #0E7080 0%, #064652 100%);
+  --theme-header-bg:     #08333D;
   --theme-card-border:   #34BED5;
   --theme-glow:          rgba(52, 190, 213, 0.35);
-  --theme-text-color:    #0B2538;
-  --theme-chip-bg:       rgba(52, 190, 213, 0.12);
-  --theme-chip-border:   rgba(52, 190, 213, 0.30);
-  --theme-chip-text:     #0A5866;
+  --theme-text-color:    #ffffff;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(255, 255, 255, 0.15);
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 3. Theme Opportunité & Croissance (Cyan Vif Électrique #12B3CD) ── */
@@ -599,89 +629,107 @@ textarea.form-input {
   --theme-card-border:   #5FD4E7;
   --theme-glow:          rgba(95, 212, 231, 0.35);
   --theme-text-color:    #ffffff;
-  --theme-chip-bg:       rgba(255, 255, 255, 0.18);
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(255, 255, 255, 0.15);
   --theme-chip-border:   rgba(255, 255, 255, 0.35);
   --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 4. Theme Difficulté & Stabilisation (Bleu Crépuscule Dark #17212D) ── */
 .theme-dif {
-  --color-accent:        #4A607A;
+  --color-accent:        #5C82A6;
   --color-accent-dark:   #304154;
-  --color-accent-light:  rgba(74, 96, 122, 0.15);
-  --color-blue-ring:     rgba(74, 96, 122, 0.25);
-  --theme-bg-gradient:   linear-gradient(180deg, #17212D 0%, #0B1119 100%);
+  --color-accent-light:  rgba(92, 130, 166, 0.15);
+  --color-blue-ring:     rgba(92, 130, 166, 0.25);
+  --theme-bg-gradient:   linear-gradient(180deg, #1A2736 0%, #0D151E 100%);
   --theme-header-bg:     #080C12;
   --theme-card-border:   #7D95B3;
   --theme-glow:          rgba(125, 149, 179, 0.25);
   --theme-text-color:    #ffffff;
-  --theme-chip-bg:       rgba(255, 255, 255, 0.08);
-  --theme-chip-border:   rgba(255, 255, 255, 0.18);
-  --theme-chip-text:     #CBD5E1;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(255, 255, 255, 0.12);
+  --theme-chip-border:   rgba(255, 255, 255, 0.25);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 5. Theme Financement & Trésorerie (Bleu Acier Cobalt #253346) ── */
 .theme-fin {
-  --color-accent:        #374960;
+  --color-accent:        #5FD4E7;
   --color-accent-dark:   #253346;
-  --color-accent-light:  rgba(55, 73, 96, 0.15);
+  --color-accent-light:  rgba(95, 212, 231, 0.15);
   --color-blue-ring:     rgba(95, 212, 231, 0.30);
   --theme-bg-gradient:   linear-gradient(180deg, #253346 0%, #151F2C 100%);
   --theme-header-bg:     #121A26;
   --theme-card-border:   #5FD4E7;
   --theme-glow:          rgba(95, 212, 231, 0.30);
   --theme-text-color:    #ffffff;
-  --theme-chip-bg:       rgba(95, 212, 231, 0.15);
-  --theme-chip-border:   rgba(95, 212, 231, 0.35);
-  --theme-chip-text:     #5FD4E7;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(255, 255, 255, 0.15);
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 6. Theme Offre Produit (Aqua Océan #02596C) ── */
 .theme-pro {
-  --color-accent:        #02596C;
+  --color-accent:        #34BED5;
   --color-accent-dark:   #013D4B;
-  --color-accent-light:  rgba(2, 89, 108, 0.12);
+  --color-accent-light:  rgba(52, 190, 213, 0.15);
   --color-blue-ring:     rgba(151, 228, 240, 0.30);
   --theme-bg-gradient:   linear-gradient(180deg, #02596C 0%, #013743 100%);
   --theme-header-bg:     #01262F;
   --theme-card-border:   #97E4F0;
   --theme-glow:          rgba(151, 228, 240, 0.30);
   --theme-text-color:    #ffffff;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
   --theme-chip-bg:       rgba(255, 255, 255, 0.15);
-  --theme-chip-border:   rgba(255, 255, 255, 0.30);
-  --theme-chip-text:     #97E4F0;
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 7. Theme Commercial (Cyan Marché Solaire #008CA5) ── */
 .theme-com {
-  --color-accent:        #008CA5;
+  --color-accent:        #34BED5;
   --color-accent-dark:   #006A7E;
-  --color-accent-light:  rgba(0, 140, 165, 0.12);
+  --color-accent-light:  rgba(52, 190, 213, 0.15);
   --color-blue-ring:     rgba(52, 190, 213, 0.30);
   --theme-bg-gradient:   linear-gradient(180deg, #008CA5 0%, #004D5C 100%);
   --theme-header-bg:     #00333E;
   --theme-card-border:   #34BED5;
   --theme-glow:          rgba(52, 190, 213, 0.35);
   --theme-text-color:    #ffffff;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
   --theme-chip-bg:       rgba(255, 255, 255, 0.18);
   --theme-chip-border:   rgba(255, 255, 255, 0.35);
   --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── 8. Theme Organisation & Gouvernance (Slate Dark #344356) ── */
 .theme-gov {
-  --color-accent:        #344356;
+  --color-accent:        #5FD4E7;
   --color-accent-dark:   #232D3B;
-  --color-accent-light:  rgba(52, 67, 86, 0.12);
+  --color-accent-light:  rgba(95, 212, 231, 0.15);
   --color-blue-ring:     rgba(125, 149, 179, 0.30);
   --theme-bg-gradient:   linear-gradient(180deg, #344356 0%, #1B232E 100%);
   --theme-header-bg:     #131922;
   --theme-card-border:   #7D95B3;
   --theme-glow:          rgba(125, 149, 179, 0.30);
   --theme-text-color:    #ffffff;
-  --theme-chip-bg:       rgba(255, 255, 255, 0.12);
-  --theme-chip-border:   rgba(255, 255, 255, 0.25);
-  --theme-chip-text:     #E2E8F0;
+  --theme-text-muted:    rgba(255, 255, 255, 0.75);
+  --theme-chip-bg:       rgba(255, 255, 255, 0.15);
+  --theme-chip-border:   rgba(255, 255, 255, 0.35);
+  --theme-chip-text:     #ffffff;
+  --theme-btn-outline-color: #ffffff;
+  --theme-btn-outline-border: rgba(255, 255, 255, 0.35);
 }
 
 /* ── Textarea Character Counter ── */

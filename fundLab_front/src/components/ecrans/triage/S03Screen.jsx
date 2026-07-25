@@ -112,7 +112,7 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
       </div>
 
       {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+      <div className="screen-nav">
         {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
         <Button variant="primary" disabled={!selected} onClick={() => { if (handleCb) handleCb(selected); }}>Continuer</Button>
       </div>

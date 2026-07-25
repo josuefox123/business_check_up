@@ -38,7 +38,7 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
         </div>
       </div>
 
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+      <div className="screen-nav">
         {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
         <Button 
           variant="primary" 

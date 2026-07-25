@@ -55,10 +55,10 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
             {priorityText}
           </p>
         </div>
+      </div>
 
-        <div className="screen-nav" style={{ justifyContent: 'flex-end' }}>
-          <Button variant="primary" onClick={onContinue}>Continuer →</Button>
-        </div>
+      <div className="screen-nav">
+        <Button variant="primary" onClick={onContinue}>Continuer →</Button>
       </div>
     </ScreenWrapper>
   );

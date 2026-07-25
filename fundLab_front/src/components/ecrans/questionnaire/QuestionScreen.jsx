@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, MessageSquare } from 'lucide-react';
-import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
+import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
@@ -138,40 +138,50 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           </div>
         )}
 
-        {isText ? (
-          <div className="text-area-wrapper">
-            <textarea
-              className="form-input"
-              rows={4}
-              maxLength={maxLength}
-              placeholder={questionData.placeholder || 'Votre réponse...'}
-              value={textVal}
-              onChange={e => setTextVal(e.target.value)}
-              style={{ resize: 'vertical' }}
-            />
-            <div className={`text-area-counter ${textVal.length >= maxLength ? 'limit-reached' : ''}`}>
-              {textVal.length} / {maxLength} caractères
+        {(() => {
+          const choices = questionData?.choices || [];
+          const numChoices = choices.length;
+          // Use 2x2 grid ONLY for EVEN short choices (2 or 4 options). Odd choice counts (3, 5) use linear cards.
+          const isEven2x2Grid = !isText && !isScale && (numChoices === 2 || numChoices === 4) && choices.every(c => (c.label || '').trim().length <= 45);
+          const containerClass = isEven2x2Grid ? 'choices-grid-2x2' : 'choices-list';
+
+          if (isText) {
+            return (
+              <TextArea
+                rows={4}
+                maxLength={maxLength}
+                placeholder={questionData.placeholder || 'Votre réponse...'}
+                value={textVal}
+                onChange={e => setTextVal(e.target.value)}
+              />
+            );
+          }
+          if (isScale) {
+            return (
+              <div className="choices-list">
+                {SCALE_LABELS.map((l, i) => (
+                  <ChoiceCard key={i + 1} label={l} selected={answer === i + 1} onClick={() => handleChoiceSelect(i + 1)} />
+                ))}
+              </div>
+            );
+          }
+          if (isMulti) {
+            return (
+              <div className={containerClass}>
+                {choices.map(c => (
+                  <CheckboxCard key={c.id} label={c.label} checked={multiAnswer.includes(c.id)} onChange={() => toggleMulti(c.id)} />
+                ))}
+              </div>
+            );
+          }
+          return (
+            <div className={containerClass}>
+              {choices.map(c => (
+                <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => handleChoiceSelect(c.id)} />
+              ))}
             </div>
-          </div>
-        ) : isScale ? (
-          <div className="choices-list">
-            {SCALE_LABELS.map((l, i) => (
-              <ChoiceCard key={i + 1} label={l} selected={answer === i + 1} onClick={() => handleChoiceSelect(i + 1)} />
-            ))}
-          </div>
-        ) : isMulti ? (
-          <div className="choices-list">
-            {questionData.choices.map(c => (
-              <CheckboxCard key={c.id} label={c.label} checked={multiAnswer.includes(c.id)} onChange={() => toggleMulti(c.id)} />
-            ))}
-          </div>
-        ) : (
-          <div className="choices-list">
-            {questionData.choices.map(c => (
-              <ChoiceCard key={c.id} label={c.label} selected={answer === c.id} onClick={() => handleChoiceSelect(c.id)} />
-            ))}
-          </div>
-        )}
+          );
+        })()}
 
         <div className="question-quit-row">
           <button
@@ -184,7 +194,7 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         </div>
       </div>
 
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+      <div className="screen-nav">
         {onBack && (
           <Button variant="outline" onClick={onBack}>
             Retour

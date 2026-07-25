@@ -98,3 +98,9 @@ export const ScoreGauge = ({ score, size = 180 }) => {
 export const Badge = ({ children, variant = 'blue', className = '' }) => (
   <span className={`badge badge-${variant} ${className}`}>{children}</span>
 );
+
+/* ================== CUSTOM SELECT ================== */
+export { CustomSelect } from './CustomSelect.jsx';
+
+/* ================== TEXT AREA ================== */
+export { TextArea } from './TextArea.jsx';

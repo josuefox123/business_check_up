@@ -86,6 +86,21 @@ export const Navbar = ({ onGoHome }) => {
 export const ScreenWrapper = ({ children, wide = false, className = '' }) => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+
+    const handleFocusIn = (e) => {
+      const target = e.target;
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')
+      ) {
+        setTimeout(() => {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300);
+      }
+    };
+
+    window.addEventListener('focusin', handleFocusIn);
+    return () => window.removeEventListener('focusin', handleFocusIn);
   }, []);
 
   return (

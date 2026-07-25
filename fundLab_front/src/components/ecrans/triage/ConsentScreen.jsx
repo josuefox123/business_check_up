@@ -54,9 +54,9 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
       </div>
 
       {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', gap: '12px' }}>
+      <div className="screen-nav">
         {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
-        <Button variant="primary" style={{ marginLeft: 'auto' }} onClick={handleSubmit}>Accepter et continuer</Button>
+        <Button variant="primary" onClick={handleSubmit}>Accepter et continuer</Button>
       </div>
     </ScreenWrapper>
   );

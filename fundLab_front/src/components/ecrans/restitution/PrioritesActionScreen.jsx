@@ -38,10 +38,10 @@ export const PrioritesActionScreen = ({ score, onContinue, onBack, restitution }
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="screen-nav" style={{ justifyContent: 'flex-end', marginTop: '32px' }}>
-          <Button variant="primary" onClick={onContinue}>Continuer →</Button>
-        </div>
+      <div className="screen-nav">
+        <Button variant="primary" onClick={onContinue}>Continuer →</Button>
       </div>
     </ScreenWrapper>
   );

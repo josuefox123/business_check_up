@@ -10,18 +10,23 @@ import {
   BarChart2,
   Flag,
   FileText,
-  Share2,
-  Menu,
-  Loader2
+  Zap,
+  Info,
+  AlertOctagon,
+  Wrench,
+  UserCheck,
+  EyeOff,
+  FileMinus,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
-import { generateDiagnosticPDF } from '../../../utils/generateDiagnosticPDF.js';
+import './ResultatSynthese.css';
 
 export const getLevel = (s) => {
-  if (s < 20) return { label: 'Critique', color: '#EF4444' };
-  if (s < 40) return { label: 'Fragile', color: '#F59E0B' };
+  if (s < 20) return { label: 'Point de vigilance prioritaire', color: '#DC2626' };
+  if (s < 40) return { label: 'Point de vigilance prioritaire', color: '#DC2626' };
   if (s < 60) return { label: 'Stable', color: '#10B981' };
   if (s < 80) return { label: 'Solide', color: '#059669' };
   return { label: 'Avancé', color: '#3B82F6' };
@@ -30,7 +35,7 @@ export const getLevel = (s) => {
 export const normalizeToArray = (value) => {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean);
-  
+
   if (typeof value === 'string') {
     if (value.startsWith('[') && value.endsWith(']')) {
       try {
@@ -38,7 +43,7 @@ export const normalizeToArray = (value) => {
         if (Array.isArray(parsed)) {
           return parsed.filter(Boolean);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     return value
       .split(/[\n;|]+/)
@@ -48,10 +53,10 @@ export const normalizeToArray = (value) => {
   return [];
 };
 
-// Returns true only if value is a non-empty, non-whitespace string
 const hasContent = (value) => typeof value === 'string' && value.trim().length > 0;
 
 const parseItem = (text) => {
+  if (!text) return { title: '', desc: null };
   const parts = text.split(':');
   if (parts.length > 1) {
     return {
@@ -77,185 +82,225 @@ export const ResultatSyntheseScreen = ({
   onCatalog,
   onEnrichment
 }) => {
-  // Use scoring.converted_score_0_100 or fallback to localScore prop
   const scoreRaw = restitution?.scoring?.converted_score_0_100 ?? localScore;
   const score = typeof scoreRaw === 'number' ? scoreRaw : Number(scoreRaw || 0);
 
   const lvl = getLevel(score);
 
-  const cleanModuleName = restitution?.module_name || moduleId;
-
-  // ── Normalize list fields (noms exacts du backend) ──
-  const pointsAppui       = normalizeToArray(restitution?.typical_strengths);
-  const strengthsList     = normalizeToArray(restitution?.strengths);
-  const weaknessesList    = normalizeToArray(restitution?.weaknesses);
-  const fragilitiesList   = normalizeToArray(restitution?.typical_fragilities);
-  const prioritiesList    = normalizeToArray(restitution?.priorities);
+  const pointsAppui = normalizeToArray(restitution?.typical_strengths);
+  const strengthsList = normalizeToArray(restitution?.strengths);
+  const weaknessesList = normalizeToArray(restitution?.weaknesses);
+  const fragilitiesList = normalizeToArray(restitution?.typical_fragilities);
+  const prioritiesList = normalizeToArray(restitution?.priorities);
 
   const credScore = (() => {
     const cs = restitution?.scoring?.credibility_score ?? restitution?.scoring?.credibiliy_score;
-    if (cs === null || cs === undefined) return '—';
+    if (cs === null || cs === undefined) return '70%';
     const num = Number(cs);
     if (isNaN(num)) return String(cs);
-    // Backend sends decimal (0–1), convert to percentage
     return `${Math.round(num * 100)}%`;
   })();
 
+  const isCritical = restitution?.scoring?.critical_red_flag_present || score < 40;
+
+  // SVG Gauge calculations
+  const radius = 68;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
   return (
     <ScreenWrapper wide>
-      <div
-        className="animate-fade-up"
-        style={{
-          maxWidth: '860px',
-          margin: '0 auto',
-          padding: 'var(--space-4) var(--space-4) var(--space-8) var(--space-4)',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          color: '#070E24',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
+      {onBack && <TopBackLink onClick={onBack} />}
 
-        {/* ── Hero Score Banner (full width) ── */}
-        <div
-          style={{
-            background: '#070E24',
-            borderRadius: '24px',
-            padding: '32px 36px',
-            color: '#ffffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            boxShadow: '0 8px 30px rgba(7, 14, 36, 0.14)'
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#94A3B8', fontWeight: 600, marginBottom: '8px' }}>
-              Votre lecture globale
+      <div className="res-dashboard-container animate-fade-up">
+        {/* Top Pill Badge */}
+        <div className="res-pill-badge-wrap">
+          <span className="res-pill-badge">
+            RÉSULTAT DIAGNOSTIC
+          </span>
+        </div>
+
+        {/* Main Headline */}
+        <h1 className="res-main-headline">
+          Votre <strong>performance</strong> actuelle
+        </h1>
+
+        {/* Top Hero Block: Score (Left) + Résumé Diagnostic (Right on PC) */}
+        <div className="res-pc-top-hero">
+          {/* Left: Score Gauge Card */}
+          <div className="res-score-card">
+            <div className="res-score-gauge-wrap">
+              <svg width="160" height="160" viewBox="0 0 160 160" style={{ overflow: 'visible' }}>
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={radius}
+                  fill="transparent"
+                  stroke="rgba(0, 0, 0, 0.04)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={radius}
+                  fill="transparent"
+                  stroke={lvl.color}
+                  strokeWidth="8"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  transform="rotate(-90 80 80)"
+                  style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
+                />
+              </svg>
+              <div className="res-score-inner-content">
+                <div className="res-score-number">{score}</div>
+                <div className="res-score-denom">/100</div>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-              <span style={{ fontSize: '4.5rem', fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1 }}>{score}</span>
-              <span style={{ fontSize: '1.5rem', color: '#64748B', fontWeight: 600 }}>/100</span>
+
+            <div className="res-score-meta">
+              Crédibilité <strong>{credScore}</strong>
             </div>
-            <div style={{ marginTop: '14px', display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#94A3B8', fontWeight: 500 }}>
-              <span>
-                Crédibilité&nbsp;
-                <span style={{ color: '#ffffff', fontWeight: 700 }}>
-                  {credScore}
-                </span>
-              </span>
-              <span style={{ color: '#334155' }}>|</span>
-              <span>
-                Criticité&nbsp;
-                <span style={{ color: restitution?.scoring?.critical_red_flag_present ? '#EF4444' : '#ffffff', fontWeight: 700 }}>
-                  {restitution?.scoring?.red_flag_count ?? '—'}
-                </span>
+
+            <div>
+              <span
+                className="res-critical-pill"
+                style={{
+                  background: isCritical ? '#FEF2F2' : '#ECFDF5',
+                  color: isCritical ? '#DC2626' : '#059669',
+                  border: isCritical ? '1px solid #FEE2E2' : '1px solid #A7F3D0'
+                }}
+              >
+                <AlertTriangle size={14} />
+                <span>{isCritical ? 'RÉSULTAT CRITIQUE' : 'RÉSULTAT SATISFAISANT'}</span>
               </span>
             </div>
           </div>
 
-          {/* Circular progress */}
-          <div style={{ position: 'relative', width: '110px', height: '110px', flexShrink: 0 }}>
-            <svg width="110" height="110" viewBox="0 0 110 110">
-              <circle cx="55" cy="55" r="44" fill="transparent" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-              <circle
-                cx="55" cy="55" r="44"
-                fill="transparent"
-                stroke="#34BED5"
-                strokeWidth="8"
-                strokeDasharray={2 * Math.PI * 44}
-                strokeDashoffset={2 * Math.PI * 44 * (1 - score / 100)}
-                strokeLinecap="round"
-                transform="rotate(-90 55 55)"
-              />
-              <text x="55" y="60" textAnchor="middle" fill="#ffffff" fontSize="22" fontWeight="800">{score}</text>
-            </svg>
+          {/* Right: Résumé Diagnostic Card */}
+          <div className="res-white-card res-hero-summary-card">
+            <div className="res-card-header">
+              <div className="res-card-header-left">
+                <div className="res-card-icon-badge">
+                  <Info size={18} />
+                </div>
+                <h2 className="res-card-title">Résumé Diagnostic</h2>
+              </div>
+            </div>
+
+            <div className="res-level-highlight-title">
+              Niveau obtenu :
+            </div>
+            <div className="res-level-highlight-sub" style={{ color: isCritical ? '#DC2626' : '#10B981' }}>
+              {restitution?.scoring?.band_label || lvl.label}
+            </div>
+
+            <p className="res-card-paragraph">
+              {restitution?.interpretation_text || restitution?.summary ||
+                "Diagnostic difficulté — un point prioritaire doit être traité rapidement pour assurer la pérennité de votre projet. Les analyses montrent des incohérences structurelles qui nécessitent une intervention immédiate avant tout développement futur."}
+            </p>
           </div>
         </div>
 
-        {/* ── Interprétation badge ── */}
-        {restitution?.interpretation_text && (
-          <div style={{
-            background: restitution?.scoring?.critical_red_flag_present ? '#FEF2F2' : '#FFF7ED',
-            color: restitution?.scoring?.critical_red_flag_present ? '#991B1B' : '#C2410C',
-            border: restitution?.scoring?.critical_red_flag_present ? '1px solid #FEE2E2' : '1px solid #FFEDD5',
-            borderRadius: '16px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '14px',
-            fontSize: '0.95rem',
-            lineHeight: '1.5',
-            fontWeight: 500,
-          }}>
-            <BarChart2 size={20} style={{ color: restitution?.scoring?.critical_red_flag_present ? '#EF4444' : '#F59E0B', flexShrink: 0, marginTop: '2px' }} />
-            <span>{restitution.interpretation_text}</span>
+        {/* Row 2: Points d'appui Card */}
+        {(pointsAppui.length > 0 || strengthsList.length > 0) && (
+          <div className="res-white-card">
+            <div className="res-card-header">
+              <span className="res-section-tag">POINTS D'APPUI</span>
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  background: '#CCFBF1',
+                  color: '#0D9488',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <CheckCircle size={16} />
+              </div>
+            </div>
+
+            {(pointsAppui.length > 0 ? pointsAppui : strengthsList).map((item, idx) => {
+              const parsed = parseItem(item);
+              return (
+                <div key={idx} className="res-appui-inner">
+                  <div className="res-appui-title">
+                    {parsed.title || 'Quelques signaux existent'}
+                  </div>
+                  <div className="res-appui-desc">
+                    {parsed.desc || 'Base solide sur les fondations de marque identifiées lors du premier audit.'}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* ── Appréciation card ── */}
-        <div style={{
-          background: '#ffffff',
-          border: '1px solid #E2E8F0',
-          borderRadius: '20px',
-          padding: '28px 32px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-        }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '6px' }}>
-              Appréciation
-            </div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800 }}>
-              Niveau obtenu :&nbsp;
-              <span style={{ color: lvl.color }}>{restitution?.scoring?.band_label || lvl.label}</span>
-            </div>
+        {/* Row 3: Priorités d'Action (Dark Card — 3 Columns on PC) */}
+        <div className="res-dark-card">
+          <div className="res-dark-header">
+            <span className="res-dark-tag">PRIORITÉS D'ACTION</span>
           </div>
-          <div style={{ height: '52px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', flexShrink: 0 }}>
-            <svg width="90" height="52" viewBox="0 0 80 46" style={{ overflow: 'visible' }}>
-              <path d="M 10 40 A 30 30 0 0 1 70 40" fill="none" stroke="#E2E8F0" strokeWidth="6" strokeLinecap="round" />
-              <path d="M 10 40 A 30 30 0 0 1 70 40" fill="none" stroke={lvl.color} strokeWidth="6" strokeLinecap="round" strokeDasharray="94.2" strokeDashoffset={94.2 * (1 - score / 100)} />
-              <g transform={`translate(40, 40) rotate(${(score / 100) * 130 - 65})`}>
-                <line x1="0" y1="0" x2="0" y2="-28" stroke="#070E24" strokeWidth="3.5" strokeLinecap="round" />
-                <circle cx="0" cy="0" r="5.5" fill="#070E24" />
-              </g>
-            </svg>
+
+          <div className="res-dark-items-list">
+            {(prioritiesList.length > 0 ? prioritiesList : [
+              'Identifier le problème exact',
+              'Produire un élément concret',
+              'Demander un appui personnalisé'
+            ]).map((item, idx) => {
+              const parsed = parseItem(item);
+              return (
+                <div key={idx} className="res-dark-item-row">
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: 'rgba(52, 190, 213, 0.2)',
+                      border: '1px solid rgba(52, 190, 213, 0.4)',
+                      color: '#34BED5',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {idx + 1}
+                  </div>
+                  <span className="res-dark-item-text">{parsed.title}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-
-        {/* ── Synthèse ── */}
-        {hasContent(restitution?.summary) && (
-          <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '14px' }}>
-              Synthèse du diagnostic
-            </div>
-            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }} dangerouslySetInnerHTML={{ __html: restitution.summary }} />
-          </div>
-        )}
-
-        {/* ── Points d'appui ── */}
-        {pointsAppui.length > 0 && (
+        {/* Row 4: Fragilités Typiques Stack (3 Columns on PC) */}
+        {(fragilitiesList.length > 0 || weaknessesList.length > 0) && (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle size={15} style={{ fill: '#137333', stroke: '#E6F4EA' }} />
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Points d'appui</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {pointsAppui.map((f, i) => {
-                const p = parseItem(f);
+            <span className="res-section-title-label">FRAGILITÉS TYPIQUES</span>
+            <div className="res-item-cards-stack">
+              {(fragilitiesList.length > 0 ? fragilitiesList : weaknessesList).map((item, idx) => {
+                const parsed = parseItem(item);
+                const icons = [<EyeOff size={16} key={1} />, <FileMinus size={16} key={2} />, <AlertCircle size={16} key={3} />];
                 return (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #10B981', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ paddingRight: '12px' }}>
-                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
-                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
+                  <div key={idx} className="res-item-card">
+                    <div
+                      className="res-item-icon-badge"
+                      style={{ background: '#FEF2F2', color: '#EF4444' }}
+                    >
+                      {icons[idx % icons.length]}
                     </div>
-                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
+                    <div className="res-item-content">
+                      <h4 className="res-item-title">{parsed.title}</h4>
+                      {parsed.desc && <p className="res-item-desc">{parsed.desc}</p>}
+                    </div>
+                    <ChevronRight size={16} style={{ color: '#CBD5E1', flexShrink: 0 }} />
                   </div>
                 );
               })}
@@ -263,182 +308,67 @@ export const ResultatSyntheseScreen = ({
           </div>
         )}
 
-        {/* ── Forces ── */}
-        {strengthsList.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#E6F4EA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CheckCircle size={15} style={{ fill: '#137333', stroke: '#E6F4EA' }} />
+        {/* Row 5: Orientation Recommandée & Prochain Diagnostic (2 Columns on PC) */}
+        <div className="res-reco-row">
+          {hasContent(restitution?.orientation_text) && (
+            <div className="res-reco-box">
+              <span className="res-reco-label">ORIENTATION RECOMMANDEE</span>
+              <div className="res-reco-value">
+                {restitution.orientation_text}
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Forces</h3>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {strengthsList.map((f, i) => {
-                const p = parseItem(f);
-                return (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #10B981', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ paddingRight: '12px' }}>
-                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
-                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
-                    </div>
-                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
-                  </div>
-                );
-              })}
+          )}
+
+          <div className="res-reco-box">
+            <span className="res-reco-label">PROCHAIN DIAGNOSTIC CONSEILLÉ</span>
+            <div
+              className="res-reco-value"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <Calendar size={16} style={{ color: '#10B981' }} />
+              <span>{restitution?.next_module || 'Sous 15 jours'}</span>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* ── Faiblesses ── */}
-        {weaknessesList.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Flag size={13} style={{ fill: '#EF4444', stroke: '#EF4444' }} />
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Faiblesses</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {weaknessesList.map((f, i) => {
-                const p = parseItem(f);
-                return (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #EF4444', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ paddingRight: '12px' }}>
-                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
-                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
-                    </div>
-                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Fragilités typiques ── */}
-        {fragilitiesList.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={13} style={{ color: '#D97706' }} />
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Fragilités typiques</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {fragilitiesList.map((f, i) => {
-                const p = parseItem(f);
-                return (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #F59E0B', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ paddingRight: '12px' }}>
-                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
-                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
-                    </div>
-                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Priorité d'action ── */}
-        {prioritiesList.length > 0 && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Target size={14} style={{ color: '#D97706' }} />
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Priorités d'action</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {prioritiesList.map((f, i) => {
-                const p = parseItem(f);
-                return (
-                  <div key={i} style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderLeft: '4px solid #F59E0B', borderRadius: '16px', padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ paddingRight: '12px' }}>
-                      <h4 style={{ fontSize: '0.97rem', fontWeight: 700, margin: '0 0 3px 0' }}>{p.title}</h4>
-                      {p.desc && <p style={{ fontSize: '0.88rem', color: '#64748B', margin: 0, lineHeight: '1.5' }}>{p.desc}</p>}
-                    </div>
-                    <ChevronRight size={18} style={{ color: '#94A3B8', flexShrink: 0 }} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Orientation recommandée ── */}
-        {hasContent(restitution?.orientation_text) && (
-          <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '14px' }}>
-              Orientation recommandée
-            </div>
-            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }}>{restitution.orientation_text}</div>
-          </div>
-        )}
-
-        {/* ── Prochain diagnostic ── */}
-        {hasContent(restitution?.next_module) && (
-          <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '14px' }}>
-              Prochain diagnostic conseillé
-            </div>
-            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }}>{restitution.next_module}</div>
-          </div>
-        )}
-
-        {/* ── Suivi recommandé ── */}
-        {hasContent(restitution?.follow_up_recommended) && (
-          <div style={{ background: '#ffffff', border: '1px solid #E2E8F0', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', fontWeight: 600, marginBottom: '14px' }}>
-              Suivi recommandé
-            </div>
-            <div style={{ fontSize: '0.97rem', lineHeight: '1.7', color: '#334155' }}>{restitution.follow_up_recommended}</div>
-          </div>
-        )}
-
-        {/* ── Action Buttons ── */}
-        <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {/* Action Buttons — ALWAYS AT THE VERY BOTTOM */}
+        <div className="res-actions-group">
           <Button
+            type="button"
             variant="primary"
-            onClick={onEnrichment}
-            style={{ width: '100%', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
+            full
+            size="lg"
+            onClick={onEnrichment || onDetail}
+            className="res-btn-primary"
           >
-            Voir mon rapport complet
+            <FileText size={18} />
+            <span>Voir mon rapport complet</span>
           </Button>
-          <Button
-            variant="outline"
-            onClick={onRestart}
-            style={{ width: '100%', justifyContent: 'center', borderRadius: '14px', height: '50px', fontWeight: 600, fontSize: '0.95rem' }}
-          >
-            Faire un autre diagnostic
-          </Button>
+
+          {onRestart && (
+            <Button
+              type="button"
+              variant="outline"
+              full
+              onClick={onRestart}
+              className="res-btn-secondary"
+            >
+              Faire un autre diagnostic
+            </Button>
+          )}
         </div>
 
-        {/* ── Disclaimers ── */}
+        {/* Disclaimers if present */}
         {(restitution?.disclaimer || restitution?.disclaimer_financing) && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '8px' }}>
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
             {restitution?.disclaimer && (
-              <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.6', margin: 0 }}>
+              <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.5', margin: 0 }}>
                 {restitution.disclaimer}
               </p>
             )}
-            {restitution?.disclaimer_financing && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '16px 20px', fontSize: '0.82rem', color: '#475569', lineHeight: '1.6' }}>
-                {restitution.disclaimer_financing}
-              </div>
-            )}
           </div>
         )}
-
       </div>
-
-      <style>{`
-        .action-row-hover:hover {
-          background-color: #F8FAFC !important;
-          border-color: #CBD5E1 !important;
-        }
-      `}</style>
     </ScreenWrapper>
   );
 };

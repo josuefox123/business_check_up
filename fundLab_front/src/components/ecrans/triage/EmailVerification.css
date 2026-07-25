@@ -1,0 +1,166 @@
+/* ============================================
+   EMAIL VERIFICATION SCREEN — Premium SaaS Styling
+   ============================================ */
+
+.email-verif-container {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 12px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .email-verif-container {
+    padding: 32px 20px;
+  }
+}
+
+.email-verif-card {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 28px 20px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.03);
+  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .email-verif-card {
+    padding: 40px 32px;
+  }
+}
+
+/* Icon Badge */
+.email-verif-icon-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(52, 190, 213, 0.16) 0%, rgba(26, 157, 184, 0.08) 100%);
+  color: #1A9DB8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  border: 1px solid rgba(52, 190, 213, 0.25);
+  box-shadow: 0 4px 12px rgba(52, 190, 213, 0.12);
+}
+
+/* Title & Subtitle */
+.email-verif-title {
+  font-size: clamp(1.3rem, 4vw, 1.65rem);
+  font-weight: 800;
+  color: var(--color-primary, #17212D);
+  margin-bottom: 10px;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+.email-verif-subtitle {
+  font-size: 0.9rem;
+  color: #64748B;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Target Email Badge */
+.email-target-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-top: 4px;
+  word-break: break-all;
+  max-width: 100%;
+}
+
+/* 6-Digit OTP Inputs Row */
+.otp-inputs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.8vw, 10px);
+  margin: 24px 0 28px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.otp-box {
+  flex: 1;
+  min-width: 36px;
+  max-width: 48px;
+  height: 56px;
+  border-radius: 12px;
+  border: 1.5px solid #CBD5E1;
+  background: #F8FAFC;
+  font-family: var(--font, inherit);
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-align: center;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+@media (max-width: 380px) {
+  .otp-box {
+    height: 48px;
+    font-size: 1.2rem;
+  }
+}
+
+.otp-box:hover:not(:disabled) {
+  border-color: #94A3B8;
+  background: #FFFFFF;
+}
+
+.otp-box:focus {
+  border-color: #34BED5 !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 0 0 4px rgba(52, 190, 213, 0.18) !important;
+}
+
+.otp-box.is-filled {
+  border-color: #34BED5;
+  background: rgba(52, 190, 213, 0.08);
+  color: #0B2538;
+}
+
+/* Resend Section */
+.resend-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #64748B;
+  margin-top: 16px;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: #1A9DB8;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resend-btn:hover {
+  color: #0F7F90;
+}

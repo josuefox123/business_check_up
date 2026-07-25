@@ -236,7 +236,7 @@
   max-width: var(--screen-max);
   width: 100%;
   margin: 0 auto;
-  padding: clamp(24px, 5vw, 48px) 24px;
+  padding: clamp(24px, 5vw, 48px) 24px 100px 24px;
   flex: 1;
 }
 
@@ -244,7 +244,7 @@
   max-width: var(--screen-wide);
   width: 100%;
   margin: 0 auto;
-  padding: clamp(24px, 5vw, 48px) 24px;
+  padding: clamp(24px, 5vw, 48px) 24px 100px 24px;
   flex: 1;
 }
 
@@ -277,7 +277,7 @@
     box-sizing: border-box;
   }
   .screen-inner, .screen-inner-wide {
-    padding: 20px 16px 48px;
+    padding: 20px 16px 96px;
   }
 
   /* Bottom Tab Navigation Layout (Standard App Tab Bar Style) */
@@ -342,7 +342,7 @@
 @media (max-width: 480px) {
   .navbar { padding: 0 16px; }
   .navbar-logo-name { font-size: 1.1rem; }
-  .screen-inner, .screen-inner-wide { padding: 16px 12px 28px; }
+  .screen-inner, .screen-inner-wide { padding: 16px 12px 96px; }
 }
 
 /* Print */

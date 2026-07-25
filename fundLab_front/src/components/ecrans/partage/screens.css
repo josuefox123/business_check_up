@@ -2,6 +2,16 @@
    DIAGNOSTIC SCREENS — Premium SaaS v2
    ============================================ */
 
+/* Scroll margin offset for mobile soft keyboard & fixed bars */
+.form-input,
+.form-group,
+input,
+textarea,
+select {
+  scroll-margin-top: 88px !important;
+  scroll-margin-bottom: 130px !important;
+}
+
 /* ============================================
    SHARED SCREEN TYPOGRAPHY
    ============================================ */
@@ -49,31 +59,43 @@
 }
 
 /* ============================================
-   SCREEN NAVIGATION BAR (Retour / Continuer - MÊME LIGNE)
+   SCREEN NAVIGATION BAR (Retour / Continuer - FIXED AT BOTTOM)
    ============================================ */
 .screen-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 1000 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-top: 1px solid var(--slate-200, #E2E8F0) !important;
+  padding: 14px max(24px, calc((100vw - 680px) / 2)) calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  margin: 0 !important;
+  box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.08) !important;
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 12px !important;
-  margin-top: 32px !important;
-  padding-top: 20px !important;
-  border-top: 1px solid var(--slate-200, #E2E8F0) !important;
+  gap: 16px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  position: relative;
-  z-index: 10;
+}
+
+.screen-wrapper.wide .screen-nav {
+  padding-left: max(24px, calc((100vw - 920px) / 2)) !important;
+  padding-right: max(24px, calc((100vw - 920px) / 2)) !important;
 }
 
 .screen-nav .btn,
 .screen-nav button {
   flex: 1;
-  max-width: 220px;
+  max-width: 240px;
   min-height: 46px;
-  padding: 12px 20px;
-  font-weight: 700;
+  padding: 12px 24px;
+  font-weight: 750;
   font-size: 0.92rem;
   border-radius: 12px;
   display: inline-flex;
@@ -82,22 +104,19 @@
   white-space: nowrap;
 }
 
+.screen-nav .btn:only-child,
+.screen-nav button:only-child {
+  margin-left: auto;
+}
+
 @media (max-width: 768px) {
   .screen-nav {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 1000 !important;
-    background: #ffffff !important;
-    border-top: 1px solid var(--slate-200, #E2E8F0) !important;
     padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
-    margin: 0 !important;
-    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.1) !important;
     gap: 10px !important;
   }
   .screen-nav .btn,
   .screen-nav button {
+    flex: 1 !important;
     max-width: 48% !important;
     min-height: 44px !important;
     font-size: 0.88rem !important;
@@ -139,8 +158,59 @@
 .choices-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-top: 16px;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+/* Linear Single Choice Cards — Clean & Modern (No Check Circle) */
+.choices-list .choice-card {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 60px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+/* Hide check circle on single choice linear cards */
+.choices-list .choice-card .choice-card-check {
+  display: none !important;
+}
+
+.choices-list .choice-card .choice-card-label {
+  margin-right: 0 !important;
+  font-size: clamp(0.9rem, 3.2vw, 0.98rem);
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.4;
+}
+
+.choices-list .choice-card:hover:not(.selected) {
+  border-color: #34BED5;
+  background: #F8FAFC;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.choices-list .choice-card.selected {
+  background: rgba(52, 190, 213, 0.12) !important;
+  border: 2px solid #34BED5 !important;
+  box-shadow: 0 0 0 4px rgba(52, 190, 213, 0.18), 0 4px 12px rgba(52, 190, 213, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+.choices-list .choice-card.selected .choice-card-label {
+  color: #0B2538 !important;
+  font-weight: 800 !important;
 }
 
 @keyframes optionEntrance {
@@ -166,6 +236,96 @@
 .choices-list > *:nth-child(6) { animation-delay: 0.48s; }
 .choices-list > *:nth-child(7) { animation-delay: 0.56s; }
 .choices-list > *:nth-child(8) { animation-delay: 0.64s; }
+
+/* ============================================
+   2x2 GRID CARDS FOR SHORT CHOICES (Professional SaaS Style)
+   ============================================ */
+.choices-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 2.5vw, 16px);
+  margin-top: 16px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+@media (max-width: 360px) {
+  .choices-grid-2x2 {
+    gap: 8px;
+  }
+}
+
+.choices-grid-2x2 > * {
+  opacity: 0;
+  animation: optionEntrance 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.choices-grid-2x2 > *:nth-child(1) { animation-delay: 0.08s; }
+.choices-grid-2x2 > *:nth-child(2) { animation-delay: 0.16s; }
+.choices-grid-2x2 > *:nth-child(3) { animation-delay: 0.24s; }
+.choices-grid-2x2 > *:nth-child(4) { animation-delay: 0.32s; }
+
+/* 2x2 Choice Card Customization — Clean Clickable Cards */
+.choices-grid-2x2 .choice-card,
+.choices-grid-2x2 .checkbox-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 22px 16px !important;
+  min-height: 110px !important;
+  height: 100% !important;
+  border-radius: 18px !important;
+  border: 1.5px solid #CBD5E1 !important;
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* Hide check circles/visuals in 2x2 grid cards */
+.choices-grid-2x2 .choice-card-check,
+.choices-grid-2x2 .checkbox-visual {
+  display: none !important;
+}
+
+/* Choice card text styling */
+.choices-grid-2x2 .choice-card-label,
+.choices-grid-2x2 .checkbox-label {
+  font-size: clamp(0.9rem, 3.4vw, 0.98rem) !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+  line-height: 1.42 !important;
+  margin-right: 0 !important;
+  text-align: center !important;
+}
+
+/* Hover state */
+.choices-grid-2x2 .choice-card:hover:not(.selected),
+.choices-grid-2x2 .checkbox-card:hover:not(.checked) {
+  border-color: #34BED5 !important;
+  background: #F8FAFC !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Selected state — Elegant SaaS Teal Accent */
+.choices-grid-2x2 .choice-card.selected,
+.choices-grid-2x2 .checkbox-card.checked {
+  background: rgba(52, 190, 213, 0.12) !important;
+  border: 2.5px solid #34BED5 !important;
+  box-shadow: 0 0 0 4px rgba(52, 190, 213, 0.2), 0 8px 20px rgba(52, 190, 213, 0.12) !important;
+  transform: translateY(-2px) !important;
+}
+
+.choices-grid-2x2 .choice-card.selected .choice-card-label,
+.choices-grid-2x2 .checkbox-card.checked .checkbox-label {
+  color: #0B2538 !important;
+  font-weight: 800 !important;
+}
 
 /* ============================================
    S01 — CONSENT
@@ -315,7 +475,7 @@
   color: var(--color-primary);
   letter-spacing: -0.025em;
   line-height: 1.2;
-  margin-bottom: 10px;
+  margin-bottom: clamp(20px, 3.5vw, 28px);
 }
 
 .question-text {
@@ -324,7 +484,7 @@
   color: var(--color-primary);
   letter-spacing: -0.025em;
   line-height: 1.25;
-  margin-bottom: 10px;
+  margin-bottom: clamp(24px, 4vw, 32px);
 }
 
 .question-hint {
@@ -811,12 +971,12 @@
     align-items: center;
     text-align: center;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
-    color: #ffffff;
+    color: var(--theme-text-color, #ffffff);
     box-sizing: border-box;
   }
 
   .screen-wrapper.intro-screen-wrapper .screen-title {
-    color: #ffffff !important;
+    color: var(--theme-text-color, #ffffff) !important;
     font-size: 1.8rem;
     font-weight: 800;
     margin-bottom: 12px;
@@ -860,7 +1020,7 @@
   .intro-hero-duration .duration-value {
     font-size: 3rem;
     font-weight: 900;
-    color: #ffffff;
+    color: var(--theme-text-color, #ffffff) !important;
     line-height: 1.1;
     letter-spacing: -0.02em;
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -869,14 +1029,14 @@
   .intro-hero-duration .duration-unit {
     font-size: 1.2rem;
     font-weight: 800;
-    color: var(--color-accent);
+    color: var(--color-accent) !important;
     letter-spacing: 0.05em;
   }
 
   .intro-hero-duration .duration-label {
     font-size: 0.78rem;
     font-weight: 500;
-    color: var(--slate-300);
+    color: var(--theme-text-muted, rgba(255, 255, 255, 0.75)) !important;
     margin-top: 4px;
   }
 
@@ -891,8 +1051,8 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .intro-meta-chip {
-    background: var(--theme-chip-bg, rgba(255, 255, 255, 0.12)) !important;
-    border: 1px solid var(--theme-chip-border, rgba(255, 255, 255, 0.25)) !important;
+    background: var(--theme-chip-bg, rgba(255, 255, 255, 0.15)) !important;
+    border: 1px solid var(--theme-chip-border, rgba(255, 255, 255, 0.35)) !important;
     color: var(--theme-chip-text, #ffffff) !important;
     font-size: 0.75rem;
     padding: 5px 12px;
@@ -903,8 +1063,8 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .alert-info {
-    background: var(--theme-chip-bg, rgba(52, 190, 213, 0.12)) !important;
-    border: 1px solid var(--theme-chip-border, rgba(52, 190, 213, 0.25)) !important;
+    background: var(--theme-chip-bg, rgba(255, 255, 255, 0.15)) !important;
+    border: 1px solid var(--theme-chip-border, rgba(255, 255, 255, 0.35)) !important;
     color: var(--theme-text-color, #ffffff) !important;
     margin: 20px 0 !important;
     display: flex;
@@ -928,14 +1088,14 @@
   }
 
   .screen-wrapper.intro-screen-wrapper .intro-actions .btn-outline {
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    color: #ffffff !important;
+    border-color: var(--theme-btn-outline-border, rgba(255, 255, 255, 0.35)) !important;
+    color: var(--theme-btn-outline-color, #ffffff) !important;
     background: transparent !important;
   }
 
   .screen-wrapper.intro-screen-wrapper .intro-actions .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-color: #ffffff !important;
+    background: var(--theme-chip-bg, rgba(255, 255, 255, 0.12)) !important;
+    border-color: var(--theme-btn-outline-color, #ffffff) !important;
   }
 }
 
@@ -1459,26 +1619,6 @@
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   /* Screen nav buttons — Strictly on the SAME single horizontal line */
-  .screen-nav {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    gap: 10px !important;
-    padding-top: 16px !important;
-    margin-top: 24px !important;
-  }
-  .screen-nav .btn,
-  .screen-nav button {
-    flex: 1 !important;
-    max-width: 48% !important;
-    justify-content: center !important;
-    min-height: 44px !important;
-    font-size: 0.88rem !important;
-    padding: 10px 12px !important;
-    white-space: nowrap !important;
-  }
   .screen-nav-right {
     flex-direction: row !important;
     gap: 8px !important;

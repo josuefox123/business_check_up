@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../ui/index.jsx';
+import { Button, TextArea } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { AlertOctagon, User, Briefcase, MapPin, TrendingUp, ArrowLeft, DollarSign } from 'lucide-react';
 import { REGIONS, DEPARTMENT_COMMUNES, SECTORS } from '../../../constants/locationData.js';
@@ -59,6 +59,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
 
       // Profil business
       business_name: s05.business_name || '',
+      activity_description: s05.activity_description || triageAnswers?.activity_description || '',
       region: s05.region || 'Atlantique',
       commune: s05.commune || '',
       sector: s05.secteur || 'Services',
@@ -84,6 +85,27 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!triageAnswers) return;
+    const s05 = triageAnswers.s05 || {};
+    const parsedPhone = parsePhoneNumber(triageAnswers.phone || triageAnswers.phone_number || '');
+
+    setForm(prev => ({
+      ...prev,
+      full_name: triageAnswers.name || prev.full_name,
+      email: triageAnswers.email || prev.email,
+      phone_country: parsedPhone.countryCode || prev.phone_country,
+      phone_suffix: parsedPhone.suffix || prev.phone_suffix,
+      business_name: s05.business_name || prev.business_name,
+      activity_description: s05.activity_description || triageAnswers.activity_description || prev.activity_description,
+      region: s05.region || prev.region,
+      commune: s05.commune || prev.commune,
+      sector: s05.secteur || prev.sector,
+      sub_sector: s05.soussecteur || prev.sub_sector,
+      year_created: s05.creation_year ? s05.creation_year.toString() : prev.year_created,
+    }));
+  }, [triageAnswers]);
 
   const currentYear = new Date().getFullYear();
   const yearsList = [];
@@ -218,6 +240,13 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
           background-size: 16px;
           padding-right: 40px;
         }
+        textarea.form-input {
+          height: auto !important;
+          min-height: 88px !important;
+          padding: 12px 16px !important;
+          font-family: inherit !important;
+          resize: vertical !important;
+        }
         .profile-card-container {
           background: #ffffff !important;
           border: 1px solid #E2E8F0 !important;
@@ -243,118 +272,130 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
           }
         }
       `}</style>
-      <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
-        <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
-          <h1 style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '6px', letterSpacing: '-0.02em' }}>
-            {isInitial ? "Informations générales" : "Finalisez votre profil"}
-          </h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
-            {isInitial ? "Veuillez renseigner les éléments ci-dessous pour démarrer votre évaluation." : "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
-          </p>
+      <form onSubmit={handleFormSubmit}>
+        <div className="animate-fade-up" style={{ maxWidth: '680px', margin: '0 auto', padding: isMobile ? '12px 12px' : '20px 20px' }}>
+          <div style={{ marginBottom: isMobile ? '18px' : '28px', textAlign: 'center' }}>
+            <h1 style={{ fontSize: isMobile ? '1.4rem' : '1.75rem', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '6px', letterSpacing: '-0.02em' }}>
+              {isInitial ? "Informations générales" : "Finalisez votre profil"}
+            </h1>
+            <p style={{ fontSize: '0.9rem', color: 'var(--slate-500)', lineHeight: 1.5 }}>
+              {isInitial ? "Veuillez renseigner les éléments ci-dessous pour démarrer votre évaluation." : "Pour recevoir votre rapport et voir vos résultats, merci de compléter les informations ci-dessous."}
+            </p>
+          </div>
+
+          <div className="profile-card-container">
+
+            {errors.global && (
+              <div className="alert alert-danger" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', background: 'var(--color-danger-bg)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
+                <AlertOctagon size={16} />
+                <span>{errors.global}</span>
+              </div>
+            )}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(52, 190, 213, 0.12)', color: '#1A9DB8' }}>
+                  <User size={18} />
+                </div>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-600)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  Coordonnées & Structure
+                </span>
+              </div>
+
+              <div className="profile-form-grid">
+                {/* Nom de l'entreprise / projet */}
+                <div className="form-group profile-form-span-2">
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                    Nom de l'entreprise / projet <span style={{ color: 'var(--color-danger)' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Ets Soglo & Associés"
+                    value={form.business_name}
+                    onChange={e => handleChange('business_name', e.target.value)}
+                  />
+                  {errors.business_name && (
+                    <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                      {errors.business_name}
+                    </div>
+                  )}
+                </div>
+
+                {/* Nom & Prénom du déclarant */}
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                    Nom & Prénom du déclarant <span style={{ color: 'var(--color-danger)' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ex: Koffi SOGLO"
+                    value={form.full_name}
+                    onChange={e => handleChange('full_name', e.target.value)}
+                  />
+                  {errors.full_name && (
+                    <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                      {errors.full_name}
+                    </div>
+                  )}
+                </div>
+
+                {/* Adresse e-mail */}
+                <div className="form-group">
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                    Adresse e-mail <span style={{ color: 'var(--color-danger)' }}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="Ex: koffi@soglo.bj"
+                    value={form.email}
+                    onChange={e => handleChange('email', e.target.value)}
+                  />
+                  {errors.email && (
+                    <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
+                      {errors.email}
+                    </div>
+                  )}
+                </div>
+
+                {/* Description de votre activité */}
+                <div className="form-group profile-form-span-2">
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                    Description de votre activité
+                  </label>
+                  <TextArea
+                    rows={3}
+                    maxLength={500}
+                    placeholder="Décrivez brièvement votre activité, vos produits ou services principaux..."
+                    value={form.activity_description}
+                    onChange={e => handleChange('activity_description', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleFormSubmit} className="profile-card-container">
-
-          {errors.global && (
-            <div className="alert alert-danger" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-danger)', background: 'var(--color-danger-bg)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
-              <AlertOctagon size={16} />
-              <span>{errors.global}</span>
-            </div>
+        <div className="screen-nav">
+          {onBack && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBackClick}
+            >
+              Retour
+            </Button>
           )}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(52, 190, 213, 0.12)', color: '#1A9DB8' }}>
-                <User size={18} />
-              </div>
-              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-600)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                Coordonnées & Structure
-              </span>
-            </div>
-
-            <div className="profile-form-grid">
-              {/* Nom de l'entreprise / projet */}
-              <div className="form-group profile-form-span-2">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  Nom de l'entreprise / projet <span style={{ color: 'var(--color-danger)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Ex: Ets Soglo & Associés"
-                  value={form.business_name}
-                  onChange={e => handleChange('business_name', e.target.value)}
-                />
-                {errors.business_name && (
-                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                    {errors.business_name}
-                  </div>
-                )}
-              </div>
-
-              {/* Nom & Prénom du déclarant */}
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  Nom & Prénom du déclarant <span style={{ color: 'var(--color-danger)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Ex: Koffi SOGLO"
-                  value={form.full_name}
-                  onChange={e => handleChange('full_name', e.target.value)}
-                />
-                {errors.full_name && (
-                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                    {errors.full_name}
-                  </div>
-                )}
-              </div>
-
-              {/* Adresse e-mail */}
-              <div className="form-group">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  Adresse e-mail <span style={{ color: 'var(--color-danger)' }}>*</span>
-                </label>
-                <input
-                  type="email"
-                  className="form-input"
-                  placeholder="Ex: koffi@soglo.bj"
-                  value={form.email}
-                  onChange={e => handleChange('email', e.target.value)}
-                />
-                {errors.email && (
-                  <div style={{ color: 'var(--color-danger)', fontSize: '0.78rem', marginTop: '4px', fontWeight: 600 }}>
-                    {errors.email}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {onBack && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBackClick}
-                  style={{ flex: isMobile ? '1 1 100%' : '1', order: isMobile ? 2 : 1, justifyContent: 'center', height: '42px' }}
-                >
-                  Retour
-                </Button>
-              )}
-              <Button
-                type="submit"
-                variant="primary"
-                style={{ flex: isMobile ? '1 1 100%' : '2', order: isMobile ? 1 : 2, justifyContent: 'center', height: '46px', fontSize: '0.95rem', fontWeight: 750 }}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Enregistrement...' : (isInitial ? 'Lancer le diagnostic →' : 'Valider et voir mon résultat →')}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </div>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Enregistrement...' : (isInitial ? 'Lancer le diagnostic' : 'Valider et voir mon résultat →')}
+          </Button>
+        </div>
+      </form>
     </ScreenWrapper>
   );
 };
