@@ -13,6 +13,7 @@ export { RouteScreen } from '../triage/RouteScreen.jsx';
 export { CatalogScreen } from '../triage/CatalogScreen.jsx';
 export { VerifModuleScreen } from '../questionnaire/VerifModuleScreen.jsx';
 export { IntroModuleScreen } from '../questionnaire/IntroModuleScreen.jsx';
+export { DiagnosticStartLoadingScreen } from '../questionnaire/DiagnosticStartLoadingScreen.jsx';
 export { QuestionScreen, QuitConfirmModal } from '../questionnaire/QuestionScreen.jsx';
 export { CalculScreen } from '../questionnaire/CalculScreen.jsx';
 export { ResultatSyntheseScreen } from '../restitution/ResultatSyntheseScreen.jsx';

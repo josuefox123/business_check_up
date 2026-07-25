@@ -246,16 +246,11 @@ export function useDiagnosticFlow() {
   };
 
   const onConsent = async () => {
-    // 1. Navigation immédiate pour un temps de réponse instantané (0ms)
+    // 1. Redirection immédiate vers l'écran d'initialisation (TriageStartLoadingScreen)
     if (currentModule) {
       navigate('/diagnostic/intro');
     } else {
-      const hasEntryChoice = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
-      if (triageQuestions.length > 0 && !hasEntryChoice) {
-        setTriageStep(4);
-      } else {
-        setTriageStep(3);
-      }
+      setTriageStep(1);
       navigate('/triage/wizard');
     }
 
@@ -605,17 +600,15 @@ export function useDiagnosticFlow() {
       return;
     }
 
-    // Si un run existe déjà (retour arrière depuis les questions), on le réutilise sans en créer un nouveau
+    // Navigation immédiate vers la page de chargement du diagnostic
+    navigate('/diagnostic/loading');
+
+    // Si un run existe déjà (retour arrière depuis les questions), on l'utilise
     if (currentRunId) {
-      navigate('/diagnostic/question');
       return;
     }
 
     const triageId = localStorage.getItem('bc_triage_id');
-    if (!triageId) {
-      navigate('/diagnostic/profil-initial');
-      return;
-    }
 
     if (sessionId && currentModule) {
       const recommendedCode = localStorage.getItem('bc_recommended_module_code');
@@ -641,7 +634,9 @@ export function useDiagnosticFlow() {
         console.error('Error starting diagnostic run:', err);
       }
     }
+  };
 
+  const onDiagnosticLoadingComplete = () => {
     navigate('/diagnostic/question');
   };
 

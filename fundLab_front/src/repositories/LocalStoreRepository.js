@@ -88,6 +88,16 @@ export const LocalStoreRepository = {
     initRepository();
     return JSON.parse(localStorage.getItem(KEYS.QUESTIONNAIRES)) || DEFAULT_MOCK_DATA.questionnaires;
   },
+  getQuestionsByModule(moduleId) {
+    const data = this.getQuestionnaires();
+    if (moduleId === 'triage' || moduleId === 'TRI-00') {
+      return Object.values(data.triage || {});
+    }
+    if (data.modules && data.modules[moduleId]) {
+      return data.modules[moduleId].questions || [];
+    }
+    return [];
+  },
   saveQuestionnaires(quest) {
     localStorage.setItem(KEYS.QUESTIONNAIRES, JSON.stringify(quest));
     return quest;
