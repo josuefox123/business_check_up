@@ -38,6 +38,7 @@ import {
 import { EmailVerificationModal } from './components/ecrans/triage/EmailVerificationModal.jsx';
 import { EnrichmentCompletionModal } from './components/ecrans/questionnaire/EnrichmentCompletionModal.jsx';
 import { TriageCompletionModal } from './components/ecrans/triage/TriageCompletionModal.jsx';
+import { DiagnosticHistoryScreen } from './components/ecrans/restitution/DiagnosticHistoryScreen.jsx';
 import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
 
@@ -252,6 +253,12 @@ function DiagnosticApp() {
       )}
 
       <Routes>
+        <Route path="/diagnostic/historique" element={
+          <DiagnosticHistoryScreen
+            userEmail={flow.pendingProfileData?.email}
+            onBack={flow.onGoHome}
+          />
+        } />
         <Route path="/" element={
           <LandingPage onStart={flow.onStartAssisted} onLearnMore={flow.onLearnMore} onGoToCatalog={flow.onGoToCatalog} />
         } />
@@ -313,6 +320,7 @@ function DiagnosticApp() {
                 <UserProfileFormScreen
                   mode="initial"
                   onSubmit={flow.handleInitiateEmailVerification}
+                  onExistingDiagnostic={(email) => flow.handleInitiateEmailVerification({ email, is_existing_lookup: true })}
                   onBack={() => {
                     const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
                     if (hasEntry) {

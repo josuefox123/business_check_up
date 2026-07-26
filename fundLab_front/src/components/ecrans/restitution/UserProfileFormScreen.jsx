@@ -41,7 +41,8 @@ const formatCustomText = (text) => {
   return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
 };
 
-export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers, mode = 'final' }) => {
+export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers, mode = 'final', onExistingDiagnostic }) => {
+  const [isExistingUser, setIsExistingUser] = useState(false);
   const parsePhoneNumber = (num) => {
     if (!num) return { countryCode: 'BJ', suffix: '' };
     const clean = num.replace(/[\s\-\(\)]/g, '');
@@ -70,7 +71,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     const parsedPhone = parsePhoneNumber(triageAnswers?.phone || triageAnswers?.phone_number || '');
 
     return {
-      user_profile_type: triageAnswers?.s03 || triageAnswers?.user_profile_type || (PROFILE_TYPES[0]?.value || ''),
+      user_profile_type: triageAnswers?.s03 || triageAnswers?.user_profile_type || '',
       full_name: triageAnswers?.name || '',
       phone_country: parsedPhone.countryCode || 'BJ',
       phone_suffix: parsedPhone.suffix || '',
@@ -80,17 +81,17 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       business_name: s05.business_name || '',
 
       activity_description: s05.activity_description || triageAnswers?.activity_description || '',
-      region: s05.region || 'Atlantique',
+      region: s05.region || '',
       commune: s05.commune || '',
       other_commune: '',
-      sector: s05.secteur || 'Services',
+      sector: s05.secteur || '',
       other_sector: '',
       sub_sector: s05.soussecteur || '',
-      year_created: s05.creation_year ? s05.creation_year.toString() : new Date().getFullYear().toString(),
+      year_created: s05.creation_year ? s05.creation_year.toString() : '',
       ca_n_1: triageAnswers?.ca_n_1 || '',
       ca_m_1: triageAnswers?.ca_m_1 || '',
-      activity_stage: triageAnswers?.s04 || triageAnswers?.activity_stage || (ACTIVITY_STAGES[0]?.value || ''),
-      employee_count_range: triageAnswers?.employee_count_range || '1-10',
+      activity_stage: triageAnswers?.s04 || triageAnswers?.activity_stage || '',
+      employee_count_range: triageAnswers?.employee_count_range || '',
       other_employee_count_range: ''
     };
   });
@@ -139,10 +140,14 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
 
   // Mettre à jour les communes quand la région change (en incluant 'Autre')
   useEffect(() => {
+    if (!form.region) {
+      setCommunes([]);
+      return;
+    }
     const list = DEPARTMENT_COMMUNES[form.region] ? [...DEPARTMENT_COMMUNES[form.region], 'Autre'] : ['Autre'];
     setCommunes(list);
-    if (list.length > 0 && !list.includes(form.commune)) {
-      setForm(prev => ({ ...prev, commune: list[0] }));
+    if (form.commune && list.length > 0 && !list.includes(form.commune)) {
+      setForm(prev => ({ ...prev, commune: '' }));
     }
   }, [form.region]);
 
@@ -150,66 +155,63 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     setForm(prev => ({ ...prev, [field]: val }));
   };
 
-  const isInitial = mode === 'initial';
-
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     const newErrors = {};
 
+    if (!form.email || !form.email.trim()) {
+      newErrors.email = "L'adresse e-mail est requise.";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        newErrors.email = "L'adresse e-mail n'est pas valide (ex: contact@entreprise.com).";
+      }
+    }
+
+    if (isExistingUser) {
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        if (onExistingDiagnostic) {
+          await onExistingDiagnostic(form.email.trim());
+        } else {
+          await onSubmit({
+            email: form.email.trim(),
+            is_existing_lookup: true
+          });
+        }
+      } catch (err) {
+        console.error('Existing diagnostic submit error:', err);
+        setErrors({ global: err.message || "Erreur lors de la vérification de l'adresse email." });
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     const phoneCountryConfig = COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0];
 
-    if (isInitial) {
-      if (!form.full_name || !form.full_name.trim()) {
-        newErrors.full_name = "Le nom et prénom du déclarant sont requis.";
-      }
+    if (!form.full_name || !form.full_name.trim()) {
+      newErrors.full_name = "Le nom et prénom du déclarant sont requis.";
+    }
 
-      if (!form.email || !form.email.trim()) {
-        newErrors.email = "L'adresse e-mail est requise.";
-      } else {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(form.email.trim())) {
-          newErrors.email = "L'adresse e-mail n'est pas valide (ex: contact@entreprise.com).";
-        }
-      }
+    if (!form.business_name || !form.business_name.trim()) {
+      newErrors.business_name = "Le nom de l'entreprise ou projet est requis.";
+    }
 
-      if (!form.business_name || !form.business_name.trim()) {
-        newErrors.business_name = "Le nom de l'entreprise ou projet est requis.";
-      }
+    if (!form.phone_suffix || !form.phone_suffix.trim()) {
+      newErrors.phone_number = "Le numéro de téléphone est requis.";
+    } else if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
+      newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
+    }
 
-      if (!form.phone_suffix || !form.phone_suffix.trim()) {
-        newErrors.phone_number = "Le numéro de téléphone est requis.";
-      } else if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
-        newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
-      }
-
-      if (!form.activity_description || !form.activity_description.trim()) {
-        newErrors.activity_description = "La description de votre activité est requise.";
-      }
-    } else {
-      if (!form.sector) {
-        newErrors.sector = "Veuillez sélectionner un secteur d'activité.";
-      } else if (form.sector === 'Autre' && !form.other_sector.trim()) {
-        newErrors.sector = "Veuillez préciser votre secteur d'activité.";
-      }
-
-      if (form.commune === 'Autre' && !form.other_commune.trim()) {
-        newErrors.commune = "Veuillez préciser votre commune.";
-      }
-
-      if (!form.region) {
-        newErrors.region = "Veuillez sélectionner un département / région.";
-      }
-
-      if (!form.phone_suffix || !form.phone_suffix.trim()) {
-        newErrors.phone_number = "Le numéro de téléphone est requis.";
-      } else if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
-        newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
-      }
-
-      if (!form.activity_description || !form.activity_description.trim()) {
-        newErrors.activity_description = "La description de votre activité est requise.";
-      }
+    if (!form.activity_description || !form.activity_description.trim()) {
+      newErrors.activity_description = "La description de votre activité est requise.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -225,7 +227,6 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
         calculatedYears = Math.max(0, new Date().getFullYear() - year);
       }
 
-      const phoneCountryConfig = COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0];
       const finalPhonePrefix = phoneCountryConfig.code === 'BJ' ? '+22901' : phoneCountryConfig.prefix;
 
       const finalSector = form.sector === 'Autre' ? formatCustomText(form.other_sector) : form.sector;
@@ -249,13 +250,13 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     }
   };
 
-  const sectorOptions = SECTORS.includes('Autre') ? SECTORS : [...SECTORS, 'Autre'];
+    const sectorOptions = SECTORS.includes('Autre') ? SECTORS : [...SECTORS, 'Autre'];
 
-  return (
-    <ScreenWrapper wide>
-      {onBack && <TopBackLink onClick={onBack} />}
+    return (
+      <ScreenWrapper wide>
+        {onBack && <TopBackLink onClick={onBack} />}
 
-      <style>{`
+        <style>{`
         .pg-form-container {
           width: 100%;
           max-width: 740px;
@@ -349,36 +350,6 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
           resize: vertical !important;
         }
 
-        .pg-verified-banner {
-          background: #F8FAFC;
-          border: 1px solid #E2E8F0;
-          border-radius: 16px;
-          padding: 16px 20px;
-          margin-bottom: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
-        }
-
-        .pg-verified-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .pg-verified-title {
-          font-size: 0.95rem;
-          font-weight: 800;
-          color: #17212D;
-        }
-
-        .pg-verified-sub {
-          font-size: 0.83rem;
-          color: #64748B;
-        }
-
         .pg-action-nav {
           display: flex;
           align-items: center;
@@ -413,84 +384,57 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
           .pg-span-2 {
             grid-column: span 1 !important;
           }
-          .pg-verified-banner {
-            flex-direction: column;
-            align-items: flex-start;
-          }
         }
       `}</style>
 
-      <div className="pg-form-container animate-fade-up">
-        {/* Page Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.85rem)', fontWeight: 800, color: '#17212D', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-            {isInitial ? "Informations de départ" : "Informations Générales"}
-          </h1>
-          <p style={{ fontSize: '0.94rem', color: '#64748B', lineHeight: 1.55, maxWidth: '560px', margin: '0 auto' }}>
-            {isInitial
-              ? "Renseignez vos coordonnées de base pour démarrer le questionnaire."
-              : "Complétez les informations ci-dessous pour nous permettre de calculer votre diagnostic recommandé sur mesure."}
-          </p>
-        </div>
+        <div className="pg-form-container animate-fade-up">
+          {/* Page Header */}
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.85rem)', fontWeight: 800, color: '#17212D', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+              {isExistingUser ? "Retrouver mon diagnostic" : "Informations Générales"}
+            </h1>
+            <p style={{ fontSize: '0.94rem', color: '#64748B', lineHeight: 1.55, maxWidth: '560px', margin: '0 auto', marginBottom: '16px' }}>
+              {isExistingUser 
+                ? "Saisissez votre adresse e-mail pour recevoir votre code de vérification et accéder à votre historique."
+                : "Renseignez les informations de votre entreprise ci-dessous pour démarrer le questionnaire."}
+            </p>
 
-        <form onSubmit={handleFormSubmit}>
-          {errors.global && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#DC2626', background: '#FEF2F2', border: '1px solid #FEE2E2', padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600, marginBottom: '24px' }}>
-              <AlertOctagon size={18} />
-              <span>{errors.global}</span>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => {
+                setIsExistingUser(!isExistingUser);
+                setErrors({});
+              }}
+              style={{
+                background: 'rgba(52, 190, 213, 0.08)',
+                border: '1px solid rgba(52, 190, 213, 0.3)',
+                color: '#1A9DB8',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                padding: '8px 16px',
+                borderRadius: '9999px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {isExistingUser ? "← Remplir le formulaire complet" : "J'ai déjà effectué un diagnostic"}
+            </button>
+          </div>
 
-          {isInitial ? (
-            /* MODE INITIAL : Coordonnées de base */
-            <div className="pg-form-section">
-              <div className="pg-section-header">
-                <div className="pg-section-icon">
-                  <User size={18} />
-                </div>
-                <h3 className="pg-section-title">Coordonnées de base</h3>
+          <form onSubmit={handleFormSubmit}>
+            {errors.global && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#DC2626', background: '#FEF2F2', border: '1px solid #FEE2E2', padding: '12px 16px', borderRadius: '12px', fontSize: '0.86rem', fontWeight: 600, marginBottom: '24px' }}>
+                <AlertOctagon size={18} />
+                <span>{errors.global}</span>
               </div>
+            )}
 
-              <div className="pg-form-grid">
-                <div className="pg-field-group pg-span-2">
-                  <label className="pg-field-label">
-                    Nom de l'entreprise / projet <span style={{ color: '#DC2626' }}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="pg-field-input"
-                    placeholder="Ex: Ets Soglo & Associés"
-                    value={form.business_name}
-                    onChange={e => handleChange('business_name', e.target.value)}
-                  />
-                  {errors.business_name && (
-                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {errors.business_name}
-                    </span>
-                  )}
-                </div>
-
+            {isExistingUser ? (
+              /* MODE VÉRIFICATION D'UN DIAGNOSTIC EXISTANT */
+              <div className="pg-form-section">
                 <div className="pg-field-group">
                   <label className="pg-field-label">
-                    Nom & Prénom du déclarant <span style={{ color: '#DC2626' }}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="pg-field-input"
-                    placeholder="Ex: Koffi SOGLO"
-                    value={form.full_name}
-                    onChange={e => handleChange('full_name', e.target.value)}
-                  />
-                  {errors.full_name && (
-                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {errors.full_name}
-                    </span>
-                  )}
-                </div>
-
-                <div className="pg-field-group">
-                  <label className="pg-field-label">
-                    Adresse e-mail <span style={{ color: '#DC2626' }}>*</span>
+                    Votre adresse e-mail <span style={{ color: '#DC2626' }}>*</span>
                   </label>
                   <input
                     type="email"
@@ -505,362 +449,396 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     </span>
                   )}
                 </div>
+              </div>
+            ) : (
+              /* MODE FORMULAIRE COMPLET */
+              <>
+                {/* Section 1: Coordonnées de base */}
+                <div className="pg-form-section">
+                  <div className="pg-section-header">
+                    <div className="pg-section-icon">
+                      <User size={18} />
+                    </div>
+                    <h3 className="pg-section-title">Coordonnées de base</h3>
+                  </div>
 
-                <div className="pg-field-group">
-                  <label className="pg-field-label">
-                    Numéro de téléphone <span style={{ color: '#DC2626' }}>*</span>
-                  </label>
-                  <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-                    <div style={{ position: 'relative' }}>
-                      <button
-                        type="button"
+                  <div className="pg-form-grid">
+                    <div className="pg-field-group pg-span-2">
+                      <label className="pg-field-label">
+                        Nom de l'entreprise / projet <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <input
+                        type="text"
                         className="pg-field-input"
-                        onClick={() => setPhoneDropdownOpen(!phoneDropdownOpen)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '0 10px',
-                          borderTopRightRadius: 0,
-                          borderBottomRightRadius: 0,
-                          borderRight: 'none',
-                          background: '#F8FAFC',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        <img 
-                          src={`https://flagcdn.com/w20/${(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).code.toLowerCase()}.png`} 
-                          alt="" 
-                          style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
-                        />
-                        <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#334155' }}>
-                          {(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).prefix}
+                        placeholder="Ex: Ets Soglo & Associés"
+                        value={form.business_name}
+                        onChange={e => handleChange('business_name', e.target.value)}
+                      />
+                      {errors.business_name && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.business_name}
                         </span>
-                      </button>
-
-                      {phoneDropdownOpen && (
-                        <>
-                          <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setPhoneDropdownOpen(false)} />
-                          <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            zIndex: 100,
-                            background: '#FFFFFF',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: '10px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-                            maxHeight: '200px',
-                            overflowY: 'auto',
-                            width: '240px',
-                            marginTop: '4px'
-                          }}>
-                            {COUNTRIES.map(c => (
-                              <div
-                                key={c.code}
-                                onClick={() => {
-                                  setForm(prev => ({ ...prev, phone_country: c.code, phone_suffix: '' }));
-                                  setPhoneDropdownOpen(false);
-                                }}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '10px',
-                                  padding: '10px 12px',
-                                  cursor: 'pointer',
-                                  fontSize: '0.86rem',
-                                  fontWeight: 500,
-                                  color: '#334155',
-                                  background: form.phone_country === c.code ? '#F1F5F9' : 'transparent'
-                                }}
-                              >
-                                <img 
-                                  src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
-                                  alt="" 
-                                  style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
-                                />
-                                <span style={{ flex: 1 }}>{c.name}</span>
-                                <span style={{ color: '#94A3B8', fontWeight: 600 }}>{c.prefix}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </>
                       )}
                     </div>
 
-                    {form.phone_country === 'BJ' && (
-                      <div style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRight: 'none', padding: '0 12px', fontSize: '0.88rem', color: '#475569', fontWeight: 700, height: '44px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
-                        01
-                      </div>
-                    )}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Nom & Prénom du déclarant <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="pg-field-input"
+                        placeholder="Ex: Koffi SOGLO"
+                        value={form.full_name}
+                        onChange={e => handleChange('full_name', e.target.value)}
+                      />
+                      {errors.full_name && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.full_name}
+                        </span>
+                      )}
+                    </div>
 
-                    <input 
-                      type="text" 
-                      className="pg-field-input" 
-                      maxLength={form.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === form.phone_country)?.length || 10)}
-                      placeholder={form.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"} 
-                      value={form.phone_suffix} 
-                      onChange={e => handleChange('phone_suffix', e.target.value.replace(/[^0-9]/g, ''))} 
-                      style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, flex: 1 }}
-                    />
-                  </div>
-                  {errors.phone_number && (
-                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {errors.phone_number}
-                    </span>
-                  )}
-                </div>
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Adresse e-mail <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <input
+                        type="email"
+                        className="pg-field-input"
+                        placeholder="Ex: koffi@soglo.bj"
+                        value={form.email}
+                        onChange={e => handleChange('email', e.target.value)}
+                      />
+                      {errors.email && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.email}
+                        </span>
+                      )}
+                    </div>
 
-                <div className="pg-field-group pg-span-2">
-                  <label className="pg-field-label">
-                    Description rapide de votre activité <span style={{ color: '#DC2626' }}>*</span>
-                  </label>
-                  <TextArea
-                    rows={2}
-                    maxLength={500}
-                    placeholder="Décrivez brièvement votre activité principale..."
-                    value={form.activity_description}
-                    onChange={e => handleChange('activity_description', e.target.value)}
-                  />
-                  {errors.activity_description && (
-                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                      {errors.activity_description}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* MODE FINAL (POST-TRIAGE) : Formulaire structuré directement sur la page */
-            <div>
-              {/* Banner Summary for Already Validated Credentials */}
-              <div className="pg-verified-banner">
-                <div className="pg-verified-info">
-                  <div className="pg-verified-title">
-                    {form.business_name || 'Votre entreprise'}
-                  </div>
-                  <div className="pg-verified-sub">
-                    {form.full_name} — {form.email}
-                  </div>
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ECFDF5', border: '1px solid #A7F3D0', color: '#059669', fontSize: '0.72rem', fontWeight: 800, padding: '4px 12px', borderRadius: '9999px', textTransform: 'uppercase', flexShrink: 0 }}>
-                  <CheckCircle2 size={14} />
-                  <span>IDENTITÉ VALIDÉE</span>
-                </div>
-              </div>
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Numéro de téléphone <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                        <div style={{ position: 'relative' }}>
+                          <button
+                            type="button"
+                            className="pg-field-input"
+                            onClick={() => setPhoneDropdownOpen(!phoneDropdownOpen)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '0 10px',
+                              borderTopRightRadius: 0,
+                              borderBottomRightRadius: 0,
+                              borderRight: 'none',
+                              background: '#F8FAFC',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            <img 
+                              src={`https://flagcdn.com/w20/${(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).code.toLowerCase()}.png`} 
+                              alt="" 
+                              style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
+                            />
+                            <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#334155' }}>
+                              {(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).prefix}
+                            </span>
+                          </button>
 
-              {/* Section 1: Activité & Secteur */}
-              <div className="pg-form-section">
-                <div className="pg-section-header">
-                  <div className="pg-section-icon">
-                    <Briefcase size={18} />
-                  </div>
-                  <h3 className="pg-section-title">Activité & Secteur</h3>
-                </div>
+                          {phoneDropdownOpen && (
+                            <>
+                              <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setPhoneDropdownOpen(false)} />
+                              <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                zIndex: 100,
+                                background: '#FFFFFF',
+                                border: '1px solid #E2E8F0',
+                                borderRadius: '10px',
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                                maxHeight: '200px',
+                                overflowY: 'auto',
+                                width: '240px',
+                                marginTop: '4px'
+                              }}>
+                                {COUNTRIES.map(c => (
+                                  <div
+                                    key={c.code}
+                                    onClick={() => {
+                                      setForm(prev => ({ ...prev, phone_country: c.code, phone_suffix: '' }));
+                                      setPhoneDropdownOpen(false);
+                                    }}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '10px',
+                                      padding: '10px 12px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.86rem',
+                                      fontWeight: 500,
+                                      color: '#334155',
+                                      background: form.phone_country === c.code ? '#F1F5F9' : 'transparent'
+                                    }}
+                                  >
+                                    <img 
+                                      src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                      alt="" 
+                                      style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
+                                    />
+                                    <span style={{ flex: 1 }}>{c.name}</span>
+                                    <span style={{ color: '#94A3B8', fontWeight: 600 }}>{c.prefix}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </>
+                          )}
+                        </div>
 
-                <div className="pg-form-grid">
-                  {/* Secteur d'activité */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Secteur d'activité <span style={{ color: '#DC2626' }}>*</span>
-                    </label>
-                    <CustomSelect
-                      options={sectorOptions}
-                      value={form.sector}
-                      onChange={val => handleChange('sector', val)}
-                      error={errors.sector}
-                    />
-                    {form.sector === 'Autre' && (
-                      <div style={{ marginTop: '8px' }}>
-                        <input
-                          type="text"
-                          className="pg-field-input"
-                          placeholder="Précisez votre secteur d'activité..."
-                          value={form.other_sector}
-                          onChange={e => handleChange('other_sector', formatCustomText(e.target.value))}
+                        {form.phone_country === 'BJ' && (
+                          <div style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRight: 'none', padding: '0 12px', fontSize: '0.88rem', color: '#475569', fontWeight: 700, height: '44px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+                            01
+                          </div>
+                        )}
+
+                        <input 
+                          type="text" 
+                          className="pg-field-input" 
+                          maxLength={form.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === form.phone_country)?.length || 10)}
+                          placeholder={form.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"} 
+                          value={form.phone_suffix} 
+                          onChange={e => handleChange('phone_suffix', e.target.value.replace(/[^0-9]/g, ''))} 
+                          style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, flex: 1 }}
                         />
                       </div>
-                    )}
-                    {errors.sector && (
-                      <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                        {errors.sector}
-                      </span>
-                    )}
-                  </div>
+                      {errors.phone_number && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.phone_number}
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Sous-secteur */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Sous-secteur d'activité
-                    </label>
-                    <input
-                      type="text"
-                      className="pg-field-input"
-                      placeholder="Ex: Transformation agroalimentaire"
-                      value={form.sub_sector}
-                      onChange={e => handleChange('sub_sector', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Stade d'activité */}
-                  <div className="pg-field-group pg-span-2">
-                    <label className="pg-field-label">
-                      Stade actuel de votre activité
-                    </label>
-                    <CustomSelect
-                      options={ACTIVITY_STAGES}
-                      value={form.activity_stage}
-                      onChange={val => handleChange('activity_stage', val)}
-                    />
-                  </div>
-
-                  {/* Description d'activité */}
-                  <div className="pg-field-group pg-span-2">
-                    <label className="pg-field-label">
-                      Description de votre activité & objectifs principaux <span style={{ color: '#DC2626' }}>*</span>
-                    </label>
-                    <TextArea
-                      rows={3}
-                      maxLength={500}
-                      placeholder="Précisez votre activité, vos canaux de vente ou vos défis prioritaires..."
-                      value={form.activity_description}
-                      onChange={e => handleChange('activity_description', e.target.value)}
-                    />
-                    {errors.activity_description && (
-                      <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                        {errors.activity_description}
-                      </span>
-                    )}
+                    <div className="pg-field-group pg-span-2">
+                      <label className="pg-field-label">
+                        Description rapide de votre activité <span style={{ color: '#DC2626' }}>*</span>
+                      </label>
+                      <TextArea
+                        rows={2}
+                        maxLength={500}
+                        placeholder="Décrivez brièvement votre activité principale..."
+                        value={form.activity_description}
+                        onChange={e => handleChange('activity_description', e.target.value)}
+                      />
+                      {errors.activity_description && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.activity_description}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Section 2: Localisation & Structure */}
-              <div className="pg-form-section">
-                <div className="pg-section-header">
-                  <div className="pg-section-icon">
-                    <MapPin size={18} />
-                  </div>
-                  <h3 className="pg-section-title">Localisation & Structure</h3>
-                </div>
-
-                <div className="pg-form-grid">
-                  {/* Région */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Département / Région <span style={{ color: '#DC2626' }}>*</span>
-                    </label>
-                    <CustomSelect
-                      options={REGIONS}
-                      value={form.region}
-                      onChange={val => handleChange('region', val)}
-                    />
+                {/* Section 2: Activité & Secteur */}
+                <div className="pg-form-section">
+                  <div className="pg-section-header">
+                    <div className="pg-section-icon">
+                      <Briefcase size={18} />
+                    </div>
+                    <h3 className="pg-section-title">Activité & Secteur</h3>
                   </div>
 
-                  {/* Commune */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Commune
-                    </label>
-                    <CustomSelect
-                      options={communes}
-                      value={form.commune}
-                      onChange={val => handleChange('commune', val)}
-                    />
-                    {form.commune === 'Autre' && (
-                      <div style={{ marginTop: '8px' }}>
-                        <input
-                          type="text"
-                          className="pg-field-input"
-                          placeholder="Précisez votre commune..."
-                          value={form.other_commune}
-                          onChange={e => handleChange('other_commune', formatCustomText(e.target.value))}
-                        />
-                      </div>
-                    )}
-                    {errors.commune && (
-                      <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
-                        {errors.commune}
-                      </span>
-                    )}
-                  </div>
+                  <div className="pg-form-grid">
+                    {/* Secteur d'activité */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Secteur d'activité
+                      </label>
+                      <CustomSelect
+                        options={sectorOptions}
+                        value={form.sector}
+                        onChange={val => handleChange('sector', val)}
+                        error={errors.sector}
+                      />
+                      {form.sector === 'Autre' && (
+                        <div style={{ marginTop: '8px' }}>
+                          <input
+                            type="text"
+                            className="pg-field-input"
+                            placeholder="Précisez votre secteur d'activité..."
+                            value={form.other_sector}
+                            onChange={e => handleChange('other_sector', formatCustomText(e.target.value))}
+                          />
+                        </div>
+                      )}
+                      {errors.sector && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.sector}
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Année de création */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Année de création
-                    </label>
-                    <CustomSelect
-                      options={yearsList}
-                      value={form.year_created}
-                      onChange={val => handleChange('year_created', val)}
-                    />
-                  </div>
+                    {/* Sous-secteur */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Sous-secteur d'activité
+                      </label>
+                      <input
+                        type="text"
+                        className="pg-field-input"
+                        placeholder="Ex: Transformation agroalimentaire"
+                        value={form.sub_sector}
+                        onChange={e => handleChange('sub_sector', e.target.value)}
+                      />
+                    </div>
 
-                  {/* Tranche d'effectifs */}
-                  <div className="pg-field-group">
-                    <label className="pg-field-label">
-                      Tranche d'effectifs (employés)
-                    </label>
-                    <CustomSelect
-                      options={EMPLOYEE_RANGES}
-                      value={form.employee_count_range}
-                      onChange={val => handleChange('employee_count_range', val)}
-                    />
+                    {/* Stade d'activité */}
+                    <div className="pg-field-group pg-span-2">
+                      <label className="pg-field-label">
+                        Stade actuel de votre activité
+                      </label>
+                      <CustomSelect
+                        options={ACTIVITY_STAGES}
+                        value={form.activity_stage}
+                        onChange={val => handleChange('activity_stage', val)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Section 3: Profil Entrepreneurial */}
-              <div className="pg-form-section">
-                <div className="pg-section-header">
-                  <div className="pg-section-icon">
-                    <User size={18} />
+                {/* Section 3: Localisation & Structure */}
+                <div className="pg-form-section">
+                  <div className="pg-section-header">
+                    <div className="pg-section-icon">
+                      <MapPin size={18} />
+                    </div>
+                    <h3 className="pg-section-title">Localisation & Structure</h3>
                   </div>
-                  <h3 className="pg-section-title">Profil Entrepreneurial</h3>
+
+                  <div className="pg-form-grid">
+                    {/* Région */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Département / Région
+                      </label>
+                      <CustomSelect
+                        options={REGIONS}
+                        value={form.region}
+                        onChange={val => handleChange('region', val)}
+                      />
+                    </div>
+
+                    {/* Commune */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Commune
+                      </label>
+                      <CustomSelect
+                        options={communes}
+                        value={form.commune}
+                        onChange={val => handleChange('commune', val)}
+                      />
+                      {form.commune === 'Autre' && (
+                        <div style={{ marginTop: '8px' }}>
+                          <input
+                            type="text"
+                            className="pg-field-input"
+                            placeholder="Précisez votre commune..."
+                            value={form.other_commune}
+                            onChange={e => handleChange('other_commune', formatCustomText(e.target.value))}
+                          />
+                        </div>
+                      )}
+                      {errors.commune && (
+                        <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                          {errors.commune}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Année de création */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Année de création
+                      </label>
+                      <CustomSelect
+                        options={yearsList}
+                        value={form.year_created}
+                        onChange={val => handleChange('year_created', val)}
+                      />
+                    </div>
+
+                    {/* Tranche d'effectifs */}
+                    <div className="pg-field-group">
+                      <label className="pg-field-label">
+                        Tranche d'effectifs (employés)
+                      </label>
+                      <CustomSelect
+                        options={EMPLOYEE_RANGES}
+                        value={form.employee_count_range}
+                        onChange={val => handleChange('employee_count_range', val)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="pg-form-grid">
-                  <div className="pg-field-group pg-span-2">
-                    <label className="pg-field-label">
-                      Votre profil d'entrepreneur
-                    </label>
-                    <CustomSelect
-                      options={PROFILE_TYPES}
-                      value={form.user_profile_type}
-                      onChange={val => handleChange('user_profile_type', val)}
-                    />
+                {/* Section 4: Profil Entrepreneurial */}
+                <div className="pg-form-section">
+                  <div className="pg-section-header">
+                    <div className="pg-section-icon">
+                      <User size={18} />
+                    </div>
+                    <h3 className="pg-section-title">Profil Entrepreneurial</h3>
+                  </div>
+
+                  <div className="pg-form-grid">
+                    <div className="pg-field-group pg-span-2">
+                      <label className="pg-field-label">
+                        Votre profil d'entrepreneur
+                      </label>
+                      <CustomSelect
+                        options={PROFILE_TYPES}
+                        value={form.user_profile_type}
+                        onChange={val => handleChange('user_profile_type', val)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="pg-action-nav">
-            {onBack && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onBack}
-                style={{ height: '52px', borderRadius: '14px', fontWeight: 700, padding: '0 20px', flexShrink: 0 }}
-              >
-                Retour
-              </Button>
+              </>
             )}
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              className="pg-btn-submit"
-            >
-              <span>{isSubmitting ? 'Enregistrement...' : (isInitial ? 'Lancer le diagnostic' : 'Obtenir mon diagnostic')}</span>
-              <ArrowRight size={18} style={{ flexShrink: 0 }} />
-            </Button>
-          </div>
-        </form>
-      </div>
-    </ScreenWrapper>
-  );
-};
+
+            {/* Action Buttons */}
+            <div className="pg-action-nav">
+              {onBack && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onBack}
+                  style={{ height: '52px', borderRadius: '14px', fontWeight: 700, padding: '0 20px', flexShrink: 0 }}
+                >
+                  Retour
+                </Button>
+              )}
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isSubmitting}
+                className="pg-btn-submit"
+              >
+                <span>
+                  {isSubmitting 
+                    ? (isExistingUser ? 'Vérification...' : 'Enregistrement...') 
+                    : (isExistingUser ? 'Retrouver mon diagnostic' : 'Lancer le diagnostic')}
+                </span>
+                <ArrowRight size={18} style={{ flexShrink: 0 }} />
+              </Button>
+            </div>
+          </form>
+        </div>
+      </ScreenWrapper>
+    );
+  };

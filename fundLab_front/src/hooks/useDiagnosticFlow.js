@@ -391,6 +391,12 @@ export function useDiagnosticFlow() {
         code
       });
 
+      if (pendingProfileData?.is_existing_lookup) {
+        setIsVerifyingEmail(false);
+        navigate('/diagnostic/historique');
+        return;
+      }
+
       if (res?.is_returning_user && res?.resume_data) {
         // Utilisateur existant → Reprise directe du dernier module et de la dernière question
         const resume = res.resume_data;
@@ -417,7 +423,6 @@ export function useDiagnosticFlow() {
         onTriageProfileSubmit(pendingProfileData);
 
         if (currentModule) {
-          // Parcours direct depuis le catalogue → Compléter le profil général puis enclencher le diagnostic
           navigate('/diagnostic/profil');
         }
       }
@@ -542,12 +547,15 @@ export function useDiagnosticFlow() {
     setTA('s10', val);
     const answersWithS10 = { ...triageAnswers, s10: val };
     setTriageAnswers(answersWithS10);
-    setShowTriageCompletionModal(true);
+    // Redirection directe vers la soumission backend (qui affiche l'écran d'analyse) sans étape de félicitations
+    submitTriageToBackend(answersWithS10);
   };
 
   const onConfirmTriageCompletion = () => {
     setShowTriageCompletionModal(false);
-    navigate('/diagnostic/profil');
+    if (triageAnswers) {
+      submitTriageToBackend(triageAnswers);
+    }
   };
 
   const onRouteStart = () => navigate('/diagnostic/intro');

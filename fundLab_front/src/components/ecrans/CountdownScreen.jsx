@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logoCompact from '../../assets/logo_compact.png';
 
 export const CountdownScreen = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -71,17 +72,17 @@ export const CountdownScreen = () => {
         overflow: 'hidden'
       }}>
         {/* Logo */}
-        <div style={{ position: 'relative', zIndex: 10, marginBottom: '3rem' }}>
+        <div style={{ position: 'relative', zIndex: 10, marginBottom: '2.5rem' }}>
           <img
-            alt="Business Check-up"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzIFuYOG6GyKqNXhF2PN5lfK6ZOYAaAaXr1fqHb5JecLzDZrc_2P8A1Zy053rOQYKFv0xL6EpPBfsDD_eB3n8rvohEUcqam_rNxFRmajMJ_saUfw1a8BDqHsQmNLmcj62ztkk6us0YPsa8QIDceq_Mhl6bU10ralfjsHtsm_5pNu89FpUKsVNob5aoBjoJhbw9fkf8oeNrjCq7xtEZI-vVowBdKI7XDTEABWwbTaNKdY3zlL1nxiZeJZ476Sd9YAtM4AdjLfwebb-0"
-            style={{ width: '240px', height: 'auto', margin: '0 auto', display: 'block' }}
+            src={logoCompact}
+            alt="Business Check-up - Powered by FUND.lab"
+            style={{ height: '56px', width: 'auto', margin: '0 auto', display: 'block' }}
           />
         </div>
 
         {/* Texte explicatif */}
-        <div style={{ position: 'relative', zIndex: 10, marginBottom: '3rem' }}>
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 700, color: '#020914', marginBottom: '1.5rem', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+        <div style={{ position: 'relative', zIndex: 10, marginBottom: '2.5rem' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#0F172A', marginBottom: '1.25rem', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
             Lancement imminent
           </h1>
           <p style={{ fontSize: '1.125rem', color: '#44474c', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
@@ -93,7 +94,7 @@ export const CountdownScreen = () => {
         {/* Compte à rebours */}
         {timeLeft.isFinished ? (
           <div style={{ padding: '2rem 0' }}>
-            <h2 style={{ fontSize: '1.5rem', color: '#006877', margin: 0, fontWeight: 500 }}>
+            <h2 style={{ fontSize: '1.5rem', color: '#1A9DB8', margin: 0, fontWeight: 600 }}>
               La plateforme est maintenant accessible.
             </h2>
           </div>
@@ -103,36 +104,36 @@ export const CountdownScreen = () => {
             zIndex: 10,
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '1rem',
-            maxWidth: '600px',
+            gap: '1.25rem',
+            maxWidth: '560px',
             margin: '0 auto'
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#f8f9fa', border: '1px solid rgba(197, 198, 204, 0.3)', borderRadius: '0.5rem', width: '100%', padding: '1.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#020914' }}>{timeLeft.days}</span>
+              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '1rem', width: '100%', padding: '1.75rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A' }}>{timeLeft.days}</span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#44474c', marginTop: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 500 }}>Jours</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>Jours</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#f8f9fa', border: '1px solid rgba(197, 198, 204, 0.3)', borderRadius: '0.5rem', width: '100%', padding: '1.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#020914' }}>{timeLeft.hours}</span>
+              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '1rem', width: '100%', padding: '1.75rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A' }}>{timeLeft.hours}</span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#44474c', marginTop: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 500 }}>Heures</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>Heures</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#f8f9fa', border: '1px solid rgba(197, 198, 204, 0.3)', borderRadius: '0.5rem', width: '100%', padding: '1.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#020914' }}>{timeLeft.minutes}</span>
+              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '1rem', width: '100%', padding: '1.75rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0F172A' }}>{timeLeft.minutes}</span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#44474c', marginTop: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 500 }}>Minutes</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>Minutes</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ backgroundColor: '#f8f9fa', border: '1px solid rgba(197, 198, 204, 0.3)', borderRadius: '0.5rem', width: '100%', padding: '1.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 700, color: '#006877' }}>{timeLeft.seconds}</span>
+              <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '1rem', width: '100%', padding: '1.75rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#008196' }}>{timeLeft.seconds}</span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#44474c', marginTop: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 500 }}>Secs</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>Secs</span>
             </div>
           </div>
         )}

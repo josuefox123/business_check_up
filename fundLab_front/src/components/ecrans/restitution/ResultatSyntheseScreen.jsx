@@ -283,7 +283,7 @@ export const ResultatSyntheseScreen = ({
         {/* Row 4: Fragilités Typiques Stack (3 Columns on PC) */}
         {(fragilitiesList.length > 0 || weaknessesList.length > 0) && (
           <div>
-            <span className="res-section-title-label">FRAGILITÉS TYPIQUES</span>
+            <span className="res-section-title-label">FRAGILITÉS</span>
             <div className="res-item-cards-stack">
               {(fragilitiesList.length > 0 ? fragilitiesList : weaknessesList).map((item, idx) => {
                 const parsed = parseItem(item);
@@ -326,7 +326,23 @@ export const ResultatSyntheseScreen = ({
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <Calendar size={16} style={{ color: '#10B981' }} />
-              <span>{restitution?.next_module || 'Sous 15 jours'}</span>
+              <span>
+                {(() => {
+                  const moduleLabels = {
+                    'PRJ-02': 'Diagnostic Projet',
+                    'FLH-01': 'Diagnostic Flash',
+                    'DIF-03': 'Diagnostic Difficulté',
+                    'OPP-04': 'Diagnostic Opportunité',
+                    'PRO-05': 'Diagnostic Offre/Produits',
+                    'COM-06': 'Diagnostic Commercial',
+                    'FIN-07': 'Diagnostic Finance',
+                    'GOV-08': 'Diagnostic Organisation',
+                    '360-09': 'Diagnostic Complet 360°',
+                  };
+                  const code = restitution?.next_module;
+                  return moduleLabels[code] || code || 'Non défini';
+                })()}
+              </span>
             </div>
           </div>
         </div>

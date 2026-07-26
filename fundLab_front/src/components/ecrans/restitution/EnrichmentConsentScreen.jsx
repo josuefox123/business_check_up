@@ -7,7 +7,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
   return (
     <ScreenWrapper>
       <div className="animate-fade-up" style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
-        
+
         <div style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -27,9 +27,8 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
         </h1>
 
         <p style={{ fontSize: '1rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
-          Vous êtes sur le point d'accéder au questionnaire d'enrichissement. 
-          Ces questions supplémentaires nous permettront d'établir un rapport complet, 
-          ultra-personnalisé et parfaitement adapté à votre structure.
+          Afin de vous donner le diagnostic le plus complet possible , nous vous demandons encore quelques
+          minutes qui nous permettrons de vous fournir un diagnostic personnalisé et adapté à votre structure.
         </p>
 
         <div style={{
@@ -75,7 +74,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
           >
             Accepter et continuer <ArrowRight size={16} />
           </Button>
-          
+
           <Button
             variant="outline"
             onClick={onCancel}
