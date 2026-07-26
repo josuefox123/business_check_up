@@ -1,11 +1,9 @@
 /**
  * Configuration de l'API Laravel pour Business Check-up
- * BASE URL: https://business-chekcup.nicktep.com/api/api/bc
- * Le serveur est configuré avec le préfixe /api/bc dans routes/api.php,
- * mais le host ajoute déjà un /api — on garde la valeur actuelle qui fonctionne.
+ * BASE URL: https://business-chekcup.nicktep.com/api/bc
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://business-chekcup.nicktep.com/api/api/bc';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://business-chekcup.nicktep.com/api/bc';
 
 /**
  * Convertit une durée en secondes (integer) en label lisible "X-Y min"

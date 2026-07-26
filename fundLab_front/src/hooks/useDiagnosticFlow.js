@@ -370,7 +370,7 @@ export function useDiagnosticFlow() {
       await requestEmailVerificationApi({
         email: profileData.email,
         full_name: profileData.full_name,
-        business_name: profileData.business_name
+        diagnostic_run_id: currentRunId
       });
     } catch (err) {
       console.error('Error requesting email verification code:', err);
@@ -682,7 +682,7 @@ export function useDiagnosticFlow() {
       const evidence_level = evidenceLevelMap[proof] || null;
       const rawAnswerStr = typeof answer === 'object' && answer !== null ? JSON.stringify(answer) : String(answer ?? '');
 
-      const targetQuestionId = q.db_id || (typeof q.id === 'number' || (!String(q.id).includes('_Q') && q.id) ? q.id : null);
+      const targetQuestionId = q.db_id || q.id;
 
       if (targetQuestionId) {
         apiFetch(`/diagnostics/${currentRunId}/answers`, {

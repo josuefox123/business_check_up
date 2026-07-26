@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, MessageSquare } from 'lucide-react';
-import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea } from '../../ui/index.jsx';
+import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea, CurrencyInput } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
@@ -78,25 +78,26 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const isMulti = questionData.type === 'multi';
   const isScale = questionData.type === 'scale_1_5';
   const isText = questionData.type === 'short_text';
+  const isCurrency = questionData.type === 'currency_xof' || questionData.type === 'currency_xof_with_period';
   const maxLength = questionData.maxLength || 500;
   const themeClass = getModuleThemeClass(moduleId || questionData?.moduleId);
 
   const [answer, setAnswer] = useState(
-    (!isMulti && !isText && savedAnswer !== null) ? savedAnswer : null
+    (!isMulti && !isText && !isCurrency && savedAnswer !== null) ? savedAnswer : null
   );
   const [multiAnswer, setMultiAnswer] = useState(
     isMulti && Array.isArray(savedAnswer) ? savedAnswer : []
   );
   const [textVal, setTextVal] = useState(
-    isText && typeof savedAnswer === 'string' ? savedAnswer : ''
+    (isText || isCurrency) && typeof savedAnswer === 'string' ? savedAnswer : ''
   );
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   useEffect(() => {
-    setAnswer((!isMulti && !isText && savedAnswer !== null) ? savedAnswer : null);
+    setAnswer((!isMulti && !isText && !isCurrency && savedAnswer !== null) ? savedAnswer : null);
     setMultiAnswer(isMulti && Array.isArray(savedAnswer) ? savedAnswer : []);
-    setTextVal(isText && typeof savedAnswer === 'string' ? savedAnswer : '');
-  }, [questionData?.id, savedAnswer, isMulti, isText]);
+    setTextVal((isText || isCurrency) && typeof savedAnswer === 'string' ? savedAnswer : '');
+  }, [questionData?.id, savedAnswer, isMulti, isText, isCurrency]);
 
   const toggleMulti = (id) => {
     if (id === 'idk') { setMultiAnswer(['idk']); return; }
@@ -106,10 +107,10 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     });
   };
 
-  const canContinue = isMulti ? multiAnswer.length > 0 : isText ? textVal.trim().length > 0 : answer !== null;
+  const canContinue = isMulti ? multiAnswer.length > 0 : (isText || isCurrency) ? textVal.trim().length > 0 : answer !== null;
 
   const handleContinue = () => {
-    const ans = isMulti ? multiAnswer : isText ? textVal : answer;
+    const ans = isMulti ? multiAnswer : (isText || isCurrency) ? textVal : answer;
     onContinue(ans, null, null, null, null);
   };
 
@@ -151,6 +152,15 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           const isEven2x2Grid = !isText && !isScale && (numChoices === 2 || numChoices === 4) && choices.every(c => (c.label || '').trim().length <= 45);
           const containerClass = isEven2x2Grid ? 'choices-grid-2x2' : 'choices-list';
 
+          if (isCurrency) {
+            return (
+              <CurrencyInput
+                type={questionData.type}
+                value={textVal}
+                onChange={(val) => setTextVal(val)}
+              />
+            );
+          }
           if (isText) {
             return (
               <TextArea

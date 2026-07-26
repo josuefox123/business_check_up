@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import DiagnosticApp from './DiagnosticApp.jsx';
 import { AdminApp } from './components/admin/AdminApp.jsx';
+import { TestCurrencyScreen } from './components/ecrans/TestCurrencyScreen.jsx';
 import { ReferencesProvider } from './contexts/ReferencesContext.jsx';
 
 // Utility component to force scroll restoration to top on route change
@@ -21,6 +22,7 @@ function App() {
       <ReferencesProvider>
         <ScrollToTop />
         <Routes>
+          <Route path="/test-currency" element={<TestCurrencyScreen />} />
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/*" element={<DiagnosticApp />} />
         </Routes>

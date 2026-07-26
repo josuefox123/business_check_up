@@ -104,3 +104,7 @@ export { CustomSelect } from './CustomSelect.jsx';
 
 /* ================== TEXT AREA ================== */
 export { TextArea } from './TextArea.jsx';
+
+/* ================== CURRENCY INPUT ================== */
+export { CurrencyInput } from './CurrencyInput.jsx';
+
