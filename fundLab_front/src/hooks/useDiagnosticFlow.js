@@ -394,7 +394,7 @@ export function useDiagnosticFlow() {
       if (pendingProfileData?.is_existing_lookup) {
         setIsVerifyingEmail(false);
         navigate('/diagnostic/historique');
-        return;
+        return res;
       }
 
       if (res?.is_returning_user && res?.resume_data) {
@@ -426,9 +426,12 @@ export function useDiagnosticFlow() {
           navigate('/diagnostic/profil');
         }
       }
+      return res;
     } catch (err) {
       console.error('Error confirming email verification code:', err);
-      setEmailVerificationError(err.message || 'Code de vérification invalide ou expiré.');
+      const errMsg = err.message || 'Code de vérification invalide ou expiré.';
+      setEmailVerificationError(errMsg);
+      throw err;
     } finally {
       setIsEmailLoading(false);
     }
