@@ -60,9 +60,6 @@ export async function apiFetch(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    if (response.status >= 500) {
-      window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
-    }
     const errorData = await response.json().catch(() => ({}));
     const error = new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
     error.status = response.status;

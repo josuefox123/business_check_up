@@ -107,10 +107,10 @@ export async function submitTriageToBackendApi(sessionId, answers) {
 
   const payload = {
     user_profile_type,
-    full_name: answers.name || answers.full_name || (answers.s05 && answers.s05.full_name) || null,
-    phone_number: answers.phone || answers.phone_number || (answers.s05 && answers.s05.phone_number) || null,
-    whatsapp_number: answers.whatsapp_number || (answers.s05 && answers.s05.whatsapp_number) || null,
-    email: answers.email || (answers.s05 && answers.s05.email) || null,
+    ...( (answers.name || answers.full_name || (answers.s05 && answers.s05.full_name)) ? { full_name: answers.name || answers.full_name || answers.s05.full_name } : {} ),
+    ...( (answers.phone || answers.phone_number || (answers.s05 && answers.s05.phone_number)) ? { phone_number: answers.phone || answers.phone_number || answers.s05.phone_number } : {} ),
+    ...( (answers.whatsapp_number || (answers.s05 && answers.s05.whatsapp_number)) ? { whatsapp_number: answers.whatsapp_number || answers.s05.whatsapp_number } : {} ),
+    ...( (answers.email || (answers.s05 && answers.s05.email)) ? { email: answers.email || answers.s05.email } : {} ),
     business_name: answers.business_name || (s05 && s05.business_name) || null,
     description: answers.description || answers.activity_description || (s05 && s05.activity_description) || null,
     region,

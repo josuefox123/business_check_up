@@ -219,6 +219,11 @@ export function useDiagnosticFlow() {
   }, [currentModule]);
 
   const onStartAssisted = () => {
+    const isAuthenticated = Boolean(localStorage.getItem('bc_is_authenticated') === 'true' || localStorage.getItem('bc_user_profile'));
+    if (isAuthenticated) {
+      navigate('/catalog');
+      return;
+    }
     clearState();
     setTriageStep(3);
     setTriageAnswers({});
@@ -246,10 +251,11 @@ export function useDiagnosticFlow() {
   };
 
   const onConsent = async () => {
-    const hasDeviceProfile = Boolean(localStorage.getItem('bc_session_id') || localStorage.getItem('bc_user_profile'));
+    const isAuthenticated = Boolean(localStorage.getItem('bc_is_authenticated') === 'true' || localStorage.getItem('bc_user_profile'));
+    const hasDeviceProfile = Boolean(localStorage.getItem('bc_session_id') || isAuthenticated);
 
     if (currentModule) {
-      if (hasDeviceProfile) {
+      if (isAuthenticated) {
         onIntroStart();
       } else {
         navigate('/diagnostic/profil-initial');
@@ -391,6 +397,12 @@ export function useDiagnosticFlow() {
         code
       });
 
+      // Enregistrer l'état d'authentification valide
+      localStorage.setItem('bc_is_authenticated', 'true');
+      if (pendingProfileData?.email) {
+        localStorage.setItem('bc_user_email', pendingProfileData.email);
+      }
+
       if (pendingProfileData?.is_existing_lookup) {
         setIsVerifyingEmail(false);
         navigate('/diagnostic/historique');
@@ -423,7 +435,7 @@ export function useDiagnosticFlow() {
         onTriageProfileSubmit(pendingProfileData);
 
         if (currentModule) {
-          navigate('/diagnostic/profil');
+          navigate('/diagnostic/intro');
         }
       }
       return res;
@@ -455,11 +467,27 @@ export function useDiagnosticFlow() {
 
 
   const submitTriageToBackend = async (answers) => {
-    const sessionId = localStorage.getItem('bc_session_id');
+    let sessionId = localStorage.getItem('bc_session_id');
+    
+    if (!sessionId) {
+      try {
+        console.warn('Session ID introuvable dans localStorage, création d\'une nouvelle session...');
+        const newSessionRes = await createSessionApi();
+        sessionId = newSessionRes?.data?.session_id || newSessionRes?.session_id;
+        if (sessionId) {
+          localStorage.setItem('bc_session_id', sessionId);
+          // Soumettre automatiquement le consentement pour éviter "403 Diagnostic consent required"
+          await submitConsentApi(sessionId, true).catch(err => console.error('Consent fallback error:', err));
+        }
+      } catch (sessErr) {
+        console.error('Erreur lors de la création de la session de secours:', sessErr);
+      }
+    }
+
     if (!sessionId) {
       setErrorModal({
         title: 'Session introuvable',
-        message: 'Impossible de continuer sans session active avec le serveur.'
+        message: 'Impossible de continuer sans session active avec le serveur. Veuillez réactualiser la page.'
       });
       return;
     }
@@ -523,6 +551,20 @@ export function useDiagnosticFlow() {
       navigate('/diagnostic/route');
     } catch (err) {
       console.error('Error submitting triage to backend:', err, err.data || err.errors);
+      const errMsg = err?.message || '';
+      
+      if (errMsg.includes('Duplicate entry') || errMsg.includes('23000') || errMsg.includes('UniqueConstraintViolationException')) {
+        setErrorModal({
+          title: 'Compte / Email déjà existant',
+          message: 'Votre profil est déjà enregistré ! Vous n\'avez plus besoin de passer par le triage et pouvez accéder directement au catalogue des diagnostics.',
+          actionLabel: 'Accéder aux diagnostics',
+          onAction: () => {
+            navigate('/catalog');
+          }
+        });
+        return;
+      }
+
       const errObj = err.data?.errors || err.errors || {};
       let details = Object.keys(errObj).length > 0 ? ' (Champs non valides : ' + Object.keys(errObj).join(', ') + ')' : '';
       setErrorModal({
@@ -618,10 +660,21 @@ export function useDiagnosticFlow() {
 
     let sessionId = localStorage.getItem('bc_session_id');
 
-    // Si pas de session : rediriger vers le consentement d'abord (le module est déjà mémorisé dans currentModule)
+    // Si l'utilisateur est authentifié mais n'a pas encore de session active
     if (!sessionId) {
-      navigate('/triage/consent');
-      return;
+      try {
+        console.warn('Création d\'une nouvelle session pour l\'utilisateur connecté...');
+        const newSessionRes = await createSessionApi();
+        sessionId = newSessionRes?.data?.session_id || newSessionRes?.session_id;
+        if (sessionId) {
+          localStorage.setItem('bc_session_id', sessionId);
+          await submitConsentApi(sessionId, true).catch(err => console.error('Consent error:', err));
+        }
+      } catch (sessErr) {
+        console.error('Erreur lors de la création de session:', sessErr);
+        navigate('/triage/consent');
+        return;
+      }
     }
 
     // Navigation immédiate vers la page de chargement du diagnostic
@@ -653,9 +706,15 @@ export function useDiagnosticFlow() {
           setCurrentRunId(runId);
           await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
             .catch(err => console.error('Error tracking session intro stage:', err));
+        } else {
+          console.warn('Diagnostic run ID missing in backend response:', res);
         }
       } catch (err) {
         console.error('Error starting diagnostic run:', err);
+        setErrorModal({
+          title: 'Erreur d\'initialisation',
+          message: 'Impossible de démarrer la session de diagnostic avec le serveur. Veuillez réactualiser et réessayez.'
+        });
       }
     }
   };
@@ -664,7 +723,7 @@ export function useDiagnosticFlow() {
     navigate('/diagnostic/question');
   };
 
-  const onAnswer = (answer, proof, confidence, evidenceType, evidenceLabel) => {
+  const onAnswer = async (answer, proof, confidence, evidenceType, evidenceLabel) => {
     const q = questions[questionIndex];
     if (!q) return;
 
@@ -683,6 +742,16 @@ export function useDiagnosticFlow() {
       ...(evidenceLabel ? { [`${q.id}_evidence_label`]: evidenceLabel } : {})
     }));
     
+    if (!currentRunId) {
+      console.error('Impossible de poster la réponse : diagnostic_run_id est introuvable.');
+      lastSubmittedQuestionIdRef.current = null;
+      setErrorModal({
+        title: 'Session de diagnostic non initialisée',
+        message: 'La session de diagnostic avec le serveur s\'est interrompue. Veuillez cliquer sur Retour et relancer le module.'
+      });
+      return;
+    }
+
     if (currentRunId) {
       const evidenceLevelMap = {
         'E0': 'E0_declarative',
@@ -696,31 +765,35 @@ export function useDiagnosticFlow() {
       const targetQuestionId = q.db_id || q.id;
 
       if (targetQuestionId) {
-        apiFetch(`/diagnostics/${currentRunId}/answers`, {
-          method: 'POST',
-          body: JSON.stringify({
+        try {
+          const payload = {
             question_id: String(targetQuestionId),
-            answer_value: rawAnswerStr,
-            response_confidence_user: confidence ? String(confidence) : null,
-            evidence_level: evidence_level ? String(evidence_level) : null,
-            evidence_type: evidenceType ? String(evidenceType) : null,
-            evidence_label: evidenceLabel ? String(evidenceLabel) : null
-          })
-        }).catch(err => {
-          // 409 = question already answered
-          if (err?.status === 409) return;
-          // 400 = backend restriction for non-scored text/short_text question types
-          if (err?.status === 400 || (err?.message && err.message.toLowerCase().includes('non supporté'))) {
-            console.warn(`[API Answer Warning] Question ${targetQuestionId} answer saved locally (Backend response: ${err.message})`);
-            return;
+            answer_value: rawAnswerStr
+          };
+          if (confidence) payload.response_confidence_user = String(confidence);
+          if (evidence_level) payload.evidence_level = String(evidence_level);
+          if (evidenceType) payload.evidence_type = String(evidenceType);
+          if (evidenceLabel) payload.evidence_label = String(evidenceLabel);
+
+          await apiFetch(`/diagnostics/${currentRunId}/answers`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          // 409 = question déjà répondue
+          if (err?.status === 409) {
+            // Ignorer
+          } else {
+            console.error('Error posting answer to backend:', err, err?.data);
+            lastSubmittedQuestionIdRef.current = null; // Débloquer la soumission pour permettre un nouvel essai
+            const backendMsg = err?.data?.message || err?.message || 'Erreur inconnue du serveur.';
+            setErrorModal({
+              title: 'Erreur d\'enregistrement de la réponse',
+              message: `Le serveur a renvoyé l'erreur suivante : "${backendMsg}". (Question: ${targetQuestionId})`
+            });
+            return; // Bloquer le passage à la question suivante
           }
-          // 404 = Question inactive or question ID not found in backend DB
-          if (err?.status === 404 || (err?.message && (err.message.toLowerCase().includes('introuvable') || err.message.toLowerCase().includes('inactive') || err.message.toLowerCase().includes('not found')))) {
-            console.warn(`[API Answer Warning] Question ${targetQuestionId} answer saved locally (Backend response: ${err.message})`);
-            return;
-          }
-          console.error('Error posting answer:', err);
-        });
+        }
       }
     }
 

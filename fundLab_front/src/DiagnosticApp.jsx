@@ -43,7 +43,7 @@ import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
 
 
-const ErrorModal = ({ title, message, onClose }) => (
+const ErrorModal = ({ title, message, onClose, actionLabel, onAction }) => (
   <div style={{
     position: 'fixed', inset: 0, zIndex: 9999,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -57,7 +57,7 @@ const ErrorModal = ({ title, message, onClose }) => (
       background: '#ffffff',
       borderRadius: '20px',
       padding: '36px 32px 28px',
-      maxWidth: '400px',
+      maxWidth: '420px',
       width: '100%',
       boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
       textAlign: 'center',
@@ -73,18 +73,36 @@ const ErrorModal = ({ title, message, onClose }) => (
         <AlertTriangle size={26} strokeWidth={2} style={{ color: '#ef4444' }} />
       </div>
       <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1E293B', marginBottom: '10px' }}>{title}</h2>
-      <p style={{ fontSize: '0.9rem', color: '#64748B', lineHeight: 1.6, marginBottom: '28px' }}>{message}</p>
-      <button
-        onClick={onClose}
-        style={{
-          width: '100%', padding: '13px 20px', borderRadius: '12px',
-          fontWeight: 750, fontSize: '0.95rem', border: 'none',
-          background: '#17212D', color: '#ffffff', cursor: 'pointer',
-          fontFamily: 'inherit', transition: 'background 0.2s',
-        }}
-      >
-        Fermer
-      </button>
+      <p style={{ fontSize: '0.9rem', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>{message}</p>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {actionLabel && onAction && (
+          <button
+            onClick={onAction}
+            style={{
+              width: '100%', padding: '13px 20px', borderRadius: '12px',
+              fontWeight: 750, fontSize: '0.95rem', border: 'none',
+              background: '#1A9DB8', color: '#ffffff', cursor: 'pointer',
+              fontFamily: 'inherit', transition: 'background 0.2s',
+            }}
+          >
+            {actionLabel}
+          </button>
+        )}
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', padding: '13px 20px', borderRadius: '12px',
+            fontWeight: 750, fontSize: '0.95rem',
+            border: actionLabel ? '1px solid #E2E8F0' : 'none',
+            background: actionLabel ? '#FFFFFF' : '#17212D',
+            color: actionLabel ? '#475569' : '#ffffff', cursor: 'pointer',
+            fontFamily: 'inherit', transition: 'background 0.2s',
+          }}
+        >
+          {actionLabel ? 'Fermer' : 'Fermer'}
+        </button>
+      </div>
     </div>
   </div>
 );
@@ -238,6 +256,11 @@ function DiagnosticApp() {
         <ErrorModal
           title={flow.errorModal.title}
           message={flow.errorModal.message}
+          actionLabel={flow.errorModal.actionLabel}
+          onAction={() => {
+            if (flow.errorModal.onAction) flow.errorModal.onAction();
+            flow.setErrorModal(null);
+          }}
           onClose={() => flow.setErrorModal(null)}
         />
       )}

@@ -233,7 +233,7 @@ export const EmailVerificationModal = ({
             disabled={isLoading || currentCode.length !== 6}
             style={{ height: '52px', fontSize: '0.95rem', fontWeight: 700, marginBottom: '16px' }}
           >
-            {isLoading ? 'Vérification en cours...' : 'Valider le code et continuer →'}
+            {isLoading ? 'Vérification en cours...' : 'Valider et continuer →'}
           </Button>
 
           {/* Resend Option */}

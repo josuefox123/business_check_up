@@ -109,9 +109,17 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
 
   const canContinue = isMulti ? multiAnswer.length > 0 : (isText || isCurrency) ? textVal.trim().length > 0 : answer !== null;
 
-  const handleContinue = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleContinue = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const ans = isMulti ? multiAnswer : (isText || isCurrency) ? textVal : answer;
-    onContinue(ans, null, null, null, null);
+    try {
+      await onContinue(ans, null, null, null, null);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const SCALE_LABELS = ['1 — Pas du tout', '2 — Peu', '3 — Modérément', '4 — Bien', '5 — Très bien'];
@@ -216,8 +224,8 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             Retour
           </Button>
         )}
-        <Button variant="primary" disabled={!canContinue} onClick={handleContinue}>
-          Continuer
+        <Button variant="primary" disabled={!canContinue || isSubmitting} onClick={handleContinue}>
+          {isSubmitting ? 'Enregistrement...' : 'Continuer'}
         </Button>
       </div>
     </ScreenWrapper>
