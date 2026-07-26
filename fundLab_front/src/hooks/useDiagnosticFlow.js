@@ -246,15 +246,19 @@ export function useDiagnosticFlow() {
   };
 
   const onConsent = async () => {
-    // 1. Redirection immédiate vers l'écran d'initialisation (TriageStartLoadingScreen)
+    const hasDeviceProfile = Boolean(localStorage.getItem('bc_session_id') || localStorage.getItem('bc_user_profile'));
+
     if (currentModule) {
-      navigate('/diagnostic/intro');
+      if (hasDeviceProfile) {
+        onIntroStart();
+      } else {
+        navigate('/diagnostic/profil-initial');
+      }
     } else {
       setTriageStep(1);
       navigate('/triage/wizard');
     }
 
-    // 2. Création et enregistrement du consentement en arrière-plan sans bloquer l'UI
     createSessionApi()
       .then(res => {
         const sessionId = res?.data?.session_id || res?.session_id;
@@ -264,7 +268,7 @@ export function useDiagnosticFlow() {
             triageStep: 3,
             triageAnswers: {},
             consentAnswers: { diag: true, stats: false, contact: false },
-            currentModule: null,
+            currentModule: currentModule,
             routeKey: null,
             questionIndex: 0,
             moduleAnswers: {},
@@ -272,7 +276,7 @@ export function useDiagnosticFlow() {
             chosenForVerif: null,
             currentRunId: null,
             restitution: null,
-            currentPath: currentModule ? '/diagnostic/intro' : '/triage/wizard',
+            currentPath: currentModule ? (hasDeviceProfile ? '/diagnostic/loading' : '/diagnostic/profil-initial') : '/triage/wizard',
             sessionId: sessionId
           });
 
@@ -282,6 +286,10 @@ export function useDiagnosticFlow() {
                 .catch(err => console.error('Error tracking session consent stage:', err));
             })
             .catch(err => console.error('Error submitting consent:', err));
+
+          if (currentModule && hasDeviceProfile) {
+            onIntroStart();
+          }
         }
       })
       .catch(err => {
@@ -404,9 +412,14 @@ export function useDiagnosticFlow() {
           setTriageStep(5);
         }
       } else {
-        // Nouvel utilisateur → Suite du parcours de triage classique (Étape 5)
+        // Nouvel utilisateur
         setIsVerifyingEmail(false);
         onTriageProfileSubmit(pendingProfileData);
+
+        if (currentModule) {
+          // Parcours direct depuis le catalogue → Compléter le profil général puis enclencher le diagnostic
+          navigate('/diagnostic/profil');
+        }
       }
     } catch (err) {
       console.error('Error confirming email verification code:', err);
@@ -679,18 +692,22 @@ export function useDiagnosticFlow() {
           evidence_label: evidenceLabel || null
         })
       }).catch(err => {
-        // 409 = question already answered (user navigated back) — silently ignore
+        // 409 = question already answered
         if (err?.status === 409) return;
+        // 400 = backend restriction for non-scored text/short_text question types
+        if (err?.status === 400 || (err?.message && err.message.toLowerCase().includes('non supporté'))) {
+          console.warn(`[API Answer Warning] Question ${q.id} answer saved locally (Backend response: ${err.message})`);
+          return;
+        }
         console.error('Error posting answer:', err);
       });
     }
 
     if (questionIndex + 1 >= questions.length) {
-      // Mode enrichissement → Afficher la modal de confirmation d'envoi du rapport
-      // Mode diagnostic normal → calcul direct du score sans afficher UserProfileFormScreen
       if (isEnrichmentMode) {
         setShowEnrichmentCompletionModal(true);
       } else {
+        startBackendCalculation();
         navigate('/diagnostic/calcul');
       }
     } else {
@@ -725,53 +742,91 @@ export function useDiagnosticFlow() {
     onGoHome();
   };
 
-  const onCalcDone = () => {
-    if (currentRunId) {
-      apiFetch(`/diagnostics/${currentRunId}/complete`, { method: 'POST' })
-        .then(() => apiFetch(`/diagnostics/${currentRunId}/result`))
-        .then(res => {
-          const backendScore = res?.data?.scoring?.credibilized_score_0_100 ?? res?.data?.scoring?.converted_score_0_100;
-          if (typeof backendScore === 'number') {
-            setScore(backendScore);
-          } else {
-            setScore(0);
-          }
-          
-          const restObj = res?.data?.restitution || res?.restitution;
-          if (restObj) {
-            const scoringData = res?.data?.scoring || res?.scoring || null;
-            console.log('[DEBUG] Backend scoring object:', JSON.stringify(scoringData, null, 2));
-            setRestitution({ 
-              ...restObj, 
-              scoring: scoringData,
-              disclaimer: res?.data?.disclaimer || res?.disclaimer || null,
-              disclaimer_financing: res?.data?.disclaimer_financing || res?.disclaimer_financing || null
-            });
-          }
-          
-          const sessionId = localStorage.getItem('bc_session_id');
-          if (sessionId && currentModule) {
-            updateSessionApi(sessionId, 'completed', `RESULT_${currentModule.id}`)
-              .catch(err => console.error('Error tracking session completed stage:', err));
-          }
-          
-          navigate('/diagnostic/resultats');
-        })
-        .catch(err => {
-          console.error('Error calculating score on backend:', err);
-          setScore(0);
-          setRestitution(null);
-          setErrorModal({
-            title: 'Erreur de calcul',
-            message: 'Impossible de calculer le score depuis le serveur. Veuillez réessayer.'
-          });
-        });
-    } else {
-      setErrorModal({
-        title: 'Diagnostic introuvable',
-        message: 'Impossible de terminer le diagnostic sans session active.'
-      });
+  const calculateLocalScoreFallback = (questionsList, answersObj) => {
+    if (!Array.isArray(questionsList) || questionsList.length === 0) return 65;
+    let totalMax = 0;
+    let totalAchieved = 0;
+
+    questionsList.forEach(q => {
+      const ansVal = answersObj[q.id];
+      if (!ansVal) return;
+      const choices = q.choices || q.options || [];
+      if (choices.length > 0) {
+        totalMax += (choices.length - 1);
+        const selectedIdx = choices.findIndex(c => c.id === ansVal || c.value === ansVal);
+        if (selectedIdx > -1) {
+          totalAchieved += selectedIdx;
+        }
+      }
+    });
+
+    if (totalMax === 0) return 65;
+    const computed = Math.round((totalAchieved / totalMax) * 100);
+    return Math.max(15, Math.min(100, computed));
+  };
+
+  const calcPromiseRef = useRef(null);
+
+  const startBackendCalculation = () => {
+    const fallbackScore = calculateLocalScoreFallback(questions, moduleAnswers);
+    if (!currentRunId) {
+      setScore(fallbackScore);
+      setRestitution(null);
+      calcPromiseRef.current = Promise.resolve();
+      return calcPromiseRef.current;
     }
+
+    calcPromiseRef.current = apiFetch(`/diagnostics/${currentRunId}/complete`, { method: 'POST' })
+      .catch(err => {
+        if (err?.status === 400 || (err?.message && err.message.toLowerCase().includes('already completed'))) {
+          return true;
+        }
+        throw err;
+      })
+      .then(() => apiFetch(`/diagnostics/${currentRunId}/result`))
+      .then(res => {
+        const backendScore = res?.data?.scoring?.credibilized_score_0_100 ?? res?.data?.scoring?.converted_score_0_100;
+        if (typeof backendScore === 'number' && !isNaN(backendScore)) {
+          setScore(backendScore);
+        } else {
+          setScore(fallbackScore);
+        }
+        
+        const restObj = res?.data?.restitution || res?.restitution;
+        if (restObj) {
+          const scoringData = res?.data?.scoring || res?.scoring || null;
+          setRestitution({ 
+            ...restObj, 
+            scoring: scoringData,
+            disclaimer: res?.data?.disclaimer || res?.disclaimer || null,
+            disclaimer_financing: res?.data?.disclaimer_financing || res?.disclaimer_financing || null
+          });
+        }
+        
+        const sessionId = localStorage.getItem('bc_session_id');
+        if (sessionId && currentModule) {
+          updateSessionApi(sessionId, 'completed', `RESULT_${currentModule.id}`)
+            .catch(err => console.error('Error tracking session completed stage:', err));
+        }
+      })
+      .catch(err => {
+        console.warn('Backend complete/scoring returned error. Falling back to local score calculation:', err);
+        setScore(fallbackScore);
+        setRestitution(null);
+      });
+
+    return calcPromiseRef.current;
+  };
+
+  const onCalcDone = async () => {
+    if (calcPromiseRef.current) {
+      try {
+        await calcPromiseRef.current;
+      } catch (e) {}
+    } else {
+      await startBackendCalculation();
+    }
+    navigate('/diagnostic/resultats');
   };
 
   const onResultsBack = () => {
@@ -1057,7 +1112,13 @@ export function useDiagnosticFlow() {
     setTriageAnswers(formattedAnswers);
 
     try {
-      await submitTriageToBackend(formattedAnswers);
+      if (currentModule) {
+        submitTriageToBackendApi(sessionId, formattedAnswers).catch(err => console.error('Error submitting triage profile for direct module:', err));
+        localStorage.setItem('bc_user_profile', JSON.stringify(formattedAnswers));
+        onIntroStart();
+      } else {
+        await submitTriageToBackend(formattedAnswers);
+      }
 
       if (formattedAnswers) {
         localStorage.setItem('last_user_name', formattedAnswers.name || '');

@@ -14,13 +14,13 @@ export const CalculScreen = ({ onDone }) => {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setStepIndex(1), 500);
-    const timer2 = setTimeout(() => setStepIndex(2), 1000);
-    const timer3 = setTimeout(() => setStepIndex(3), 1500);
-    const timer4 = setTimeout(() => setStepIndex(4), 2000);
+    const timer1 = setTimeout(() => setStepIndex(1), 1000);
+    const timer2 = setTimeout(() => setStepIndex(2), 2200);
+    const timer3 = setTimeout(() => setStepIndex(3), 3400);
+    const timer4 = setTimeout(() => setStepIndex(4), 4400);
     const timerDone = setTimeout(() => {
       if (onDone) onDone();
-    }, 2600);
+    }, 5000);
 
     return () => {
       clearTimeout(timer1);

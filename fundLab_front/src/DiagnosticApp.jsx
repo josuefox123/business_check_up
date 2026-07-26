@@ -15,6 +15,7 @@ import { useDiagnosticFlow } from './hooks/useDiagnosticFlow.js';
 import {
   ConsentScreen,
   TriageStartLoadingScreen,
+  DiagnosticStartLoadingScreen,
   ChoixEntreeScreen,
   S03Screen, S04Screen, S05Screen,
   TriageScreen,
@@ -421,6 +422,12 @@ function DiagnosticApp() {
             />
           )
         } />
+        <Route path="/diagnostic/loading" element={
+          <DiagnosticStartLoadingScreen
+            moduleName={flow.currentModule?.name || 'Diagnostic'}
+            onComplete={() => navigate('/diagnostic/question')}
+          />
+        } />
         <Route path="/diagnostic/question" element={
           flow.currentModule && flow.questions.length > 0 && (
             <QuestionScreen
@@ -490,12 +497,23 @@ function DiagnosticApp() {
           <EnrichmentConsentScreen onConfirm={flow.onStartEnrichmentQuestions} onCancel={flow.onEnrichmentCancel} />
         } />
         <Route path="/diagnostic/profil-initial" element={
-          <UserProfileFormScreen 
-            mode="initial"
-            onSubmit={flow.onProfileInitialSubmit} 
-            onBack={flow.onProfileInitialBack} 
-            triageAnswers={flow.triageAnswers}
-          />
+          flow.isVerifyingEmail ? (
+            <EmailVerificationModal
+              email={flow.pendingProfileData?.email || ''}
+              onVerify={flow.handleConfirmEmailCode}
+              onResend={() => flow.handleInitiateEmailVerification(flow.pendingProfileData)}
+              onCancel={() => flow.setIsVerifyingEmail(false)}
+              isLoading={flow.isEmailLoading}
+              errorMsg={flow.emailVerificationError}
+            />
+          ) : (
+            <UserProfileFormScreen 
+              mode="initial"
+              onSubmit={flow.handleInitiateEmailVerification} 
+              onBack={() => navigate('/diagnostic/intro')} 
+              triageAnswers={flow.triageAnswers}
+            />
+          )
         } />
         <Route path="/diagnostic/profil" element={
           <UserProfileFormScreen 

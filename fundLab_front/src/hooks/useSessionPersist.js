@@ -6,18 +6,24 @@ const SESSION_EXPIRY_DAYS = 7;
 export function useSessionPersist() {
   const [clientIp, setClientIp] = useState('');
 
-  // Fetch client IP on mount
+  // Fetch client IP on mount with short timeout to prevent slow network blocks
   useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    fetch('https://api.ipify.org?format=json', { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         if (data && data.ip) {
           setClientIp(data.ip);
         }
       })
-      .catch(err => {
-        console.warn('Could not fetch client IP for session fingerprinting:', err);
-      });
+      .catch(() => {
+        // Silently ignore external IP fetch timeouts / network blockings
+      })
+      .finally(() => clearTimeout(timeoutId));
+
+    return () => controller.abort();
   }, []);
 
   const saveState = (stateData) => {
