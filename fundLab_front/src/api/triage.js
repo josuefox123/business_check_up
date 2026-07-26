@@ -112,6 +112,7 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     whatsapp_number: answers.whatsapp_number || (answers.s05 && answers.s05.whatsapp_number) || null,
     email: answers.email || (answers.s05 && answers.s05.email) || null,
     business_name: answers.business_name || (s05 && s05.business_name) || null,
+    description: answers.description || answers.activity_description || (s05 && s05.activity_description) || null,
     region,
     commune: normalizedCommune,
     sector,

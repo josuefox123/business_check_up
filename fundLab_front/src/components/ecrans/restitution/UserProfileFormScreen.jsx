@@ -98,6 +98,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
   const [communes, setCommunes] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   useEffect(() => {
@@ -156,6 +157,8 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     setErrors({});
     const newErrors = {};
 
+    const phoneCountryConfig = COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0];
+
     if (isInitial) {
       if (!form.full_name || !form.full_name.trim()) {
         newErrors.full_name = "Le nom et prénom du déclarant sont requis.";
@@ -173,6 +176,16 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
       if (!form.business_name || !form.business_name.trim()) {
         newErrors.business_name = "Le nom de l'entreprise ou projet est requis.";
       }
+
+      if (!form.phone_suffix || !form.phone_suffix.trim()) {
+        newErrors.phone_number = "Le numéro de téléphone est requis.";
+      } else if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
+        newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
+      }
+
+      if (!form.activity_description || !form.activity_description.trim()) {
+        newErrors.activity_description = "La description de votre activité est requise.";
+      }
     } else {
       if (!form.sector) {
         newErrors.sector = "Veuillez sélectionner un secteur d'activité.";
@@ -186,6 +199,16 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
 
       if (!form.region) {
         newErrors.region = "Veuillez sélectionner un département / région.";
+      }
+
+      if (!form.phone_suffix || !form.phone_suffix.trim()) {
+        newErrors.phone_number = "Le numéro de téléphone est requis.";
+      } else if (form.phone_suffix.trim().length !== phoneCountryConfig.length) {
+        newErrors.phone_number = `Le numéro de téléphone doit comporter exactement ${phoneCountryConfig.length} chiffres.`;
+      }
+
+      if (!form.activity_description || !form.activity_description.trim()) {
+        newErrors.activity_description = "La description de votre activité est requise.";
       }
     }
 
@@ -483,9 +506,115 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                   )}
                 </div>
 
+                <div className="pg-field-group">
+                  <label className="pg-field-label">
+                    Numéro de téléphone <span style={{ color: '#DC2626' }}>*</span>
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        className="pg-field-input"
+                        onClick={() => setPhoneDropdownOpen(!phoneDropdownOpen)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '0 10px',
+                          borderTopRightRadius: 0,
+                          borderBottomRightRadius: 0,
+                          borderRight: 'none',
+                          background: '#F8FAFC',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <img 
+                          src={`https://flagcdn.com/w20/${(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).code.toLowerCase()}.png`} 
+                          alt="" 
+                          style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
+                        />
+                        <span style={{ fontSize: '0.86rem', fontWeight: 600, color: '#334155' }}>
+                          {(COUNTRIES.find(c => c.code === form.phone_country) || COUNTRIES[0]).prefix}
+                        </span>
+                      </button>
+
+                      {phoneDropdownOpen && (
+                        <>
+                          <div style={{ position: 'fixed', inset: 0, zIndex: 90 }} onClick={() => setPhoneDropdownOpen(false)} />
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            zIndex: 100,
+                            background: '#FFFFFF',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: '10px',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            width: '240px',
+                            marginTop: '4px'
+                          }}>
+                            {COUNTRIES.map(c => (
+                              <div
+                                key={c.code}
+                                onClick={() => {
+                                  setForm(prev => ({ ...prev, phone_country: c.code, phone_suffix: '' }));
+                                  setPhoneDropdownOpen(false);
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '10px',
+                                  padding: '10px 12px',
+                                  cursor: 'pointer',
+                                  fontSize: '0.86rem',
+                                  fontWeight: 500,
+                                  color: '#334155',
+                                  background: form.phone_country === c.code ? '#F1F5F9' : 'transparent'
+                                }}
+                              >
+                                <img 
+                                  src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+                                  alt="" 
+                                  style={{ width: '18px', height: 'auto', borderRadius: '2px' }} 
+                                />
+                                <span style={{ flex: 1 }}>{c.name}</span>
+                                <span style={{ color: '#94A3B8', fontWeight: 600 }}>{c.prefix}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {form.phone_country === 'BJ' && (
+                      <div style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', borderRight: 'none', padding: '0 12px', fontSize: '0.88rem', color: '#475569', fontWeight: 700, height: '44px', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+                        01
+                      </div>
+                    )}
+
+                    <input 
+                      type="text" 
+                      className="pg-field-input" 
+                      maxLength={form.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === form.phone_country)?.length || 10)}
+                      placeholder={form.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"} 
+                      value={form.phone_suffix} 
+                      onChange={e => handleChange('phone_suffix', e.target.value.replace(/[^0-9]/g, ''))} 
+                      style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0, flex: 1 }}
+                    />
+                  </div>
+                  {errors.phone_number && (
+                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                      {errors.phone_number}
+                    </span>
+                  )}
+                </div>
+
                 <div className="pg-field-group pg-span-2">
                   <label className="pg-field-label">
-                    Description rapide de votre activité
+                    Description rapide de votre activité <span style={{ color: '#DC2626' }}>*</span>
                   </label>
                   <TextArea
                     rows={2}
@@ -494,6 +623,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                     value={form.activity_description}
                     onChange={e => handleChange('activity_description', e.target.value)}
                   />
+                  {errors.activity_description && (
+                    <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                      {errors.activity_description}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -584,7 +718,7 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                   {/* Description d'activité */}
                   <div className="pg-field-group pg-span-2">
                     <label className="pg-field-label">
-                      Description de votre activité & objectifs principaux
+                      Description de votre activité & objectifs principaux <span style={{ color: '#DC2626' }}>*</span>
                     </label>
                     <TextArea
                       rows={3}
@@ -593,6 +727,11 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
                       value={form.activity_description}
                       onChange={e => handleChange('activity_description', e.target.value)}
                     />
+                    {errors.activity_description && (
+                      <span style={{ color: '#DC2626', fontSize: '0.78rem', fontWeight: 600 }}>
+                        {errors.activity_description}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

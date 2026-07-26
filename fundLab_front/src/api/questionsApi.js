@@ -10,34 +10,39 @@ export const questionsApi = {
 
     return apiFetch(url)
       .then(res => {
-        const questionsList = res?.data?.questions || res?.questions || (Array.isArray(res) ? res : []);
+        const rawQuestions = res?.data?.questions || res?.questions || res?.data || res;
+        const questionsList = Array.isArray(rawQuestions) ? rawQuestions : [];
         
         if (questionsList.length === 0) {
           throw new Error('Backend returned empty questions list');
         }
         
         // Formater les questions du backend pour correspondre à l'interface frontend
-        return questionsList.map(q => {
-          let type = q.answer_type || 'single';
+        return questionsList.map((q, idx) => {
+          let type = q.answer_type || q.type || 'single';
           if (type === 'single_choice') type = 'single';
           else if (type === 'multi_choice') type = 'multi';
           else if (type === 'scale_1_5') type = 'scale_1_5';
           else if (type === 'text_libre') type = 'short_text';
 
-          const choices = (q.options || []).map(opt => ({
-            id: opt.value,
-            label: opt.label,
+          const rawChoices = q.options || q.choices || [];
+          const choices = rawChoices.map(opt => ({
+            id: opt.value !== undefined ? opt.value : (opt.id || opt.code),
+            label: opt.label || opt.text || opt.title || '',
             icon: opt.icon || null,
-            desc: opt.desc || null
+            desc: opt.desc || opt.description || null
           }));
 
+          const qDbId = q.id || q.question_db_id || q.db_id || null;
+          const qId = q.question_code || q.question_id || q.code || qDbId || `${targetModuleId}_Q${idx + 1}`;
+
           return {
-            id: q.question_id,
-            db_id: q.question_db_id || null,
-            order: q.order || 1,
+            id: qId,
+            db_id: qDbId,
+            order: q.order || (idx + 1),
             axe: q.role || q.dimension || 'Général',
-            question: q.text,
-            hint: q.helper_text || null,
+            question: q.text || q.label || q.question || '',
+            hint: q.helper_text || q.hint || null,
             type: type,
             choices: choices,
           };

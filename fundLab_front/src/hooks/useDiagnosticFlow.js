@@ -680,27 +680,37 @@ export function useDiagnosticFlow() {
         'E3': 'E3_verifiable_data'
       };
       const evidence_level = evidenceLevelMap[proof] || null;
+      const rawAnswerStr = typeof answer === 'object' && answer !== null ? JSON.stringify(answer) : String(answer ?? '');
 
-      apiFetch(`/diagnostics/${currentRunId}/answers`, {
-        method: 'POST',
-        body: JSON.stringify({
-          question_id: q.id,
-          answer_value: answer,
-          response_confidence_user: confidence || null,
-          evidence_level: evidence_level,
-          evidence_type: evidenceType || null,
-          evidence_label: evidenceLabel || null
-        })
-      }).catch(err => {
-        // 409 = question already answered
-        if (err?.status === 409) return;
-        // 400 = backend restriction for non-scored text/short_text question types
-        if (err?.status === 400 || (err?.message && err.message.toLowerCase().includes('non supporté'))) {
-          console.warn(`[API Answer Warning] Question ${q.id} answer saved locally (Backend response: ${err.message})`);
-          return;
-        }
-        console.error('Error posting answer:', err);
-      });
+      const targetQuestionId = q.db_id || (typeof q.id === 'number' || (!String(q.id).includes('_Q') && q.id) ? q.id : null);
+
+      if (targetQuestionId) {
+        apiFetch(`/diagnostics/${currentRunId}/answers`, {
+          method: 'POST',
+          body: JSON.stringify({
+            question_id: String(targetQuestionId),
+            answer_value: rawAnswerStr,
+            response_confidence_user: confidence ? String(confidence) : null,
+            evidence_level: evidence_level ? String(evidence_level) : null,
+            evidence_type: evidenceType ? String(evidenceType) : null,
+            evidence_label: evidenceLabel ? String(evidenceLabel) : null
+          })
+        }).catch(err => {
+          // 409 = question already answered
+          if (err?.status === 409) return;
+          // 400 = backend restriction for non-scored text/short_text question types
+          if (err?.status === 400 || (err?.message && err.message.toLowerCase().includes('non supporté'))) {
+            console.warn(`[API Answer Warning] Question ${targetQuestionId} answer saved locally (Backend response: ${err.message})`);
+            return;
+          }
+          // 404 = Question inactive or question ID not found in backend DB
+          if (err?.status === 404 || (err?.message && (err.message.toLowerCase().includes('introuvable') || err.message.toLowerCase().includes('inactive') || err.message.toLowerCase().includes('not found')))) {
+            console.warn(`[API Answer Warning] Question ${targetQuestionId} answer saved locally (Backend response: ${err.message})`);
+            return;
+          }
+          console.error('Error posting answer:', err);
+        });
+      }
     }
 
     if (questionIndex + 1 >= questions.length) {
@@ -1002,6 +1012,7 @@ export function useDiagnosticFlow() {
       s05: {
         ...(triageAnswers?.s05 || {}),
         business_name: profileData.business_name || null,
+        activity_description: profileData.activity_description || null,
         region: profileData.region,
         commune: profileData.commune || null,
         secteur: profileData.sector,
@@ -1009,8 +1020,12 @@ export function useDiagnosticFlow() {
         creation_year: profileData.year_created || null,
       },
       name: profileData.full_name || null,
+      full_name: profileData.full_name || null,
       phone: profileData.phone_number || null,
+      phone_number: profileData.phone_number || null,
       email: profileData.email || null,
+      activity_description: profileData.activity_description || null,
+      description: profileData.activity_description || null,
       s00: triageAnswers?.s00 || 'direct',
       s06: triageAnswers?.s06 || 'global_understanding',
       s07: triageAnswers?.s07 || [],
@@ -1089,6 +1104,7 @@ export function useDiagnosticFlow() {
       s05: {
         ...(triageAnswers?.s05 || {}),
         business_name: profileData.business_name || triageAnswers?.s05?.business_name || null,
+        activity_description: profileData.activity_description || triageAnswers?.s05?.activity_description || null,
         region: profileData.region || triageAnswers?.s05?.region || 'Atlantique',
         commune: profileData.commune || triageAnswers?.s05?.commune || null,
         secteur: profileData.sector || triageAnswers?.s05?.secteur || 'Services',
@@ -1096,9 +1112,13 @@ export function useDiagnosticFlow() {
         creation_year: profileData.year_created || triageAnswers?.s05?.creation_year || null,
       },
       name: profileData.full_name || triageAnswers.name || null,
+      full_name: profileData.full_name || triageAnswers.full_name || triageAnswers.name || null,
       phone: profileData.phone_number || triageAnswers.phone || null,
+      phone_number: profileData.phone_number || triageAnswers.phone_number || triageAnswers.phone || null,
       whatsapp_number: '',
       email: profileData.email || triageAnswers.email || null,
+      activity_description: profileData.activity_description || triageAnswers.activity_description || triageAnswers?.s05?.activity_description || null,
+      description: profileData.activity_description || profileData.description || triageAnswers.description || triageAnswers.activity_description || triageAnswers?.s05?.activity_description || null,
       ca_n_1: profileData.ca_n_1 || null,
       ca_m_1: profileData.ca_m_1 || null,
       employee_count_range: profileData.employee_count_range || null,

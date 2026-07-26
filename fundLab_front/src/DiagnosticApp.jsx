@@ -431,7 +431,7 @@ function DiagnosticApp() {
         <Route path="/diagnostic/question" element={
           flow.currentModule && flow.questions.length > 0 && (
             <QuestionScreen
-              key={flow.questionIndex}
+              key={`${flow.questions[flow.questionIndex]?.id || 'q'}_${flow.questionIndex}`}
               moduleId={flow.currentModule.id}
               questionData={flow.questions[flow.questionIndex]}
               current={flow.questionIndex + 1}

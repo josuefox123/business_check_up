@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AlertTriangle, MessageSquare } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
@@ -91,6 +91,12 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     isText && typeof savedAnswer === 'string' ? savedAnswer : ''
   );
   const [showQuitModal, setShowQuitModal] = useState(false);
+
+  useEffect(() => {
+    setAnswer((!isMulti && !isText && savedAnswer !== null) ? savedAnswer : null);
+    setMultiAnswer(isMulti && Array.isArray(savedAnswer) ? savedAnswer : []);
+    setTextVal(isText && typeof savedAnswer === 'string' ? savedAnswer : '');
+  }, [questionData?.id, savedAnswer, isMulti, isText]);
 
   const toggleMulti = (id) => {
     if (id === 'idk') { setMultiAnswer(['idk']); return; }
