@@ -14,7 +14,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
             <span className="lp-tag">Auto-diagnostic entrepreneurial</span>
 
             <h1 className="lp-hero-title">
-              Voyez plus clair <span className="lp-title-accent">dans votre entreprise.</span>
+              Faites le point <span className="lp-title-accent">sur votre entreprise.</span>
             </h1>
 
             <p className="lp-hero-desc">
@@ -44,7 +44,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
       <footer className="lp-disclaimer-footer">
         <div className="lp-container">
           <div className="lp-disclaimer-content">
-            <span className="lp-disclaimer-title">UNE PREMIÈRE LECTURE UTILE</span>
+            <span className="lp-disclaimer-title">NOTE DE PRUDENCE</span>
             <p className="lp-disclaimer-text">
               Diagnostic indicatif fondé sur vos réponses. Il ne constitue ni un audit, ni une due diligence, ni une décision de financement.
             </p>
