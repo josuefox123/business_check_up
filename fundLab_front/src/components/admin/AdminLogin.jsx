@@ -22,7 +22,7 @@ export const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // Si API_BASE_URL est absolue (ex: https://https://api-checkup.business-assist.io/api)
+    // Si API_BASE_URL est absolue (ex: https://https://business-chekcup.nicktep.com/api)
     // On extrait le domaine backend et /api pour pointer vers /api/auth/login
     // Sinon on utilise le chemin relatif /api/auth/login pour le proxy local
     const loginUrl = API_BASE_URL.startsWith('http')

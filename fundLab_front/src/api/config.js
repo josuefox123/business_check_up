@@ -1,9 +1,9 @@
 /**
  * Configuration de l'API Laravel pour Business Check-up
- * BASE URL: https://api-checkup.business-assist.io/docs/api
+ * BASE URL: https://business-chekcup.nicktep.com/docs/api
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-checkup.business-assist.io/api/bc';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://business-chekcup.nicktep.com/api/bc';
 
 /**
  * Convertit une durée en secondes (integer) en label lisible "X-Y min"

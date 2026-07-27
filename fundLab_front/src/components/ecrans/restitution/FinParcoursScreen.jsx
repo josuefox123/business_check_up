@@ -197,8 +197,8 @@ export const FinParcoursScreen = ({ onRestart }) => {
 
     try {
       // POST /diagnostics/{diagnosticRunId}/appointment
-      // Base URL : https://api-checkup.business-assist.io/api
-      const BASE = 'https://api-checkup.business-assist.io/api';
+      // Base URL : https://business-chekcup.nicktep.com/api
+      const BASE = 'https://business-chekcup.nicktep.com/api';
       await apiFetch(`${BASE}/diagnostics/${runId}/appointment`, {
         method: 'POST',
         body: JSON.stringify({
