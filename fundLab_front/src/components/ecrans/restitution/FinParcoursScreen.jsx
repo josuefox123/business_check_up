@@ -35,15 +35,15 @@ const generateSlots = () => {
 const TIME_SLOTS = generateSlots();
 
 /* ─── Helpers ─── */
-const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const DAYS_FR_MIN = ['Di','Lu','Ma','Me','Je','Ve','Sa'];
-const DAYS_FULL_FR = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MONTHS_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+const DAYS_FR_MIN = ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'];
+const DAYS_FULL_FR = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 
-const todayMidnight = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
-const toKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayMidnight = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const toKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
-const isPast    = (d) => d < todayMidnight();
+const isPast = (d) => d < todayMidnight();
 const isDisabled = (d) => isWeekend(d) || isPast(d);
 
 const formatDayFull = (d) =>
@@ -52,7 +52,7 @@ const formatDayFull = (d) =>
 /* ─── Mini-Calendar ─── */
 const MiniCalendar = ({ selectedDate, onSelect }) => {
   const today = todayMidnight();
-  const [viewYear, setViewYear]   = useState(today.getFullYear());
+  const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
 
   const prevMonth = () => {
@@ -118,9 +118,9 @@ const MiniCalendar = ({ selectedDate, onSelect }) => {
         {cells.map((day, idx) => {
           if (!day) return <div key={`empty-${idx}`} />;
           const disabled = isDisabled(day);
-          const isToday  = toKey(day) === toKey(today);
-          const isSel    = selKey === toKey(day);
-          const isWE     = isWeekend(day);
+          const isToday = toKey(day) === toKey(today);
+          const isSel = selKey === toKey(day);
+          const isWE = isWeekend(day);
 
           return (
             <button
@@ -197,8 +197,8 @@ export const FinParcoursScreen = ({ onRestart }) => {
 
     try {
       // POST /diagnostics/{diagnosticRunId}/appointment
-      // Base URL : https://business-chekcup.nicktep.com/api/
-      const BASE = 'https://business-chekcup.nicktep.com/api';
+      // Base URL : https://api-checkup.business-assist.io/api
+      const BASE = 'https://api-checkup.business-assist.io/api';
       await apiFetch(`${BASE}/diagnostics/${runId}/appointment`, {
         method: 'POST',
         body: JSON.stringify({
@@ -219,7 +219,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
   };
 
   const handleFinish = () => {
-    ['last_run_id','last_user_name','last_user_email','last_user_phone','last_user_whatsapp']
+    ['last_run_id', 'last_user_name', 'last_user_email', 'last_user_phone', 'last_user_whatsapp']
       .forEach(k => localStorage.removeItem(k));
     onRestart();
   };

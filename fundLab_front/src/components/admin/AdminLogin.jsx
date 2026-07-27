@@ -22,7 +22,7 @@ export const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // Si API_BASE_URL est absolue (ex: https://business-chekcup.nicktep.com/api/api/bc)
+    // Si API_BASE_URL est absolue (ex: https://https://api-checkup.business-assist.io/api)
     // On extrait le domaine backend et /api pour pointer vers /api/auth/login
     // Sinon on utilise le chemin relatif /api/auth/login pour le proxy local
     const loginUrl = API_BASE_URL.startsWith('http')
@@ -33,22 +33,22 @@ export const AdminLogin = ({ onLogin }) => {
       method: 'POST',
       body: JSON.stringify({ email, password })
     })
-    .then(res => {
-      const token = res?.data?.access_token || res?.access_token;
-      if (token) {
-        onLogin(token);
-      } else {
-        onLogin();
-      }
-    })
-    .catch(err => {
-      console.warn('Backend login failed, trying local fallback:', err);
-      if (email === 'admin@fundlab.com' && password === 'Admin123') {
-        onLogin();
-      } else {
-        setError('Identifiants incorrects. Veuillez réessayer.');
-      }
-    });
+      .then(res => {
+        const token = res?.data?.access_token || res?.access_token;
+        if (token) {
+          onLogin(token);
+        } else {
+          onLogin();
+        }
+      })
+      .catch(err => {
+        console.warn('Backend login failed, trying local fallback:', err);
+        if (email === 'admin@fundlab.com' && password === 'Admin123') {
+          onLogin();
+        } else {
+          setError('Identifiants incorrects. Veuillez réessayer.');
+        }
+      });
   };
 
   if (mode === 'forgot') {
@@ -60,7 +60,7 @@ export const AdminLogin = ({ onLogin }) => {
           </Link>
           <h2 className="admin-login-title">Mot de passe oublié</h2>
           <p className="admin-login-sub">Saisissez votre identifiant pour recevoir un lien de réinitialisation.</p>
-          
+
           {error && (
             <div className="admin-login-error">
               <AlertTriangle size={16} style={{ flexShrink: 0 }} />
@@ -93,13 +93,13 @@ export const AdminLogin = ({ onLogin }) => {
               <label className="admin-login-field-label">Identifiant (E-mail ou Téléphone)</label>
               <div className="admin-login-input-container">
                 <Mail size={18} className="admin-login-field-icon" />
-                <input 
-                  type="text" 
-                  placeholder="exemple@domaine.com" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                <input
+                  type="text"
+                  placeholder="exemple@domaine.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="admin-login-input"
-                  required 
+                  required
                 />
               </div>
             </div>
@@ -108,10 +108,10 @@ export const AdminLogin = ({ onLogin }) => {
               Envoyer le lien
             </button>
           </form>
-          
+
           <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
                 setMode('login');
                 setError('');
@@ -135,7 +135,7 @@ export const AdminLogin = ({ onLogin }) => {
         </Link>
         <h2 className="admin-login-title">Espace Administration</h2>
         <p className="admin-login-sub">Identifiez-vous pour accéder au tableau de bord.</p>
-        
+
         {error && (
           <div className="admin-login-error">
             <AlertTriangle size={16} style={{ flexShrink: 0 }} />
@@ -148,22 +148,22 @@ export const AdminLogin = ({ onLogin }) => {
             <label className="admin-login-field-label">Identifiant (E-mail ou Téléphone)</label>
             <div className="admin-login-input-container">
               <Mail size={18} className="admin-login-field-icon" />
-              <input 
-                type="text" 
-                placeholder="E-mail ou Téléphone" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+              <input
+                type="text"
+                placeholder="E-mail ou Téléphone"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="admin-login-input"
-                required 
+                required
               />
             </div>
           </div>
-          
+
           <div className="admin-login-field-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <label className="admin-login-field-label" style={{ marginBottom: 0 }}>Mot de passe</label>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => {
                   setMode('forgot');
                   setError('');
@@ -176,14 +176,14 @@ export const AdminLogin = ({ onLogin }) => {
             </div>
             <div className="admin-login-input-container">
               <Lock size={18} className="admin-login-field-icon" />
-              <input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Votre mot de passe" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="admin-login-input"
                 style={{ paddingRight: '44px' }}
-                required 
+                required
               />
               <button
                 type="button"
@@ -212,14 +212,14 @@ export const AdminLogin = ({ onLogin }) => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="admin-login-submit-btn"
           >
             Se connecter au Panel
           </button>
         </form>
-        
+
         <div style={{ marginTop: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
           <Link to="/" style={{ color: '#64748b', fontSize: '0.8rem', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
             Retourner au site principal
