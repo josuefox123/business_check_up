@@ -770,10 +770,10 @@ export function useDiagnosticFlow() {
             question_id: String(targetQuestionId),
             answer_value: rawAnswerStr
           };
-          if (confidence) payload.response_confidence_user = String(confidence);
-          if (evidence_level) payload.evidence_level = String(evidence_level);
-          if (evidenceType) payload.evidence_type = String(evidenceType);
-          if (evidenceLabel) payload.evidence_label = String(evidenceLabel);
+          // if (confidence) payload.response_confidence_user = String(confidence);
+          // if (evidence_level) payload.evidence_level = String(evidence_level);
+          // if (evidenceType) payload.evidence_type = String(evidenceType);
+          // if (evidenceLabel) payload.evidence_label = String(evidenceLabel);
 
           await apiFetch(`/diagnostics/${currentRunId}/answers`, {
             method: 'POST',
