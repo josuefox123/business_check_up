@@ -799,6 +799,9 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       if (isEnrichmentMode) {
+        if (currentRunId) {
+          apiFetch(`/diagnostics/${currentRunId}/details`).catch(err => console.error('Error fetching diagnostic details:', err));
+        }
         setShowEnrichmentCompletionModal(true);
       } else {
         startBackendCalculation();

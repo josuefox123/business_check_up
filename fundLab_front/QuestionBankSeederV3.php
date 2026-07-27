@@ -4213,18 +4213,594 @@ class QuestionBankSeederV3 extends Seeder
 
         // =========================================================
         // AXE 5 : ÉQUIPE ET COMPÉTENCES (RH)
+        //VOS AUTRES AXES : PRO, COM, VIS, POS, MKT
         // =========================================================
         
-        // (Sur le même modèle)
-        // Q1 - RH : État (Motivation)
-        // Q2 - RH : Point fort (Compétences)
-        // Q3 - RH : Risque (Turnover/Démotivation)
-        // Q4 - RH : Approfondissement (next_module_hint => 'RH-10')
+        // =========================================================
+        // AXE 3 : PRODUIT ET SERVICE (PRO)
+        // =========================================================
+
+        // Q1 - PRO : État (Standardisation et Qualité)
+        $questions[] = [
+            'question_id' => '360-09-PRO-Q1',
+            'order' => ++$order,
+            'role' => 'Produit',
+            'dimension' => 'produit_service',
+            'text' => "En une phrase, quelle est l’offre principale de l’entreprise ?",
+            'helper_text' => "Décrivez ce que le client achète réellement.",
+            'answer_type' => 'short_text',
+            'answer_ia' => true,
+            'options' => [
+                ['value' => 'OFFER_CLEAR_5', 'label' => 'offre précise, prioritaire et compréhensible', 'score' => 5],
+                ['value' => 'OFFER_PARTIAL_3', 'label' => 'offre compréhensible mais large/incomplète', 'score' => 3],
+                ['value' => 'OFFER_VAGUE_2', 'label' => 'domaine d’activité ou promesse générale', 'score' => 2],
+                ['value' => 'OFFER_UNKNOWN_1', 'label' => 'aucune offre identifiable', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.2,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Fiches techniques, process de contrôle qualité, retours clients.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_PRO_QUALITE_INSTABLE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q2 - PRO : Point fort (Avantage concurrentiel)
+        $questions[] = [
+            'question_id' => '360-09-PRO-Q2',
+            'order' => ++$order,
+            'role' => 'Produit',
+            'dimension' => 'produit_service',
+            'text' => "Pourquoi les clients choisissent-ils principalement cette offre ?",
+            'helper_text' => "Citez le bénéfice ou la différence la plus importante.",
+            'answer_type' => 'short_text',
+            'answer_ia' => true,
+            'options' => [
+                ['value' => 'VALUE_CLEAR_5', 'label' => 'bénéfice client concret et différence spécifique appuyée', 'score' => 5],
+                ['value' => 'VALUE_PARTIAL_3', 'label' => 'bénéfice clair mais différence ou preuve limitée', 'score' => 4],
+                ['value' => 'VALUE_GENERIC_2', 'label' => 'qualité/prix/service sans précision', 'score' => 2],
+                ['value' => 'VALUE_UNKNOWN_1', 'label' => 'aucune raison identifiable', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.0,
+            'evidence_required' => false,
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 1, 'code' => 'AXE_PRO_SANS_AVANTAGE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q3 - PRO : Risque (Dépendance de production)
+        $questions[] = [
+            'question_id' => '360-09-PRO-Q3',
+            'order' => ++$order,
+            'role' => 'Produit',
+            'dimension' => 'produit_service',
+            'text' => "L’offre principale est-elle rentable et livrée avec la qualité et les délais promis ?",
+            'helper_text' => "Pensez conjointement à la marge et à la capacité d’exécution.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'VALUE_ROBUST_5', 'label' => 'Oui, rentable et régulièrement livrée', 'score' => 5],
+                ['value' => 'VALUE_PARTIAL_3', 'label' => 'Rentable mais exécution fragile', 'score' => 3],
+                ['value' => 'VALUE_WEAK_2', 'label' => 'Marge incertaine mais exécution correcte', 'score' => 2],
+                ['value' => 'VALUE_UNSTABLE_1', 'label' => 'Marge et exécution fragiles', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.5,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Listez les dépendances critiques (nom du fournisseur, équipement...).',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_PRO_DEPENDANCE_CRITIQUE'],
+            ],
+            'followup_trigger' => [
+                [
+                    'field' => 'score',
+                    'operator' => '<=',
+                    'value' => 2,
+                    'question_id' => '360-09-PRO-FU3',
+                    'text' => "Avez-vous un plan B si cette ressource critique vient à manquer demain ?",
+                ],
+            ],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q4 - PRO : Approfondissement
+        $questions[] = [
+            'question_id' => '360-09-PRO-Q4',
+            'order' => ++$order,
+            'role' => 'Produit',
+            'dimension' => 'produit_service',
+            'text' => "Souhaitez-vous approfondir le produit et l’offre après la vue globale ?",
+            'helper_text' => "Ce choix n'affecte pas le score 360° global.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui', 'label' => 'Oui'],
+                ['value' => 'non', 'label' => 'Non'],
+                ['value' => 'plus_tard', 'label' => 'Plus tard'],
+            ],
+            'score_logic' => 'no_score',
+            'weight' => 0.0,
+            'evidence_required' => false,
+            'next_question_logic' => 'sequential',
+            'next_module_hint' => 'PRO-04', 
+        ];
+
 
         // =========================================================
-        // VOS AUTRES AXES : PRO, COM, VIS, POS, MKT
+        // AXE 4 : COMMERCIAL ET VENTES (COM)
         // =========================================================
-        // Ajoutez ici les 4 questions pour chaque axe, en suivant strictement la même logique.
+
+        // Q1 - COM : État (Processus de vente)
+        $questions[] = [
+            'question_id' => '360-09-COM-Q1',
+            'order' => ++$order,
+            'role' => 'Commercial',
+            'dimension' => 'commercial',
+            'text' => "Décrivez vos principaux clients et le canal par lequel ils achètent le plus souvent.",
+            'helper_text' => "Une ou deux phrases suffisent.",
+            'answer_type' => 'short_text',
+            'answer_ia' => true,
+            'options' => [
+                ['value' => 'COMMERCIAL_CLEAR_5', 'label' => 'segments et canal dominant concrets, liés à des achats réels → 5'],
+                ['value' => 'COMMERCIAL_PARTIAL_3', 'label' => 'clients ou canal identifiables mais non hiérarchisés → 3'],
+                ['value' => 'COMMERCIAL_VAGUE_2', 'label' => 'clients très généraux ou canal non défini → 2'],
+                ['value' => 'COMMERCIAL_UNKNOWN_1', 'label' => 'aucun élément exploitable → 1'],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.2,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Script de vente, CRM, étapes du tunnel de conversion.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_COM_VENTE_IMPROVISEE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q2 - COM : Point fort (Indicateurs / Conversion)
+        $questions[] = [
+            'question_id' => '360-09-COM-Q2',
+            'order' => ++$order,
+            'role' => 'Commercial',
+            'dimension' => 'commercial',
+            'text' => "Avez-vous une routine régulière pour attirer et suivre de nouveaux clients ?",
+            'helper_text' => "Une routine a une fréquence, un responsable et un suivi.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'VALUE_ROBUST_5', 'label' => 'Oui, régulière et suivie', 'score' => 5],
+                ['value' => 'VALUE_PARTIAL_3', 'label' => 'Oui, mais peu suivie', 'score' => 3],
+                ['value' => 'VALUE_WEAK_2', 'label' => 'Occasionnelle', 'score' => 2],
+                ['value' => 'VALUE_UNSTABLE_1', 'label' => 'Aucune', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.0,
+            'evidence_required' => false,
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 1, 'code' => 'AXE_COM_METRIQUES_ABSENTES'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q3 - COM : Risque (Dépendance Client)
+        $questions[] = [
+            'question_id' => '360-09-COM-Q3',
+            'order' => ++$order,
+            'role' => 'Commercial',
+            'dimension' => 'commercial',
+            'text' => "Les ventes reposent-elles sur des clients récurrents et plusieurs canaux ?",
+            'helper_text' => "Une activité plus résiliente combine récurrence et diversification.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'COMMERCIAL_RESILIENT_5', 'label' => 'Oui, clients récurrents et plusieurs canaux', 'score' => 5],
+                ['value' => 'COMMERCIAL_PARTIAL_3', 'label' => 'Clients récurrents mais un canal dominant', 'score' => 3],
+                ['value' => 'COMMERCIAL_WEAK_2', 'label' => 'Plusieurs canaux mais peu de récurrence', 'score' => 3],
+                ['value' => 'COMMERCIAL_VULNERABLE_1', 'label' => 'Peu de récurrence et forte dépendance', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.5,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Répartition du CA par client ou segment.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_COM_DEPENDANCE_CLIENT'],
+            ],
+            'followup_trigger' => [
+                [
+                    'field' => 'score',
+                    'operator' => '<=',
+                    'value' => 2,
+                    'question_id' => '360-09-COM-FU3',
+                    'text' => "Quelles actions menez-vous actuellement pour trouver de nouveaux clients et diluer ce risque ?",
+                ],
+            ],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q4 - COM : Approfondissement
+        $questions[] = [
+            'question_id' => '360-09-COM-Q4',
+            'order' => ++$order,
+            'role' => 'Commercial',
+            'dimension' => 'commercial',
+            'text' => "Souhaitez-vous approfondir le commercial et l’accès marché après la vue globale ?",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui', 'label' => 'Oui'],
+                ['value' => 'non', 'label' => 'Non'],
+                ['value' => 'plus_tard', 'label' => 'Plus tard'],
+            ],
+            'score_logic' => 'no_score',
+            'weight' => 0.0,
+            'evidence_required' => false,
+            'next_question_logic' => 'sequential',
+            'next_module_hint' => 'COM-05', 
+        ];
+
+
+        // =========================================================
+        // AXE 6 : POSITIONNEMENT ET STRATÉGIE (POS)
+        // =========================================================
+
+        // Q1 - POS : État (Clarté de l'offre)
+        $questions[] = [
+            'question_id' => '360-09-POS-Q1',
+            'order' => ++$order,
+            'role' => 'Positionnement',
+            'dimension' => 'positionnement',
+            'text' => "Pourquoi un client vous choisit-il plutôt qu’un concurrent ou une autre solution ?",
+            'helper_text' => "Citez la différence la plus utile pour le client.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'POSITION_DEFENSIBLE_5', 'label' => 'Différence spécifique, utile, prouvée et difficile à imiter', 'score' => 5],
+                ['value' => 'POSITION_CLEAR_4', 'label' => 'Différence claire mais facilement imitable ou peu prouvée', 'score' => 4],
+                ['value' => 'POSITION_GENERIC_2', 'label' => 'Qualité/prix/service sans précision', 'score' => 2],
+                ['value' => 'POSITION_UNKNOWN_1', 'label' => 'Aucune différence', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.2,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Rédigez cette phrase de positionnement.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_POS_PROPOSITION_FLOUE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q2 - POS : Point fort (Ciblage)
+        $questions[] = [
+            'question_id' => '360-09-POS-Q2',
+            'order' => ++$order,
+            'role' => 'Positionnement',
+            'dimension' => 'positionnement',
+            'text' => "Votre positionnement est-il compris de la même manière par les clients, l’équipe et les partenaires ?",
+            'helper_text' => "Un positionnement cohérent se retrouve dans le message, l’offre, les prix et l’expérience client.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'POSITION_COHERENT_5', 'label' => 'Oui, très cohérent', 'score' => 5],
+                ['value' => 'POSITION_IMITABLE_3', 'label' => 'Plutôt cohérent', 'score' => 3],
+                ['value' => 'CIBLAGE_LARGE_1', 'label' => 'Variable selon les personnes', 'score' => 1],
+                ['value' => 'JE_NE_SAIS_PAS_1', 'label' => 'Je ne sais pas', 'score' => 1],
+                
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.0,
+            'evidence_required' => false,
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 1, 'code' => 'AXE_POS_CIBLAGE_TROP_LARGE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q3 - POS : Risque (Menaces marché)
+        $questions[] = [
+            'question_id' => '360-09-POS-Q3',
+            'order' => ++$order,
+            'role' => 'Positionnement',
+            'dimension' => 'positionnement',
+            'text' => "Votre avantage resterait-il pertinent si un concurrent baissait ses prix ou copiait votre offre ?",
+            'helper_text' => "Cette question teste la défendabilité, pas seulement la qualité actuelle.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'AVANTAGE_RESILIENT_5', 'label' => 'Oui, avantage difficile à copier', 'score' => 5],
+                ['value' => 'AVANTAGE_IMITABLE_3', 'label' => 'Oui, mais avec adaptation', 'score' => 3],
+                ['value' => 'CIBLAGE_LARGE_1', 'label' => 'Probablement non', 'score' => 1],
+                ['value' => 'JE_NE_SAIS_PAS_1', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.5,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Quelle est cette principale menace ?',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_POS_MODELE_MENACE'],
+            ],
+            'followup_trigger' => [
+                [
+                    'field' => 'score',
+                    'operator' => '<=',
+                    'value' => 2,
+                    'question_id' => '360-09-POS-FU3',
+                    'text' => "Comment comptez-vous faire évoluer votre offre pour contrer cette menace ?",
+                ],
+            ],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q4 - POS : Approfondissement
+        $questions[] = [
+            'question_id' => '360-09-POS-Q4',
+            'order' => ++$order,
+            'role' => 'Positionnement',
+            'dimension' => 'positionnement',
+            'text' => "Souhaitez-vous approfondir le positionnement concurrentiel après la vue globale ?",
+            'helper_text' => "Ce choix n’affecte pas le score 360°.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui', 'label' => 'Oui'],
+                ['value' => 'non', 'label' => 'Non'],
+                ['value' => 'plus_tard', 'label' => 'Plus tard'],
+            ],
+            'score_logic' => 'no_score',
+            'weight' => 0.0,
+            'evidence_required' => false,
+            'next_question_logic' => 'sequential',
+            'next_module_hint' => 'POS-02', 
+        ];
+
+
+        // =========================================================
+        // AXE 7 : MARKETING (MKT)
+        // =========================================================
+
+        // Q1 - MKT : État (Génération de leads)
+        $questions[] = [
+            'question_id' => '360-09-MKT-Q1',
+            'order' => ++$order,
+            'role' => 'Marketing',
+            'dimension' => 'marketing',
+            'text' => "Quels signaux montrent que la demande pour votre offre existe ou progresse ?",
+            'helper_text' => "Sélectionnez les signaux réellement observés.",
+            'answer_type' => 'multi_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'vente_hausse', 'label' => 'Ventes en hausse', 'score' => 5],
+                ['value' => 'clients_recurrents', 'label' => 'Clients récurrents', 'score' => 4],
+                ['value' => 'demandes_non_satisfaites', 'label' => 'Demandes non satisfaites', 'score' => 3],
+                ['value' => 'nouveaux_entrants_concurrents', 'label' => 'Nouveaux entrants / concurrents', 'score' => 2],
+                ['value' => 'commandes_precommandes', 'label' => 'Commandes ou précommandes', 'score' => 1],
+                ['value' => 'donnees_sectorielles', 'label' => 'Données sectorielles', 'score' => 1],
+                ['value' => 'aucun_signal_clair', 'label' => 'Aucun signal clair', 'score' => 1],
+                ['value' => 'jenesaispas', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.2,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Décrivez brièvement le canal qui génère le plus de prospects.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_MKT_ACQUISITION_ALEATOIRE'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q2 - MKT : Point fort (Canaux performants)
+        $questions[] = [
+            'question_id' => '360-09-MKT-Q2',
+            'order' => ++$order,
+            'role' => 'Marketing',
+            'dimension' => 'marketing',
+            'text' => "L’entreprise connaît-elle la taille ou la profondeur de son marché accessible ?",
+            'helper_text' => "Il ne s’agit pas nécessairement d’une étude complète ; des données clients, zones, volumes ou concurrents peuvent suffire.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'demande_insuffisante', 'label' => 'Demande insuffisante', 'score' => 1],
+                ['value' => 'concurrence', 'label' => 'Concurrence', 'score' => 1],
+                ['value' => 'pression_sur_les_prix', 'label' => 'Pression sur les prix', 'score' => 1],
+                ['value' => 'acces_au_marche_distribution', 'label' => 'Accès au marché / distribution', 'score' => 1],
+                ['value' => 'reglementation', 'label' => 'Réglementation', 'score' => 1],
+                ['value' => 'saisonnalite', 'label' => 'Saisonnalité', 'score' => 1],
+                ['value' => 'dependance_a_un_segment', 'label' => 'Dépendance à un segment', 'score' => 1],
+                ['value' => 'jenesaispas', 'label' => 'Je ne sais pas', 'score' => 1],
+            ],
+            'score_logic' => 'count_based', // Adapté pour du multi_choice
+            'weight' => 1.0,
+            'evidence_required' => false,
+            'red_flag_conditions' => [
+                ['field' => 'values', 'operator' => 'intersects', 'value' => ['aucun_succes'], 'code' => 'AXE_MKT_CANAUX_INEFFICACES'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q3 - MKT : Risque (Mesure du ROI)
+        $questions[] = [
+            'question_id' => '360-09-MKT-Q3',
+            'order' => ++$order,
+            'role' => 'Marketing',
+            'dimension' => 'marketing',
+            'text' => "Mesurez-vous le Retour sur Investissement (ROI) de vos dépenses marketing (temps et argent) ?",
+            'helper_text' => "Savez-vous combien vous coûte l'acquisition d'un nouveau client (CAC) ?",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui_systematiquement', 'label' => 'Oui, systématiquement', 'score' => 5],
+                ['value' => 'partiellement', 'label' => 'Oui, pour certaines campagnes', 'score' => 3],
+                ['value' => 'non_depenses_aveugles', 'label' => 'Non, nous dépensons sans mesurer', 'score' => 1],
+                ['value' => 'pas_de_budget', 'label' => 'Nous n\'avons pas de budget marketing', 'score' => 2],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.5,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Comment suivez-vous vos dépenses publicitaires/marketing ?',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_MKT_DEPENSES_AVEUGLES'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q4 - MKT : Approfondissement
+        $questions[] = [
+            'question_id' => '360-09-MKT-Q4',
+            'order' => ++$order,
+            'role' => 'Marketing',
+            'dimension' => 'marketing',
+            'text' => "Souhaitez-vous approfondir le potentiel marché après la vue globale ?",
+            'helper_text' => "Ce choix n’affecte pas le score 360°.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui', 'label' => 'Oui'],
+                ['value' => 'non', 'label' => 'Non'],
+                ['value' => 'plus_tard', 'label' => 'Plus tard'],
+            ],
+            'score_logic' => 'no_score',
+            'weight' => 0.0,
+            'evidence_required' => false,
+            'next_question_logic' => 'sequential',
+            'next_module_hint' => 'MKT-03', 
+        ];
+
+
+        // =========================================================
+        // AXE 8 : VISIBILITÉ ET IMAGE DE MARQUE (VIS)
+        // =========================================================
+
+        // Q1 - VIS : État (Présence en ligne)
+        $questions[] = [
+            'question_id' => '360-09-VIS-Q1',
+            'order' => ++$order,
+            'role' => 'Visibilité',
+            'dimension' => 'visibilite',
+            'text' => "Lorsqu'un prospect cherche votre entreprise ou vos services sur internet, que trouve-t-il ?",
+            'helper_text' => "Faites le test sur Google avec votre nom d'entreprise ou votre spécialité locale.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'site_pro_et_reseaux', 'label' => 'Un site pro et des pages sociales actives', 'score' => 5],
+                ['value' => 'annuaire_ou_page_basique', 'label' => 'Des informations basiques (page FB, Google Maps)', 'score' => 3],
+                ['value' => 'infos_obsoletes', 'label' => 'Des informations obsolètes ou peu engageantes', 'score' => 2],
+                ['value' => 'rien', 'label' => 'Quasiment rien', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.2,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Lien de votre site web ou page principale.',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_VIS_FANTOME_DIGITAL'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q2 - VIS : Point fort (Réputation / Recommandation)
+        $questions[] = [
+            'question_id' => '360-09-VIS-Q2',
+            'order' => ++$order,
+            'role' => 'Visibilité',
+            'dimension' => 'visibilite',
+            'text' => "Vos clients actuels vous recommandent-ils spontanément à leur entourage ?",
+            'helper_text' => "Le bouche-à-oreille est le premier indicateur d'une image de marque forte.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'tres_souvent', 'label' => 'Très souvent, c\'est notre moteur', 'score' => 5],
+                ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
+                ['value' => 'rarement', 'label' => 'Rarement ou Jamais', 'score' => 1],
+                ['value' => 'je_ne_mesure_pas', 'label' => 'Je ne sais pas d\'où viennent mes clients', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.0,
+            'evidence_required' => false,
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 1, 'code' => 'AXE_VIS_AUCUN_AMBASSADEUR'],
+            ],
+            'followup_trigger' => [],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q3 - VIS : Risque (E-Réputation)
+        $questions[] = [
+            'question_id' => '360-09-VIS-Q3',
+            'order' => ++$order,
+            'role' => 'Visibilité',
+            'dimension' => 'visibilite',
+            'text' => "Avez-vous des avis négatifs visibles en ligne, ou une image publique dégradée ?",
+            'helper_text' => "Les avis Google ou commentaires Facebook non gérés font fuir les prospects.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'non_excellente', 'label' => 'Non, excellente réputation (4.5+ étoiles)', 'score' => 5],
+                ['value' => 'quelques_avis_geres', 'label' => 'Quelques avis moyens, mais nous y répondons', 'score' => 4],
+                ['value' => 'aucun_avis', 'label' => 'Nous n\'avons aucun avis', 'score' => 2],
+                ['value' => 'oui_bad_buzz', 'label' => 'Oui, avis négatifs fréquents ou bad buzz', 'score' => 1],
+            ],
+            'score_logic' => 'direct',
+            'weight' => 1.5,
+            'evidence_required' => true,
+            'evidence_prompt' => 'Quelle est votre note moyenne actuelle sur Google/Facebook ?',
+            'default_evidence_level' => 'E1',
+            'red_flag_conditions' => [
+                ['field' => 'score', 'operator' => '<=', 'value' => 2, 'code' => 'AXE_VIS_MAUVAISE_REPUTATION'],
+            ],
+            'followup_trigger' => [
+                [
+                    'field' => 'score',
+                    'operator' => '=',
+                    'value' => 1,
+                    'question_id' => '360-09-VIS-FU3',
+                    'text' => "Quel est le motif de plainte le plus récurrent de la part de ces clients mécontents ?",
+                ],
+            ],
+            'next_question_logic' => 'sequential',
+        ];
+
+        // Q4 - VIS : Approfondissement
+        $questions[] = [
+            'question_id' => '360-09-VIS-Q4',
+            'order' => ++$order,
+            'role' => 'Visibilité',
+            'dimension' => 'visibilite',
+            'text' => "Souhaitez-vous approfondir votre visibilité digitale et image de marque ?",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
+            'options' => [
+                ['value' => 'oui', 'label' => 'Oui'],
+                ['value' => 'non', 'label' => 'Non'],
+                ['value' => 'plus_tard', 'label' => 'Plus tard'],
+            ],
+            'score_logic' => 'no_score',
+            'weight' => 0.0,
+            'evidence_required' => false,
+            'next_question_logic' => 'sequential',
+            'next_module_hint' => 'VIS-06', 
+        ];
 
         // =========================================================
         // AXE 9 : IMPACT ET CONFORMITÉ (IMP) 
