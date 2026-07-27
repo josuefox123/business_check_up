@@ -82,8 +82,11 @@ export const ResultatSyntheseScreen = ({
   onCatalog,
   onEnrichment
 }) => {
-  const scoreRaw = restitution?.scoring?.converted_score_0_100 ?? localScore;
-  const score = typeof scoreRaw === 'number' ? scoreRaw : Number(scoreRaw || 0);
+  const scoreRaw = restitution?.scoring?.credibilized_score_0_100 
+    ?? restitution?.scoring?.converted_score_0_100 
+    ?? localScore;
+  const parsedScore = typeof scoreRaw === 'number' ? scoreRaw : Number(scoreRaw || 0);
+  const score = Math.max(0, Math.min(100, Math.round(parsedScore)));
 
   const lvl = getLevel(score);
 
@@ -94,14 +97,14 @@ export const ResultatSyntheseScreen = ({
   const prioritiesList = normalizeToArray(restitution?.priorities);
 
   const credScore = (() => {
-    const cs = restitution?.scoring?.credibility_score ?? restitution?.scoring?.credibiliy_score;
+    const cs = restitution?.scoring?.credibility_score;
     if (cs === null || cs === undefined) return '0%';
     const num = Number(cs);
     if (isNaN(num)) return String(cs);
     return `${Math.round(num * 100)}%`;
   })();
 
-  const isCritical = restitution?.scoring?.critical_red_flag_present || score < 40;
+  const isCritical = restitution?.scoring?.has_critical_red_flag || score < 40;
 
   // SVG Gauge calculations
   const radius = 68;
@@ -194,8 +197,17 @@ export const ResultatSyntheseScreen = ({
             </div>
 
             <p className="res-card-paragraph">
-              {restitution?.interpretation_text || restitution?.summary ||
-                "Non reçu"}
+              {restitution?.summary && (
+                <span style={{ display: 'block', marginBottom: '10px' }}>
+                  {restitution.summary}
+                </span>
+              )}
+              {restitution?.interpretation_text && (
+                <span style={{ display: 'block', color: '#475569', fontStyle: 'italic' }}>
+                  {restitution.interpretation_text}
+                </span>
+              )}
+              {!restitution?.summary && !restitution?.interpretation_text && "Non reçu"}
             </p>
           </div>
         </div>

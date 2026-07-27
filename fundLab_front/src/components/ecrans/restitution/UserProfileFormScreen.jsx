@@ -401,19 +401,23 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
 
             <button
               type="button"
+              disabled
               onClick={() => {
-                setIsExistingUser(!isExistingUser);
-                setErrors({});
+                // Clic désactivé temporairement
+                // setIsExistingUser(!isExistingUser);
+                // setErrors({});
               }}
               style={{
-                background: 'rgba(52, 190, 213, 0.08)',
-                border: '1px solid rgba(52, 190, 213, 0.3)',
-                color: '#1A9DB8',
+                background: 'rgba(241, 245, 249, 0.8)',
+                border: '1px solid rgba(203, 213, 225, 0.6)',
+                color: '#94A3B8',
                 fontSize: '0.86rem',
                 fontWeight: 700,
                 padding: '8px 16px',
                 borderRadius: '9999px',
-                cursor: 'pointer',
+                cursor: 'not-allowed',
+                pointerEvents: 'none',
+                opacity: 0.7,
                 transition: 'all 0.15s ease'
               }}
             >
