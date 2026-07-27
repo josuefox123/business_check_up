@@ -96,6 +96,7 @@ export const ResultatSyntheseScreen = ({
   const fragilitiesList = normalizeToArray(restitution?.typical_fragilities);
   const prioritiesList = normalizeToArray(restitution?.priorities);
 
+/*
   const credScore = (() => {
     const cs = restitution?.scoring?.credibility_score;
     if (cs === null || cs === undefined) return '0%';
@@ -103,6 +104,7 @@ export const ResultatSyntheseScreen = ({
     if (isNaN(num)) return String(cs);
     return `${Math.round(num * 100)}%`;
   })();
+*/
 
   const isCritical = restitution?.scoring?.has_critical_red_flag || score < 40;
 
@@ -162,9 +164,9 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            <div className="res-score-meta">
+            {/* <div className="res-score-meta">
               Crédibilité <strong>{credScore}</strong>
-            </div>
+            </div> */}
 
             <div>
               <span
