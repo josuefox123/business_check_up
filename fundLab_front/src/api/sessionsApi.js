@@ -36,11 +36,11 @@ async function getUserIp() {
 
 /**
  * Créer une nouvelle session utilisateur
- * POST /sessions
+ * POST /diagnostic-sessions
  */
 export async function createSessionApi(entryMode = 'assisted') {
   const ip = await getUserIp();
-  return apiFetch('/sessions', {
+  return apiFetch('/diagnostic-sessions', {
     method: 'POST',
     body: JSON.stringify({
       entry_source: 'direct',
@@ -54,10 +54,10 @@ export async function createSessionApi(entryMode = 'assisted') {
 
 /**
  * Enregistrer le consentement utilisateur
- * POST /sessions/{sessionId}/consent
+ * POST /diagnostic-sessions/{sessionId}/consent
  */
 export async function submitConsentApi(sessionId, consent = true) {
-  return apiFetch(`/sessions/${sessionId}/consent`, {
+  return apiFetch(`/diagnostic-sessions/${sessionId}/consent`, {
     method: 'POST',
     body: JSON.stringify({
       consent_diagnostic: consent,
@@ -70,10 +70,10 @@ export async function submitConsentApi(sessionId, consent = true) {
 
 /**
  * Mettre à jour le statut et le dernier écran de la session
- * PATCH /sessions/{sessionId}
+ * PATCH /diagnostic-sessions/{sessionId}
  */
 export async function updateSessionApi(sessionId, status, lastScreenId = null) {
-  return apiFetch(`/sessions/${sessionId}`, {
+  return apiFetch(`/diagnostic-sessions/${sessionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       status,
@@ -84,10 +84,10 @@ export async function updateSessionApi(sessionId, status, lastScreenId = null) {
 
 /**
  * Abandonner une session
- * DELETE /sessions/{sessionId}/abandon
+ * DELETE /diagnostic-sessions/{sessionId}/abandon
  */
 export async function abandonSessionApi(sessionId, lastScreenId = null) {
-  return apiFetch(`/sessions/${sessionId}/abandon`, {
+  return apiFetch(`/diagnostic-sessions/${sessionId}/abandon`, {
     method: 'DELETE',
     body: JSON.stringify({
       last_screen_id: lastScreenId

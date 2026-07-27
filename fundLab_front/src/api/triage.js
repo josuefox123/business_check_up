@@ -9,7 +9,7 @@ import { BACKEND_REFERENCES } from '../constants/referenceData.js';
 
 /**
  * Soumettre les réponses de triage au backend
- * POST /sessions/{sessionId}/triage
+ * POST /diagnostic-sessions/{sessionId}/triage
  */
 export async function submitTriageToBackendApi(sessionId, answers) {
   const { s03, s04, s05 = {}, s06, s07 = [], s08, s09 } = answers;
@@ -163,7 +163,7 @@ export async function submitTriageToBackendApi(sessionId, answers) {
     })()
   };
 
-  return apiFetch(`/sessions/${sessionId}/triage`, {
+  return apiFetch(`/diagnostic-sessions/${sessionId}/triage`, {
     method: 'POST',
     body: JSON.stringify(payload)
   });
