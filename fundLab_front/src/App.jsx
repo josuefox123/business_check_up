@@ -23,10 +23,6 @@ function App() {
   const now = new Date().getTime();
   const isBeforeLaunch = now < targetDate;
 
-  // Détection souple du domaine (includes pour couvrir les sous-domaines/ports)
-  const hostname = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
-  const isTargetDomain = hostname.includes('checkup.business-assist.io');
-
   // Activer le mode décompte SEULEMENT si on est sur le domaine cible ET avant la date de lancement
   const showCountdownOnly = isTargetDomain && isBeforeLaunch;
 
@@ -38,9 +34,9 @@ function App() {
           <Route path="/test-currency" element={<TestCurrencyScreen />} />
           {/* L'accès /admin reste accessible pour les administrateurs même avant le lancement */}
           <Route path="/admin/*" element={<AdminApp />} />
-          <Route 
-            path="/*" 
-            element={showCountdownOnly ? <CountdownScreen /> : <DiagnosticApp />} 
+          <Route
+            path="/*"
+            element={<DiagnosticApp />}
           />
         </Routes>
       </ReferencesProvider>

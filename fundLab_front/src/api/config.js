@@ -1,9 +1,9 @@
 /**
  * Configuration de l'API Laravel pour Business Check-up
- * BASE URL: https://business-chekcup.nicktep.com/api/bc
+ * BASE URL: https://api-checkup.business-assist.io/docs/api
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://business-chekcup.nicktep.com/api/bc';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-checkup.business-assist.io/';
 
 /**
  * Convertit une durée en secondes (integer) en label lisible "X-Y min"
@@ -12,8 +12,8 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://busine
 export function formatDurationSeconds(seconds) {
   if (!seconds || typeof seconds !== 'number') return '';
   const minutes = Math.round(seconds / 60);
-  if (minutes <= 5)  return `${minutes} min`;
-  if (minutes <= 8)  return '7-10 min';
+  if (minutes <= 5) return `${minutes} min`;
+  if (minutes <= 8) return '7-10 min';
   if (minutes <= 12) return '8-12 min';
   if (minutes <= 15) return '10-15 min';
   if (minutes <= 20) return '15-20 min';
@@ -26,7 +26,7 @@ export function formatDurationSeconds(seconds) {
  */
 export async function apiFetch(endpoint, options = {}) {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-  
+
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
