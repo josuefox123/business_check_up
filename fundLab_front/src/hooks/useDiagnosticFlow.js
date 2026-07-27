@@ -542,7 +542,7 @@ export function useDiagnosticFlow() {
         .catch(err => console.error('Error tracking session triage stage:', err));
 
       if (triageId) {
-        apiFetch(`/diagnostic-sessions/${sessionId}/triage/confirm`, {
+        apiFetch(`/sessions/${sessionId}/triage/confirm`, {
           method: 'POST',
           body: JSON.stringify({ triage_id: triageId, confirmed: true })
         }).catch(err => console.error('Error confirming triage module:', err));
@@ -692,7 +692,7 @@ export function useDiagnosticFlow() {
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
       const isOverride = !isRecommended;
       try {
-        const res = await apiFetch(`/diagnostic-sessions/${sessionId}/diagnostics`, {
+        const res = await apiFetch(`/sessions/${sessionId}/diagnostics`, {
           method: 'POST',
           body: JSON.stringify({
             module_code: currentModule.id,
@@ -1143,7 +1143,7 @@ export function useDiagnosticFlow() {
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
       const isOverride = !isRecommended;
       try {
-        const res = await apiFetch(`/diagnostic-sessions/${sessionId}/diagnostics`, {
+        const res = await apiFetch(`/sessions/${sessionId}/diagnostics`, {
           method: 'POST',
           body: JSON.stringify({
             module_code: currentModule.id,
