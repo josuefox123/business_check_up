@@ -15,7 +15,7 @@ export const CountdownScreen = () => {
     // 1. Restriction au nom de domaine spécifique
     const hostname = window.location.hostname;
     const allowedDomains = ['checkup.business-assist.io', 'localhost', '127.0.0.1'];
-    
+
     if (allowedDomains.includes(hostname)) {
       setIsAllowedDomain(true);
     }
@@ -25,7 +25,7 @@ export const CountdownScreen = () => {
     // Ne pas démarrer l'intervalle si le domaine n'est pas le bon
     if (!isAllowedDomain) return;
 
-    const targetDateString = "2026-07-27T08:00:00+01:00";
+    const targetDateString = "2026-07-27T10:00:00+01:00";
     const targetDate = new Date(targetDateString).getTime();
 
     const updateCountdown = () => {
@@ -58,7 +58,7 @@ export const CountdownScreen = () => {
 
   // Si le domaine n'est pas le bon, on ne rend rien du tout (écran vide)
   if (!isAllowedDomain) {
-    return null; 
+    return null;
   }
 
   return (
@@ -90,10 +90,10 @@ export const CountdownScreen = () => {
         display: 'flex',
         flexDirection: 'column'
       }}>
-        
+
         {/* Conteneur principal */}
         <div style={{ padding: '3.5rem 2rem 2.5rem 2rem' }}>
-          
+
           {/* Logo */}
           <div style={{ marginBottom: '2.5rem' }}>
             <img
@@ -178,7 +178,7 @@ export const CountdownScreen = () => {
                 </div>
               </div>
             )}
-            
+
             <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0 }}>
               Revenez ici dès la fin du décompte pour réaliser votre premier Business Check-up.
             </p>
@@ -196,9 +196,9 @@ export const CountdownScreen = () => {
         </div>
 
         {/* Footer */}
-        <div style={{ 
-          borderTop: '1px solid #F1F5F9', 
-          padding: '1.5rem', 
+        <div style={{
+          borderTop: '1px solid #F1F5F9',
+          padding: '1.5rem',
           backgroundColor: '#FCFDFD',
           fontSize: '0.85rem',
           color: '#94A3B8'
