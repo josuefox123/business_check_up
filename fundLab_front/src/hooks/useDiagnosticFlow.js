@@ -236,9 +236,9 @@ export function useDiagnosticFlow() {
     navigate('/triage/consent');
   };
 
-  const onGoToCatalog   = () => navigate('/catalog');
-  const onLearnMore     = () => navigate('/a-propos');
-  const onGoHome        = () => {
+  const onGoToCatalog = () => navigate('/catalog');
+  const onLearnMore = () => navigate('/a-propos');
+  const onGoHome = () => {
     clearState();
     setTriageAnswers({});
     setConsentAnswers({ diag: false, stats: false, contact: false });
@@ -415,7 +415,7 @@ export function useDiagnosticFlow() {
         if (resume.session_id) {
           localStorage.setItem('bc_session_id', resume.session_id);
         }
-        
+
         setIsVerifyingEmail(false);
         onTriageProfileSubmit(pendingProfileData);
 
@@ -468,7 +468,7 @@ export function useDiagnosticFlow() {
 
   const submitTriageToBackend = async (answers) => {
     let sessionId = localStorage.getItem('bc_session_id');
-    
+
     if (!sessionId) {
       try {
         console.warn('Session ID introuvable dans localStorage, création d\'une nouvelle session...');
@@ -501,7 +501,7 @@ export function useDiagnosticFlow() {
       const rawDuration = recommended.target_duration_formatted || recommended.duration || null;
       const backendDuration = typeof rawDuration === 'number' ? formatDurationSeconds(rawDuration) : rawDuration;
       const backendDescription = recommended.description || null;
-      
+
       const triageId = data.triage_id;
       if (triageId) {
         localStorage.setItem('bc_triage_id', triageId);
@@ -509,7 +509,7 @@ export function useDiagnosticFlow() {
       localStorage.setItem('bc_recommended_module_code', backendModuleId);
 
       const backendRoute = data.route || data.recommended_route || 'S13';
-      
+
       let fullModuleData = {
         id: backendModuleId,
         name: backendModuleName || 'Diagnostic',
@@ -537,7 +537,7 @@ export function useDiagnosticFlow() {
       setQuestionIndex(0);
       setCurrentModule(fullModuleData);
       setRouteKey(backendRoute);
-      
+
       await updateSessionApi(sessionId, 'in_progress', backendRoute)
         .catch(err => console.error('Error tracking session triage stage:', err));
 
@@ -552,7 +552,7 @@ export function useDiagnosticFlow() {
     } catch (err) {
       console.error('Error submitting triage to backend:', err, err.data || err.errors);
       const errMsg = err?.message || '';
-      
+
       if (errMsg.includes('Duplicate entry') || errMsg.includes('23000') || errMsg.includes('UniqueConstraintViolationException')) {
         setErrorModal({
           title: 'Compte / Email déjà existant',
@@ -733,15 +733,15 @@ export function useDiagnosticFlow() {
     }
     lastSubmittedQuestionIdRef.current = q.id;
 
-    setModuleAnswers(p => ({ 
-      ...p, 
-      [q.id]: answer, 
+    setModuleAnswers(p => ({
+      ...p,
+      [q.id]: answer,
       ...(proof ? { [`${q.id}_proof`]: proof } : {}),
       ...(confidence ? { [`${q.id}_confidence`]: confidence } : {}),
       ...(evidenceType ? { [`${q.id}_evidence_type`]: evidenceType } : {}),
       ...(evidenceLabel ? { [`${q.id}_evidence_label`]: evidenceLabel } : {})
     }));
-    
+
     if (!currentRunId) {
       console.error('Impossible de poster la réponse : diagnostic_run_id est introuvable.');
       lastSubmittedQuestionIdRef.current = null;
@@ -760,15 +760,13 @@ export function useDiagnosticFlow() {
         'E3': 'E3_verifiable_data'
       };
       const evidence_level = evidenceLevelMap[proof] || null;
-      const rawAnswerStr = typeof answer === 'object' && answer !== null ? JSON.stringify(answer) : String(answer ?? '');
-
       const targetQuestionId = q.db_id || q.id;
 
       if (targetQuestionId) {
         try {
           const payload = {
             question_id: String(targetQuestionId),
-            answer_value: rawAnswerStr
+            answer_value: answer
           };
           // if (confidence) payload.response_confidence_user = String(confidence);
           // if (evidence_level) payload.evidence_level = String(evidence_level);
@@ -888,18 +886,18 @@ export function useDiagnosticFlow() {
         } else {
           setScore(fallbackScore);
         }
-        
+
         const restObj = res?.data?.restitution || res?.restitution;
         if (restObj) {
           const scoringData = res?.data?.scoring || res?.scoring || null;
-          setRestitution({ 
-            ...restObj, 
+          setRestitution({
+            ...restObj,
             scoring: scoringData,
             disclaimer: res?.data?.disclaimer || res?.disclaimer || null,
             disclaimer_financing: res?.data?.disclaimer_financing || res?.disclaimer_financing || null
           });
         }
-        
+
         const sessionId = localStorage.getItem('bc_session_id');
         if (sessionId && currentModule) {
           updateSessionApi(sessionId, 'completed', `RESULT_${currentModule.id}`)
@@ -919,7 +917,7 @@ export function useDiagnosticFlow() {
     if (calcPromiseRef.current) {
       try {
         await calcPromiseRef.current;
-      } catch (e) {}
+      } catch (e) { }
     } else {
       await startBackendCalculation();
     }
@@ -982,17 +980,17 @@ export function useDiagnosticFlow() {
             preferred_contact_channel: 'phone'
           })
         })
-        .then(() => {
-          navigate('/diagnostic/fin');
-        })
-        .catch(err => {
-          console.error('Erreur lors de la demande de suivi backend:', err);
-          setErrorModal({
-            title: 'Erreur de contact',
-            message: 'Une erreur est survenue lors de l’enregistrement de votre demande. Nos conseillers feront le point avec vous.'
+          .then(() => {
+            navigate('/diagnostic/fin');
+          })
+          .catch(err => {
+            console.error('Erreur lors de la demande de suivi backend:', err);
+            setErrorModal({
+              title: 'Erreur de contact',
+              message: 'Une erreur est survenue lors de l’enregistrement de votre demande. Nos conseillers feront le point avec vous.'
+            });
+            setTimeout(() => navigate('/diagnostic/fin'), 3000);
           });
-          setTimeout(() => navigate('/diagnostic/fin'), 3000);
-        });
         return;
       }
 
@@ -1273,7 +1271,7 @@ export function useDiagnosticFlow() {
     showResumeModal, setShowResumeModal,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,
-    
+
     // Actions
     onStartAssisted,
     onGoToCatalog,
