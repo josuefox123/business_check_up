@@ -25,7 +25,7 @@ export const CountdownScreen = () => {
     // Ne pas démarrer l'intervalle si le domaine n'est pas le bon
     if (!isAllowedDomain) return;
 
-    const targetDateString = "2026-07-27T10:00:00+01:00";
+    const targetDateString = "2026-07-27T09:00:00+01:00";
     const targetDate = new Date(targetDateString).getTime();
 
     const updateCountdown = () => {
