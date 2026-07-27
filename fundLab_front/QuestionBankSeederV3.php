@@ -1231,7 +1231,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'L’entreprise peut-elle continuer normalement ses activités sur les 30 prochains jours ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'oui_mais_avec_tension', 'label' => 'Oui, mais avec tension', 'score' => 3],
@@ -1265,7 +1265,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quel niveau de trésorerie est disponible pour payer les charges courantes du mois ?',
                 'helper_text' => 'Vous pouvez saisir un montant approximatif ou choisir « Je ne sais pas ». Le montant n’est pas une preuve comptable.',
                 'answer_type' => 'currency_xof',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'partiellement', 'label' => 'Partiellement', 'score' => 3],
@@ -1300,7 +1300,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Vos ventes ont-elles baissé par rapport à votre niveau habituel ?',
                 'helper_text' => 'Comparez avec une période normale ou avec la même saison de l’année précédente lorsque cela est pertinent.',
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'non', 'label' => 'Non', 'score' => 5],
                     ['value' => 'oui_legrement', 'label' => 'Oui, légèrement', 'score' => 3],
@@ -1335,7 +1335,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Avez-vous des retards de paiement significatifs ?',
                 'helper_text' => "Si Oui, précisez-les",
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 // Multi-choix sans score : red flag = plusieurs retards (values_count >= 2).
                 'options' => [
                     ['value' => 'fournisseurs', 'label' => 'Fournisseurs'],
@@ -1374,7 +1374,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Avez-vous perdu un client important ou une source majeure de revenus ?',
                 'helper_text' => 'Pensez à un client, un contrat, une subvention d’exploitation, un canal ou une activité qui représentait une part significative des revenus.',
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'non', 'label' => 'Non', 'score' => 5],
                     ['value' => 'oui_mais_impact_limite', 'label' => 'Oui, mais impact limité', 'score' => 3],
@@ -1410,7 +1410,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Avez-vous des difficultés à produire, livrer ou maintenir la qualité ?',
                 'helper_text' => 'Choisissez la situation la plus proche, puis décrivez le blocage principal.',
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'non', 'label' => 'Non', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
@@ -1445,7 +1445,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Le dirigeant ou l’équipe sont-ils surchargés au point de ralentir l’activité ?',
                 'helper_text' => 'La surcharge est critique lorsqu’elle provoque des retards, des erreurs, des décisions bloquées ou une incapacité à suivre les clients.',
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'non', 'label' => 'Non', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
@@ -1481,7 +1481,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Le problème peut-il venir de prix trop bas ou de marges insuffisantes ?',
                 'helper_text' => 'Répondez selon vos informations actuelles. Une incertitude sur les coûts doit être signalée.',
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'non_marges_suivies', 'label' => 'Non, marges suivies', 'score' => 5],
                     ['value' => 'possible', 'label' => 'Possible', 'score' => 3],
@@ -1516,7 +1516,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Qu’avez-vous déjà tenté pour corriger la situation ?',
                 'helper_text' => null,
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 // Multi-choix sans score : conditions sur 'values'.
                 // "Financement seul" = sélection EXACTE de 'chercher_financement' (operator '=').
                 'options' => [
@@ -1556,7 +1556,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Pensez-vous qu’un financement seul réglerait le problème ?',
                 'helper_text' => 'Cette question vise à distinguer un besoin de cash d’un problème de marge, de marché, d’organisation ou d’exécution.',
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_completement', 'label' => 'Oui complètement', 'score' => 2],
                     ['value' => 'partiellement', 'label' => 'Partiellement', 'score' => 3],
@@ -1591,7 +1591,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quel type d’élément pouvez-vous utiliser pour confirmer la difficulté principale ?',
                 'helper_text' => 'Aucun téléversement n’est demandé. Indiquez seulement ce que vous avez ou pouvez consulter.',
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'cahier_caisse', 'label' => 'Cahier de caisse ou de ventes'],
                     ['value' => 'facture_recu', 'label' => 'Factures / reçus'],
@@ -1630,7 +1630,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quelle action doit être engagée en premier dans les 7 prochains jours ?',
                 'helper_text' => 'Décrivez une action précise, réaliste et directement liée au risque le plus urgent.',
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'action_precise', 'label' => 'Action précise, réalisable sous 7 jours, traitant une obligation ou un risque critique et produisant un résultat observable', 'score' => 5],
                     ['value' => 'action_concrete', 'label' => 'Action concrète mais priorité ou résultat attendu incomplet', 'score' => 4],
@@ -1659,7 +1659,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Souhaitez-vous être orienté vers un appui plus personnalisé ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui', 'label' => 'Oui'],
                     ['value' => 'non', 'label' => 'Non'],
@@ -1697,7 +1697,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quelle opportunité souhaitez-vous saisir ?',
                 'helper_text' => "Décrivez-la concrètement.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 // Options sans score : conditions basées sur 'value'.
                 'options' => [
                     ['value' => 'financement', 'label' => 'Financement'],
@@ -1735,7 +1735,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'À quelle échéance devez-vous agir ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 // Options sans score : conditions basées sur 'value'.
                 'options' => [
                     ['value' => 'moins_dun_mois', 'label' => 'Moins d’un mois'],
@@ -1771,7 +1771,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre entreprise a-t-elle déjà des clients ou ventes régulières liés à cette opportunité ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_reguliers', 'label' => 'Oui, réguliers', 'score' => 5],
                     ['value' => 'oui_premiers_clients', 'label' => 'Oui, premiers clients', 'score' => 4],
@@ -1807,7 +1807,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre offre est-elle prête pour l’opportunité visée ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_prete_et_testee', 'label' => 'Oui, prête et testée', 'score' => 5],
                     ['value' => 'oui_mais_a_ajuster', 'label' => 'Oui, mais à ajuster', 'score' => 3],
@@ -1842,7 +1842,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Comment comptez-vous accéder au client, au marché ou au partenaire visé ?",
                 'helper_text' => "Décrivez le canal, le contact, l’intermédiaire, la procédure ou l’étape d’accès la plus réaliste.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui_contact_canal_clair', 'label' => 'Oui, contact/canal clair', 'score' => 5],
                     ['value' => 'partiellement', 'label' => 'Partiellement', 'score' => 3],
@@ -1945,7 +1945,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'L’opportunité est-elle rentable ou susceptible d’améliorer la marge ?',
                 'helper_text' => "Répondez selon un calcul ou une estimation des revenus et coûts liés à l’opportunité.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui_marge_estimee', 'label' => 'Oui, marge estimée', 'score' => 5],
                     ['value' => 'probablement', 'label' => 'Probablement', 'score' => 3],
@@ -1980,7 +1980,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre organisation peut-elle absorber l’opportunité sans désorganiser l’activité existante ?',
                 'helper_text' => "Pensez au temps du dirigeant, aux responsabilités, aux contrôles, à la trésorerie et au suivi des autres clients.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'oui_avec_ajustements', 'label' => 'Oui, avec ajustements', 'score' => 3],
@@ -2015,7 +2015,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quel est le risque principal si vous avancez sur cette opportunité ?",
                 'helper_text' => "Décrivez le risque qui pourrait coûter le plus à l’entreprise ou empêcher la réussite.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 // Options sans score : conditions basées sur 'value'.
                 'options' => [
                     ['value' => 'risque_concret_identifie', 'label' => "Risque concret, relié à une cause, un impact et une échéance", 'score' => 5],
@@ -2050,7 +2050,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quels éléments détenez-vous aujourd’hui pour appuyer cette opportunité ?",
                 'helper_text' => "Aucun téléversement n’est demandé. Indiquez seulement ce qui existe.",
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'contrat_commande_signe', 'label' => 'Contrat ou bon de commande', 'score' => 5],
                     ['value' => 'demande_ecrite_devis_appel_doffres', 'label' => 'Appel d’offres / cahier des charges', 'score' => 4],
@@ -2087,7 +2087,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Si l’opportunité nécessite un financement, l’usage des fonds est-il clair ?',
                 'helper_text' => "Le besoin doit être relié à des postes précis : stock, équipement, BFR, travaux, équipe, certification ou logistique.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_usage_detaille', 'label' => 'Oui, usage détaillé', 'score' => 5],
                     ['value' => 'usage_global', 'label' => 'Usage global', 'score' => 3],
@@ -2122,7 +2122,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Pourquoi votre entreprise est-elle bien placée pour saisir cette opportunité ?',
                 'helper_text' => "Citez les capacités, références, relations, actifs ou avantages qui rendent votre entreprise crédible.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'plusieurs_atouts', 'label' => ' plusieurs atouts concrets, pertinents et appuyés par des références ou capacités', 'score' => 5],
                     ['value' => 'au_moins_un_atout', 'label' => "au moins un atout clair et pertinent mais preuve limitée", 'score' => 3],
@@ -2157,7 +2157,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre équipe ou vos partenaires clés sont-ils disponibles pour exécuter ?',
                 'helper_text' => "La disponibilité doit couvrir la préparation, le lancement et le suivi de l’opportunité.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'partiellement', 'label' => 'Partiellement', 'score' => 3],
@@ -2192,7 +2192,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Si vous deviez avancer demain, quel serait le point à sécuriser en premier ?',
                 'helper_text' => "Choisissez le prérequis dont l’absence pourrait rendre l’engagement prématuré ou risqué.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'pre_requis_precis', 'label' => "prérequis précis, prioritaire, lié au risque dominant et accompagné d’une action de sécurisation", 'score' => 5],
                     ['value' => 'pre_requis_moins_prioritaire', 'label' => "prérequis pertinent mais action ou seuil non précisé", 'score' => 4],
@@ -2221,7 +2221,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Souhaitez-vous recevoir une lecture de la maturité de cette opportunité et des conditions à sécuriser ?",
                 'helper_text' => "Cette lecture n’est ni une validation d’éligibilité ni une décision de financement.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_lecture_complete', 'label' => 'Oui, afficher la lecture complète'],
                     ['value' => 'oui_lecture_resume', 'label' => 'Oui, afficher un résumé'],
@@ -2259,7 +2259,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "En une phrase, quelle est l’offre principale de votre entreprise ?",
                 'helper_text' => "Décrivez ce que le client achète réellement. Une phrase simple suffit.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'offre_precise', 'label' => "offre précise, compréhensible, prioritaire et livrable", 'score' => 5],
                     ['value' => 'offre_comprensible', 'label' => "offre compréhensible mais peu claire ou pas prioritaire", 'score' => 4],
@@ -2293,7 +2293,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre offre répond-elle à un besoin clairement exprimé par les clients ?',
                 'helper_text' => "Basez-vous sur des demandes, usages, réclamations, commandes ou retours concrets.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_besoin_frequent', 'label' => 'Oui, besoin fréquent', 'score' => 5],
                     ['value' => 'oui_besoin_identifie_mais_limite', 'label' => 'Oui, besoin identifié mais limité', 'score' => 4],
@@ -2328,7 +2328,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Décrivez le type de client pour lequel votre offre est la plus utile.",
                 'helper_text' => "Indiquez qui il est, dans quelle situation il achète et ce qu’il cherche à obtenir.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui_segment_precis', 'label' => 'Oui, segment précis', 'score' => 5],
                     ['value' => 'segment_assez_clair', 'label' => 'Segment assez clair', 'score' => 3],
@@ -2363,7 +2363,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Pourquoi un client choisirait-il votre offre plutôt qu’une autre ?',
                 'helper_text' => "Citez une différence utile et observable pour le client.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'difference_claire_et_percue', 'label' => "différence concrète, utile, spécifique et appuyée par une preuve ou capacité", 'score' => 5],
                     ['value' => 'difference_claire_mais_peu_prouvee', 'label' => 'Différence claire mais peu prouvée', 'score' => 4],
@@ -2398,7 +2398,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Comment avez-vous fixé vos prix ?',
                 'helper_text' => "Expliquez brièvement votre logique.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'couts_marge_valeur_client', 'label' => 'Coûts + marge + valeur client', 'score' => 5],
                     ['value' => 'couts_marge_simple', 'label' => 'Coûts + marge simple', 'score' => 4],
@@ -2434,7 +2434,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Savez-vous si vos principaux produits/services sont rentables individuellement ?',
                 'helper_text' => "Répondez selon un calcul réel ou une estimation des prix et coûts directs.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_produit_par_produit', 'label' => 'Oui, produit par produit', 'score' => 5],
                     ['value' => 'oui_globalement', 'label' => 'Oui, globalement', 'score' => 3],
@@ -2469,7 +2469,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Votre gamme est-elle lisible pour vos clients ?',
                 'helper_text' => "Une gamme lisible permet au client de comprendre rapidement les choix, les différences et les prix.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_gamme_claire', 'label' => 'Oui, gamme claire', 'score' => 5],
                     ['value' => 'plutot_claire', 'label' => 'Plutôt claire', 'score' => 3],
@@ -2503,7 +2503,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Collectez-vous les retours ou réclamations clients pour améliorer l’offre ?',
                 'helper_text' => "Les échanges oraux, WhatsApp, retours produits et observations des vendeurs sont aussi utiles s’ils sont exploités.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_regulierement', 'label' => 'Oui, régulièrement', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
@@ -2538,7 +2538,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quelle amélioration importante avez-vous apportée à votre offre au cours des 12 derniers mois ?",
                 'helper_text' => "Décrivez ce qui a changé et pourquoi.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui_sur_la_base_des_clients', 'label' => "amélioration précise, reliée à un besoin ou une donnée, avec résultat observé", 'score' => 5],
                     ['value' => 'oui_par_intuition', 'label' => "amélioration précise mais résultat non encore mesuré", 'score' => 4],
@@ -2572,7 +2572,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Pouvez-vous livrer l’offre promise de manière régulière ?',
                 'helper_text' => "Pensez à la qualité, aux délais, aux volumes, à l’approvisionnement et au service après-vente.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_sans_tension', 'label' => 'Oui, sans tension', 'score' => 5],
                     ['value' => 'oui_mais_avec_limites', 'label' => 'Oui, mais avec limites', 'score' => 3],
@@ -2607,7 +2607,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quels éléments montrent que votre offre intéresse réellement le marché ?",
                 'helper_text' => null,
                 'answer_type' => "Plusieurs réponses sont possibles. Aucun téléversement n’est demandé.",
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'ventes_recurrentes', 'label' => 'Ventes répétées', 'score' => 5],
                     ['value' => 'precommandes_demandes_ecrites', 'label' => "Commandes ou précommandes", 'score' => 4],
@@ -2646,6 +2646,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quel point devez-vous améliorer en priorité sur l’offre ?',
                 'helper_text' => "Choisissez un seul point prioritaire",
                 'answer_type' => 'single_choice',
+                'answer_ia' => "false",
                 'options' => [
                     ['value' => 'clarte', 'label' => 'Clarté'],
                     ['value' => 'prix_marge', 'label' => 'Prix/marge'],
@@ -2686,7 +2687,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Décrivez vos principaux clients en deux ou trois profils.",
                 'helper_text' => "Pour chaque profil, indiquez qui ils sont, ce qu’ils achètent et, si possible, à quelle fréquence.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'profils_distincts', 'label' => "2–3 profils distincts, concrets, liés à des achats/usages réels et hiérarchisés", 'score' => 5],
                     ['value' => 'profils_larges', 'label' => "profils identifiables mais larges, incomplets ou non hiérarchisés", 'score' => 3],
@@ -2720,6 +2721,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Par quels moyens vos clients vous découvrent-ils aujourd’hui ?',
                 'helper_text' => null,
                 'answer_type' => 'multi_choice',
+                'answer_ia' => "false",
                 // Multi-choix sans score : conditions sur 'values' / 'values_count'.
                 'options' => [
                     ['value' => 'boutique_point_physique', 'label' => 'Boutique/point physique'],
@@ -2759,8 +2761,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Conversion',
                 'dimension' => 'commercial',
                 'text' => 'Quand un prospect vous contacte, arrivez-vous souvent à conclure la vente ?',
-                'helper_text' => null,
+                'helper_text' => "Répondez selon votre expérience récente, même si vous ne calculez pas encore un taux de conversion.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => "false",
                 'options' => [
                     ['value' => 'oui_souvent', 'label' => 'Oui, souvent', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
@@ -2793,8 +2796,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Récurrence',
                 'dimension' => 'commercial',
                 'text' => 'Avez-vous des clients qui achètent plusieurs fois ?',
-                'helper_text' => null,
+                'helper_text' => "Pensez aux clients ayant acheté au moins deux fois au cours des 12 derniers mois.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_beaucoup', 'label' => 'Oui, beaucoup', 'score' => 5],
                     ['value' => 'quelques_uns', 'label' => 'Quelques-uns', 'score' => 3],
@@ -2828,6 +2832,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Gardez-vous une trace de vos clients ou prospects ?',
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_base_structuree', 'label' => 'Oui, base structurée', 'score' => 5],
                     ['value' => 'oui_liste_simple_whatsapp', 'label' => 'Oui, liste simple/WhatsApp', 'score' => 4],
@@ -2859,9 +2864,10 @@ class QuestionBankSeederV3 extends Seeder
                 'order' => 6,
                 'role' => 'Proposition commerciale',
                 'dimension' => 'commercial',
-                'text' => 'Votre message commercial dit-il clairement pourquoi acheter chez vous ?',
-                'helper_text' => null,
-                'answer_type' => 'single_choice',
+                'text' => "En une ou deux phrases, que dites-vous à un client pour lui donner envie d’acheter chez vous ?",
+                'helper_text' => "Formulez votre message commercial principal comme vous le diriez réellement au client.",
+                'answer_type' => 'short_text',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'oui_message_clair', 'label' => 'Oui, message clair', 'score' => 5],
                     ['value' => 'plutot_clair', 'label' => 'Plutôt clair', 'score' => 3],
@@ -2894,8 +2900,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Objectifs vente',
                 'dimension' => 'commercial',
                 'text' => 'Avez-vous un objectif de vente mensuel ou hebdomadaire ?',
-                'helper_text' => null,
+                'helper_text' => "L’objectif peut être exprimé en chiffre d’affaires, nombre de clients, commandes ou volumes.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_suivi_regulierement', 'label' => 'Oui, suivi régulièrement', 'score' => 5],
                     ['value' => 'oui_mais_peu_suivi', 'label' => 'Oui, mais peu suivi', 'score' => 3],
@@ -2963,8 +2970,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Tendance',
                 'dimension' => 'commercial',
                 'text' => 'Les ventes évoluent-elles plutôt à la hausse, stables ou à la baisse ?',
-                'helper_text' => null,
+                'helper_text' => "Comparez avec votre niveau habituel ou avec la même période de l’année précédente si l’activité est saisonnière.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'hausse', 'label' => 'Hausse', 'score' => 5],
                     ['value' => 'stable', 'label' => 'Stable', 'score' => 4],
@@ -2998,8 +3006,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Capacité marketing',
                 'dimension' => 'finance',
                 'text' => 'Avez-vous une routine pour attirer de nouveaux clients ?',
-                'helper_text' => null,
+                'helper_text' => "Une routine est une action répétée avec une fréquence et une responsabilité claires.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_reguliere', 'label' => 'Oui, régulière', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Parfois', 'score' => 3],
@@ -3031,8 +3040,9 @@ class QuestionBankSeederV3 extends Seeder
                 'role' => 'Frein principal',
                 'dimension' => 'meta',
                 'text' => 'Qu’est-ce qui limite le plus votre capacité à vendre davantage ?',
-                'helper_text' => null,
+                'helper_text' => "Choisissez le frein principal, puis décrivez un exemple concret.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'manque_de_clients', 'label' => 'Manque de clients'],
                     ['value' => 'offre_prix', 'label' => 'Offre/prix'],
@@ -3061,9 +3071,10 @@ class QuestionBankSeederV3 extends Seeder
                 'order' => 12,
                 'role' => 'Preuve commerciale',
                 'dimension' => 'commercial',
-                'text' => 'Quel élément concret prouve l’intérêt du marché ?',
-                'helper_text' => null,
+                'text' => "Quels éléments concrets montrent l’intérêt du marché pour votre offre ?",
+                'helper_text' => "Plusieurs réponses sont possibles. Aucun téléversement n’est demandé.",
                 'answer_type' => 'single_choice',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'ventes_regulieres', 'label' => 'Ventes régulières', 'score' => 5],
                     ['value' => 'commandes_devis_en_attente', 'label' => 'Commandes/devis en attente', 'score' => 4],
@@ -3140,7 +3151,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Quelles sont vos principales charges fixes et variables ?',
                 'helper_text' => 'Sélectionnez les catégories connues, puis indiquez celles dont le montant est le plus important.',
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'loyer', 'label' => 'Loyer', 'score' => 5],
                     ['value' => 'salaires_main_doeuvre', 'label' => 'Salaires / main-d’œuvre', 'score' => 4],
@@ -3530,7 +3541,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Décrivez brièvement les rôles des personnes clés dans l’entreprise.',
                 'helper_text' => "Indiquez qui s’occupe principalement de la direction, des ventes, de l’argent, de la production ou du service au client.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'fonctions_cles_couvertes', 'label' => "fonctions clés couvertes, responsabilités distinctes et personnes identifiables", 'score' => 5],
                     ['value' => 'roles_compris', 'label' => "plusieurs rôles compris mais chevauchements ou zones non couvertes", 'score' => 4],
@@ -3564,7 +3575,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Qui prend les décisions importantes dans l’entreprise ?",
                 'helper_text' => "Décrivez comment une décision récente a été prise.",
                 'answer_type' => 'short_text',
-                'answer_ia' => 'true',
+                'answer_ia' => true,
                 'options' => [
                     ['value' => 'dirigeant_avec_relais_comite', 'label' => 'Dirigeant avec relais/comité', 'score' => 5],
                     ['value' => 'dirigeant_avec_consultation', 'label' => 'Dirigeant avec consultation', 'score' => 4],
@@ -3599,7 +3610,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Avez-vous une routine de pilotage : réunion, point caisse, ventes ou production ?",
                 'helper_text' => "Une routine doit avoir une fréquence, des participants et quelques sujets suivis.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_regular', 'label' => 'Oui, régulière et suivie', 'score' => 5],
                     ['value' => 'oui_informelles', 'label' => "Oui, informelle", 'score' => 3],
@@ -3634,7 +3645,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Le dirigeant peut-il s’absenter 3 jours sans bloquer l’activité ?",
                 'helper_text' => null,
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_sans_probleme', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'oui_limites', 'label' => 'Oui, avec limites', 'score' => 3],
@@ -3668,7 +3679,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Les informations clés circulent-elles correctement dans l’équipe ?",
                 'helper_text' => "Pensez aux commandes, paiements, stocks, retards, problèmes clients et décisions.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_regulierement', 'label' => 'Oui', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Partiellement', 'score' => 3],
@@ -3702,7 +3713,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => 'Existe-t-il des procédures écrites ou répétées pour les tâches importantes ?',
                 'helper_text' => "Il peut s’agir d’une fiche, d’un cahier, d’une checklist, d’un modèle ou d’une pratique écrite.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'oui_document', 'label' => 'Oui, documentées', 'score' => 5],
                     ['value' => 'oui_oral', 'label' => 'Oui, mais orale', 'score' => 3],
@@ -3736,7 +3747,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quels indicateurs suivez-vous régulièrement pour piloter l’entreprise ?",
                 'helper_text' => "Plusieurs réponses sont possibles. Sélectionnez uniquement les indicateurs réellement consultés.",
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'ventes', 'label' => 'Ventes'],
                     ['value' => 'tresorerie', 'label' => 'Trésorerie'],
@@ -3809,7 +3820,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Existe-t-il des tensions internes qui perturbent l’activité ?",
                 'helper_text' => "Vous pouvez répondre sans nommer les personnes. L’objectif est d’identifier l’effet sur l’entreprise.",
                 'answer_type' => 'single_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'non', 'label' => 'Non', 'score' => 5],
                     ['value' => 'parfois', 'label' => 'Quelques tensions maîtrisées', 'score' => 3],
@@ -3879,7 +3890,7 @@ class QuestionBankSeederV3 extends Seeder
                 'text' => "Quels engagements importants sont formalisés par écrit ?",
                 'helper_text' => "Plusieurs réponses sont possibles. Pensez aux contrats, commandes, dettes, rôles et décisions.",
                 'answer_type' => 'multi_choice',
-                'answer_ia' => 'false',
+                'answer_ia' => false,
                 'options' => [
                     ['value' => 'contrats_clients', 'label' => 'Contrats clients', 'score' => 5],
                     ['value' => 'bon_commandes', 'label' => 'Bons de commande / devis acceptés', 'score' => 3],
@@ -3963,14 +3974,15 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Gouvernance',
             'dimension' => 'gouvernance',
-            'text' => "Quand une décision importante doit être prise, sait-on clairement qui décide ?",
-            'helper_text' => "Évaluez la clarté des rôles et des responsabilités au quotidien.",
+            'text' => "Les rôles et responsabilités des personnes clés sont-ils clairement répartis",
+            'helper_text' => "Répondez selon la manière dont l’entreprise fonctionne réellement, pas seulement selon les titres.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'oui_tres_clair', 'label' => 'Oui, très clair', 'score' => 5],
-                ['value' => 'plutot_clair', 'label' => 'Plutôt clair', 'score' => 4],
-                ['value' => 'flou', 'label' => 'Souvent flou ou confus', 'score' => 2],
-                ['value' => 'tout_passe_par_moi', 'label' => 'Tout passe par le dirigeant', 'score' => 1],
+                ['value' => 'oui_tres_clair', 'label' => 'Oui, rôles clairs et connus', 'score' => 5],
+                ['value' => 'plutot_clair', 'label' => 'Partiellement clairs', 'score' => 4],
+                ['value' => 'flou', 'label' => 'Très centralisés ou souvent flous', 'score' => 2],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
             ],
             'score_logic' => 'direct',
             'weight' => 1.2,
@@ -3998,14 +4010,16 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Gouvernance',
             'dimension' => 'gouvernance',
-            'text' => "Si le dirigeant s'absente une semaine, l'activité continue-t-elle normalement ?",
-            'helper_text' => null,
+            'text' => "Existe-t-il une routine régulière pour suivre ventes, trésorerie, opérations et décisions ?",
+            'helper_text' => "Il peut s’agir d’une réunion, d’un point caisse ou d’un tableau simple.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'oui_sans_probleme', 'label' => 'Oui, sans problème', 'score' => 5],
-                ['value' => 'oui_ralentissement', 'label' => 'Oui, avec des ralentissements', 'score' => 3],
-                ['value' => 'difficilement', 'label' => 'Difficilement', 'score' => 2],
-                ['value' => 'non', 'label' => 'Non, tout s\'arrête', 'score' => 1],
+                ['value' => 'oui_sans_probleme', 'label' => 'Oui, au moins mensuelle et structurée', 'score' => 5],
+                ['value' => 'oui_ralentissement', 'label' => 'Oui, mais irrégulière', 'score' => 3],
+                ['value' => 'occasionnel', 'label' => 'Très occasionnelle', 'score' => 2],
+                ['value' => 'aucune', 'label' => 'Aucune', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 0],
             ],
             'score_logic' => 'direct',
             'weight' => 1.0,
@@ -4023,14 +4037,19 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Gouvernance',
             'dimension' => 'gouvernance',
-            'text' => "Existe-t-il des tensions ou conflits (associés, équipe) qui freinent l'entreprise ?",
-            'helper_text' => null,
-            'answer_type' => 'single_choice',
+            'text' => "Si le dirigeant s’absente trois jours, quelles fonctions continuent normalement ?",
+            'helper_text' => "Plusieurs réponses sont possibles.",
+            'answer_type' => 'multi_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'non', 'label' => 'Non', 'score' => 5],
-                ['value' => 'parfois', 'label' => 'Parfois, mais gérable', 'score' => 3],
-                ['value' => 'oui_important', 'label' => 'Oui, impact important', 'score' => 2],
-                ['value' => 'oui_critique', 'label' => 'Oui, conflit critique', 'score' => 1],
+                ['value' => 'ventes', 'label' => 'Ventes / relation clients', 'score' => 5],
+                ['value' => 'paiements', 'label' => 'Paiements / trésorerie', 'score' => 3],
+                ['value' => 'production', 'label' => 'Production / livraison', 'score' => 2],
+                ['value' => 'achats', 'label' => 'Achats / approvisionnement', 'score' => 1],
+                ['value' => 'equipe', 'label' => 'Gestion de l’équipe', 'score' => 1],
+                ['value' => 'presque_tout', 'label' => 'Presque tout continue', 'score' => 1],
+                ['value' => 'tres_peu', 'label' => 'Très peu de choses continuent', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 0],
             ],
             'score_logic' => 'direct',
             'weight' => 1.5,
@@ -4058,9 +4077,10 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Gouvernance',
             'dimension' => 'gouvernance',
-            'text' => "Souhaitez-vous approfondir le fonctionnement et l'organisation (Gouvernance) ?",
+            'text' => "Souhaitez-vous approfondir la gouvernance et l’organisation après la vue globale ?",
             'helper_text' => "Ce choix n'affecte pas le score 360° global.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'oui', 'label' => 'Oui'],
                 ['value' => 'non', 'label' => 'Non'],
@@ -4083,14 +4103,16 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Finance',
             'dimension' => 'finance',
-            'text' => "Avez-vous une visibilité claire sur votre trésorerie pour les 3 prochains mois ?",
-            'helper_text' => null,
+            'text' => "Pouvez-vous reconstituer vos ventes, vos charges et votre trésorerie sur les trois derniers mois ?",
+            'helper_text' => "Les données peuvent provenir d’un cahier, de factures, de relevés bancaires ou Mobile Money.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'oui_tres_claire', 'label' => 'Oui, très claire', 'score' => 5],
-                ['value' => 'partielle', 'label' => 'Partielle', 'score' => 3],
-                ['value' => 'floue', 'label' => 'Floue (pilotage à vue)', 'score' => 2],
-                ['value' => 'aucune', 'label' => 'Aucune visibilité', 'score' => 1],
+                ['value' => 'oui_de_maniere_assez_precise', 'label' => 'Oui, de manière assez précise', 'score' => 5],
+                ['value' => 'oui_partiellement', 'label' => 'Oui, partiellement', 'score' => 3],
+                ['value' => 'tres_difficilement', 'label' => 'Très difficilement', 'score' => 2],
+                ['value' => 'non', 'label' => 'Non', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
             ],
             'score_logic' => 'direct',
             'weight' => 1.2,
@@ -4110,15 +4132,15 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Finance',
             'dimension' => 'finance',
-            'text' => "Quels indicateurs suivez-vous au moins chaque mois ?",
-            'helper_text' => "Cochez tous les indicateurs analysés régulièrement.",
-            'answer_type' => 'multi_choice',
+            'text' => "Connaissez-vous la marge de vos produits ou services principaux ?",
+            'helper_text' => "La marge suppose de connaître le prix et les principaux coûts directs.",
+            'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'ventes', 'label' => 'Chiffre d\'affaires'],
-                ['value' => 'cash', 'label' => 'Niveau de trésorerie'],
-                ['value' => 'marges', 'label' => 'Marges et coûts'],
-                ['value' => 'dettes', 'label' => 'Dettes fournisseurs/fiscales'],
-                ['value' => 'aucun', 'label' => 'Aucun suivi régulier'],
+                ['value' => 'oui_calculee', 'label' => 'Oui, calculée', 'score' => 5],
+                ['value' => 'une_estimation', 'label' => 'Une estimation', 'score' => 3],
+                ['value' => 'non', 'label' => 'Non', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
             ],
             'score_logic' => 'count_based',
             'weight' => 1.0,
@@ -4136,14 +4158,16 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Finance',
             'dimension' => 'finance',
-            'text' => "L'entreprise fait-elle face à des retards de paiement bloquants (fournisseurs, salaires, impôts) ?",
-            'helper_text' => null,
+            'text' => "La trésorerie disponible couvre-t-elle les charges essentielles des 30 prochains jours ?",
+            'helper_text' => "Répondez selon les soldes disponibles, les échéances et les encaissements attendus.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
-                ['value' => 'non', 'label' => 'Non, tout est à jour', 'score' => 5],
-                ['value' => 'quelques_retards', 'label' => 'Quelques retards gérés', 'score' => 3],
-                ['value' => 'oui_important', 'label' => 'Oui, dettes importantes', 'score' => 2],
-                ['value' => 'oui_critique', 'label' => 'Oui, risque de cessation', 'score' => 1],
+                ['value' => 'oui_avec_marge', 'label' => 'Oui, avec marge', 'score' => 5],
+                ['value' => 'oui_mais_de_justesse', 'label' => 'Oui, mais de justesse', 'score' => 3],
+                ['value' => 'partiellement', 'label' => 'Partiellement', 'score' => 2],
+                ['value' => 'non', 'label' => 'Non', 'score' => 1],
+                ['value' => 'je_ne_sais_pas', 'label' => 'Je ne sais pas', 'score' => 1],
             ],
             'score_logic' => 'direct',
             'weight' => 1.5,
@@ -4171,8 +4195,10 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Finance',
             'dimension' => 'finance',
-            'text' => "Souhaitez-vous approfondir l'analyse financière et la trésorerie ?",
+            'text' => "Souhaitez-vous approfondir la finance et la viabilité après la vue globale ?",
+            'helper_text' => "Ce choix n'affecte pas le score 360° global.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'oui', 'label' => 'Oui'],
                 ['value' => 'non', 'label' => 'Non'],
@@ -4214,6 +4240,7 @@ class QuestionBankSeederV3 extends Seeder
             'text' => "Quelles formes de valeur territoriale, sociale ou environnementale l’entreprise crée-t-elle aujourd’hui ?",
             'helper_text' => "Plusieurs réponses possibles. Sélectionnez uniquement les effets réellement observés.",
             'answer_type' => 'multi_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'emploi_locaux', 'label' => 'Emplois locaux', 'score' => 5],
                 ['value' => 'revenus_producteurs', 'label' => 'Revenus pour producteurs / fournisseurs', 'score' => 4],
@@ -4238,11 +4265,10 @@ class QuestionBankSeederV3 extends Seeder
             'order' => ++$order,
             'role' => 'Impact',
             'dimension' => 'impact',
-            // CORRECTION : Votre question demandait un nombre ("Combien de personnes...") mais vos options disaient "Oui documenté". 
-            // J'ai réaligné la question sur vos options.
             'text' => "L'entreprise a-t-elle un point fort social ou environnemental reconnu et mesurable ?",
             'helper_text' => "Par exemple : certification, nombre documenté de bénéficiaires, bilan carbone.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'oui_documente', 'label' => 'Oui, documenté et mesuré', 'score' => 5],
                 ['value' => 'oui_informel', 'label' => 'Oui, mais informel', 'score' => 3],
@@ -4277,6 +4303,7 @@ class QuestionBankSeederV3 extends Seeder
             'text' => "Existe-t-il un effet négatif ou un risque social/environnemental à mieux maîtriser ?",
             'helper_text' => "Exemples : déchets, sécurité, nuisances, exclusion.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'non', 'label' => 'Non, aucun risque significatif identifié', 'score' => 5],
                 ['value' => 'oui_risque_faible', 'label' => 'Oui, risque faible et maîtrisé', 'score' => 4],
@@ -4304,6 +4331,7 @@ class QuestionBankSeederV3 extends Seeder
             'text' => "Souhaitez-vous approfondir l’impact et l’ancrage local ?",
             'helper_text' => "Ce choix n’affecte pas le score 360°.",
             'answer_type' => 'single_choice',
+            'answer_ia' => false,
             'options' => [
                 ['value' => 'oui', 'label' => 'Oui'],
                 ['value' => 'non', 'label' => 'Non'],
