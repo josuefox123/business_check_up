@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import DiagnosticApp from './DiagnosticApp.jsx';
 import { AdminApp } from './components/admin/AdminApp.jsx';
 import { TestCurrencyScreen } from './components/ecrans/TestCurrencyScreen.jsx';
-import { CountdownScreen } from './components/ecrans/CountdownScreen.jsx';
 import { ReferencesProvider } from './contexts/ReferencesContext.jsx';
 
 // Utility component to force scroll restoration to top on route change
@@ -24,7 +23,6 @@ function App() {
   const isBeforeLaunch = now < targetDate;
 
   // Activer le mode décompte SEULEMENT si on est sur le domaine cible ET avant la date de lancement
-  const showCountdownOnly = isTargetDomain && isBeforeLaunch;
 
   return (
     <BrowserRouter>
