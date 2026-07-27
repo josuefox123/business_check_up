@@ -3,7 +3,7 @@
  * BASE URL: https://api-checkup.business-assist.io/docs/api
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-checkup.business-assist.io';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-checkup.business-assist.io/api/bc';
 
 /**
  * Convertit une durée en secondes (integer) en label lisible "X-Y min"
