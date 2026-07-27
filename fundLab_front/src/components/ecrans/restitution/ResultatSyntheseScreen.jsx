@@ -95,7 +95,7 @@ export const ResultatSyntheseScreen = ({
 
   const credScore = (() => {
     const cs = restitution?.scoring?.credibility_score ?? restitution?.scoring?.credibiliy_score;
-    if (cs === null || cs === undefined) return '70%';
+    if (cs === null || cs === undefined) return '0%';
     const num = Number(cs);
     if (isNaN(num)) return String(cs);
     return `${Math.round(num * 100)}%`;
@@ -189,16 +189,13 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            <div className="res-level-highlight-title">
-              Niveau obtenu :
-            </div>
             <div className="res-level-highlight-sub" style={{ color: isCritical ? '#DC2626' : '#10B981' }}>
               {restitution?.scoring?.band_label || lvl.label}
             </div>
 
             <p className="res-card-paragraph">
               {restitution?.interpretation_text || restitution?.summary ||
-                "Diagnostic difficulté — un point prioritaire doit être traité rapidement pour assurer la pérennité de votre projet. Les analyses montrent des incohérences structurelles qui nécessitent une intervention immédiate avant tout développement futur."}
+                "Non reçu"}
             </p>
           </div>
         </div>
@@ -229,10 +226,10 @@ export const ResultatSyntheseScreen = ({
               return (
                 <div key={idx} className="res-appui-inner">
                   <div className="res-appui-title">
-                    {parsed.title || 'Quelques signaux existent'}
+                    {parsed.title || 'Pas de titre'}
                   </div>
                   <div className="res-appui-desc">
-                    {parsed.desc || 'Base solide sur les fondations de marque identifiées lors du premier audit.'}
+                    {parsed.desc || ''}
                   </div>
                 </div>
               );
