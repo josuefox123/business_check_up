@@ -72,11 +72,7 @@ export function useDiagnosticFlow() {
       if (triageQuestions.length === 0) {
         const qList = await questionsApi.getTriageQuestions();
         if (qList) {
-          const filtered = qList.map(q => ({
-            ...q,
-            choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
-          }));
-          setTriageQuestions(filtered);
+          setTriageQuestions(qList);
         }
       }
       setIsOffline(false);
@@ -125,12 +121,8 @@ export function useDiagnosticFlow() {
     questionsApi.getTriageQuestions()
       .then(qList => {
         if (qList) {
-          const filtered = qList.map(q => ({
-            ...q,
-            choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
-          }));
-          setTriageQuestions(filtered);
-          const hasEntryChoice = filtered.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+          setTriageQuestions(qList);
+          const hasEntryChoice = qList.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
           if (!hasEntryChoice) {
             setTriageStep(prev => prev === 3 ? 4 : prev);
           }
@@ -231,11 +223,7 @@ export function useDiagnosticFlow() {
       QuestionService.getDiagnosticQuestions(currentModule.id)
         .then(res => {
           if (res) {
-            const filtered = res.map(q => ({
-              ...q,
-              choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
-            }));
-            setQuestions(filtered);
+            setQuestions(res);
           } else {
             setQuestions([]);
           }
