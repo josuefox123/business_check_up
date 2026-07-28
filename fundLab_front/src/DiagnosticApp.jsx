@@ -218,18 +218,47 @@ function DiagnosticApp() {
   if (flow.isOffline && isDiagnosticPath) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '480px', background: '#FFFFFF', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}>
+        <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️</div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#17212D', marginBottom: '16px' }}>Service temporairement indisponible</h1>
           <p style={{ fontSize: '0.92rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
-            L'accès aux diagnostics et au triage nécessite une connexion active avec le serveur de l'application. Veuillez réessayer plus tard.
+            L'accès aux diagnostics nécessite une connexion au serveur. Veuillez vérifier votre réseau ou réessayer la connexion.
           </p>
-          <button 
-            onClick={() => window.location.href = '/'}
-            style={{ background: '#17212D', color: '#FFFFFF', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer' }}
-          >
-            Retour à l'accueil
-          </button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button 
+              onClick={flow.retryConnection}
+              disabled={flow.isRetrying}
+              style={{ 
+                background: '#2563EB', 
+                color: '#FFFFFF', 
+                border: 'none', 
+                padding: '12px 24px', 
+                borderRadius: '8px', 
+                fontWeight: 700, 
+                cursor: flow.isRetrying ? 'not-allowed' : 'pointer',
+                opacity: flow.isRetrying ? 0.7 : 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              {flow.isRetrying ? 'Connexion en cours...' : '🔄 Réessayer'}
+            </button>
+            <button 
+              onClick={() => window.location.href = '/'}
+              style={{ 
+                background: '#F1F5F9', 
+                color: '#475569', 
+                border: '1px solid #CBD5E1', 
+                padding: '12px 24px', 
+                borderRadius: '8px', 
+                fontWeight: 700, 
+                cursor: 'pointer' 
+              }}
+            >
+              Retour à l'accueil
+            </button>
+          </div>
         </div>
       </div>
     );

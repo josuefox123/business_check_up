@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { ClipboardCheck, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ClipboardCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
-export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
+export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false, estimatedDuration, moduleName }) => {
   return (
     <ScreenWrapper>
       <div className="animate-fade-up" style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
@@ -23,12 +23,12 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
         </div>
 
         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#070E24', marginBottom: '16px', lineHeight: '1.3' }}>
-          Enrichir mon diagnostic
+          Enrichir mon diagnostic {moduleName ? `— ${moduleName}` : ''}
         </h1>
 
         <p style={{ fontSize: '1rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
-          Afin de vous donner le diagnostic le plus complet possible , nous vous demandons encore quelques
-          minutes qui nous permettrons de vous fournir un diagnostic personnalisé et adapté à votre structure.
+          Afin de vous donner le diagnostic le plus complet possible, nous vous demandons encore quelques
+          minutes qui nous permettront de vous fournir un diagnostic personnalisé et adapté à votre structure.
         </p>
 
         <div style={{
@@ -43,21 +43,27 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
           gap: '12px'
         }}>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, marginTop: '2px' }}>✓</div>
+            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+              <Check size={12} strokeWidth={3} />
+            </div>
             <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: '1.4' }}>
               <strong>Recommandations précises :</strong> Une analyse plus fine de vos forces et axes d'amélioration.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, marginTop: '2px' }}>✓</div>
+            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+              <Check size={12} strokeWidth={3} />
+            </div>
             <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: '1.4' }}>
               <strong>Rapport sur-mesure :</strong> Accès à un plan d'actions détaillé à la fin.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, marginTop: '2px' }}>✓</div>
+            <div style={{ minWidth: '20px', height: '20px', borderRadius: '50%', background: '#34BED5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+              <Check size={12} strokeWidth={3} />
+            </div>
             <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: '1.4' }}>
-              <strong>Durée estimée :</strong> Environ 5 à 10 minutes supplémentaires.
+              <strong>Durée estimée :</strong> {estimatedDuration ? `Environ ${estimatedDuration}` : "[estimated_duration non disponible]"}
             </p>
           </div>
         </div>
@@ -70,17 +76,20 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel }) => {
           <Button
             variant="primary"
             onClick={onConfirm}
-            style={{ width: '100%', justifyContent: 'center', gap: '8px', height: '48px', fontSize: '0.95rem', fontWeight: 600 }}
+            disabled={isLoading}
+            style={{ width: '100%', justifyContent: 'center', gap: '8px', height: '48px', fontSize: '0.95rem', fontWeight: 600, opacity: isLoading ? 0.7 : 1 }}
           >
-            Accepter et continuer <ArrowRight size={16} />
+            <span>{isLoading ? 'Chargement...' : 'Accepter et continuer'}</span>
+            {!isLoading && <ArrowRight size={16} />}
           </Button>
 
           <Button
             variant="outline"
             onClick={onCancel}
+            disabled={isLoading}
             style={{ width: '100%', justifyContent: 'center', gap: '8px', height: '48px', fontSize: '0.95rem', fontWeight: 600 }}
           >
-            <ArrowLeft size={16} /> Retour à la synthèse
+            <ArrowLeft size={16} /> <span>Retour à la synthèse</span>
           </Button>
         </div>
 

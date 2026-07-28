@@ -166,6 +166,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   useEffect(() => {
@@ -180,6 +181,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
   const handleBookAppointment = async () => {
     if (!selectedTime || !selectedDate) return;
     setIsSubmitting(true);
+    setErrorMsg('');
 
     const runId = localStorage.getItem('last_run_id');
 
@@ -190,16 +192,14 @@ export const FinParcoursScreen = ({ onRestart }) => {
     const requested_starts_at = rdvDate.toISOString();
 
     if (!runId) {
-      // Pas de runId en local → simule la confirmation
+      console.warn('[last_run_id non disponible] Simulation de la réservation en mode démo / test.');
       setTimeout(() => { setIsSubmitting(false); setBooked(true); setShowModal(false); }, 800);
       return;
     }
 
     try {
-      // POST /diagnostics/{diagnosticRunId}/appointment
-      // Base URL : https://business-chekcup.nicktep.com/api
-      const BASE = 'https://business-chekcup.nicktep.com/api';
-      await apiFetch(`${BASE}/diagnostics/${runId}/appointment`, {
+      // Direct canonical API fetch via apiFetch wrapper
+      await apiFetch(`/diagnostics/${runId}/appointment`, {
         method: 'POST',
         body: JSON.stringify({
           requested_starts_at,
@@ -210,9 +210,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
       setShowModal(false);
     } catch (err) {
       console.error('Appointment booking error:', err);
-      // En cas d'erreur réseau, on confirme quand même côté UX
-      setBooked(true);
-      setShowModal(false);
+      setErrorMsg(err?.message || '[appointment_booking_error] Impossible de planifier le rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmitting(false);
     }
@@ -269,7 +267,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '340px', margin: '0 auto' }}>
-          <Button variant="primary" onClick={() => setShowModal(true)} style={{ height: '52px', justifyContent: 'center', gap: '10px', borderRadius: '14px', fontWeight: 700, fontSize: '0.97rem', boxShadow: '0 8px 24px rgba(20,184,166,0.22)' }}>
+          <Button variant="primary" onClick={() => { setErrorMsg(''); setShowModal(true); }} style={{ height: '52px', justifyContent: 'center', gap: '10px', borderRadius: '14px', fontWeight: 700, fontSize: '0.97rem', boxShadow: '0 8px 24px rgba(20,184,166,0.22)' }}>
             <Calendar size={19} /> Prendre rendez-vous avec un expert
           </Button>
           <button type="button" onClick={handleFinish} style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '0.87rem', cursor: 'pointer', padding: '6px', textDecoration: 'underline', fontFamily: 'inherit' }}>
@@ -308,6 +306,12 @@ export const FinParcoursScreen = ({ onRestart }) => {
               </button>
             </div>
 
+            {errorMsg && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '10px 14px', borderRadius: '10px', marginBottom: '16px', fontSize: '0.83rem', fontWeight: 600 }}>
+                {errorMsg}
+              </div>
+            )}
+
             {/* ── ÉTAPE 1 : Calendrier ── */}
             <div style={{ marginBottom: '22px' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '12px' }}>
@@ -316,12 +320,13 @@ export const FinParcoursScreen = ({ onRestart }) => {
               <div style={{ background: '#FAFBFC', borderRadius: '16px', padding: '16px', border: '1px solid #E2E8F0' }}>
                 <MiniCalendar
                   selectedDate={selectedDate}
-                  onSelect={(d) => { setSelectedDate(d); setSelectedTime(null); }}
+                  onSelect={(d) => { setSelectedDate(d); setSelectedTime(null); setErrorMsg(''); }}
                 />
               </div>
               {selectedDate && (
-                <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, color: '#14B8A6' }}>
-                  📅 {formatDayFull(selectedDate)}
+                <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '0.82rem', fontWeight: 600, color: '#14B8A6', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Calendar size={14} />
+                  <span>{formatDayFull(selectedDate)}</span>
                 </div>
               )}
             </div>
@@ -344,7 +349,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
                     {TIME_SLOTS.filter(s => parseInt(s.time) < 12).map(slot => {
                       const isSel = selectedTime === slot.time;
                       return (
-                        <button key={slot.time} type="button" onClick={() => setSelectedTime(slot.time)} style={{ padding: '10px 4px', borderRadius: '10px', border: '1.5px solid', borderColor: isSel ? '#14B8A6' : '#E2E8F0', background: isSel ? 'linear-gradient(135deg,#14B8A6,#0E7490)' : '#FAFAFA', color: isSel ? '#fff' : '#334155', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: isSel ? '0 4px 10px rgba(20,184,166,0.3)' : 'none', fontFamily: 'inherit' }}>
+                        <button key={slot.time} type="button" onClick={() => { setSelectedTime(slot.time); setErrorMsg(''); }} style={{ padding: '10px 4px', borderRadius: '10px', border: '1.5px solid', borderColor: isSel ? '#14B8A6' : '#E2E8F0', background: isSel ? 'linear-gradient(135deg,#14B8A6,#0E7490)' : '#FAFAFA', color: isSel ? '#fff' : '#334155', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: isSel ? '0 4px 10px rgba(20,184,166,0.3)' : 'none', fontFamily: 'inherit' }}>
                           {slot.time}
                           {isSel && <div style={{ fontSize: '0.58rem', opacity: 0.85, marginTop: '2px' }}>→ {slot.endTime}</div>}
                         </button>
@@ -362,7 +367,7 @@ export const FinParcoursScreen = ({ onRestart }) => {
                     {TIME_SLOTS.filter(s => parseInt(s.time) >= 14).map(slot => {
                       const isSel = selectedTime === slot.time;
                       return (
-                        <button key={slot.time} type="button" onClick={() => setSelectedTime(slot.time)} style={{ padding: '10px 4px', borderRadius: '10px', border: '1.5px solid', borderColor: isSel ? '#14B8A6' : '#E2E8F0', background: isSel ? 'linear-gradient(135deg,#14B8A6,#0E7490)' : '#FAFAFA', color: isSel ? '#fff' : '#334155', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: isSel ? '0 4px 10px rgba(20,184,166,0.3)' : 'none', fontFamily: 'inherit' }}>
+                        <button key={slot.time} type="button" onClick={() => { setSelectedTime(slot.time); setErrorMsg(''); }} style={{ padding: '10px 4px', borderRadius: '10px', border: '1.5px solid', borderColor: isSel ? '#14B8A6' : '#E2E8F0', background: isSel ? 'linear-gradient(135deg,#14B8A6,#0E7490)' : '#FAFAFA', color: isSel ? '#fff' : '#334155', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: isSel ? '0 4px 10px rgba(20,184,166,0.3)' : 'none', fontFamily: 'inherit' }}>
                           {slot.time}
                           {isSel && <div style={{ fontSize: '0.58rem', opacity: 0.85, marginTop: '2px' }}>→ {slot.endTime}</div>}
                         </button>

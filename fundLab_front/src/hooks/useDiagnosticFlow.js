@@ -57,7 +57,37 @@ export function useDiagnosticFlow() {
   const [restitution, setRestitution] = useState(null);
   const [errorModal, setErrorModal] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [references, setReferences] = useState(null);
+
+  const retryConnection = async () => {
+    setIsRetrying(true);
+    try {
+      const res = await apiFetch('/reference-list');
+      if (res) {
+        setReferences(res);
+      }
+      // Re-fetch triage questions if empty
+      if (triageQuestions.length === 0) {
+        const qList = await questionsApi.getByModule('triage');
+        if (qList) {
+          const filtered = qList.map(q => ({
+            ...q,
+            choices: (q.choices || []).filter(c => c.id !== 'idk' && !c.label.toLowerCase().includes('ne sais pas'))
+          }));
+          setTriageQuestions(filtered);
+        }
+      }
+      setIsOffline(false);
+      return true;
+    } catch (err) {
+      console.error('Retry connection failed:', err);
+      return false;
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   const [triageQuestions, setTriageQuestions] = useState([]);
   const [isEnrichmentMode, setIsEnrichmentMode] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
@@ -85,7 +115,7 @@ export function useDiagnosticFlow() {
         }
       })
       .catch(err => {
-        if (err.isNetworkError || err.status >= 500) {
+        if (typeof window !== 'undefined' && window.navigator && window.navigator.onLine === false) {
           setIsOffline(true);
         }
       });
@@ -1266,6 +1296,8 @@ export function useDiagnosticFlow() {
     restitution, setRestitution,
     errorModal, setErrorModal,
     isOffline,
+    isRetrying,
+    retryConnection,
     references,
     triageQuestions,
     showResumeModal, setShowResumeModal,

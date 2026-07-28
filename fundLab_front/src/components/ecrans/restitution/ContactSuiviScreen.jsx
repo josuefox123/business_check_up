@@ -6,21 +6,42 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
   const [form, setForm] = useState({ nom: '', email: '', tel: '', entreprise: '', accept: false });
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAction = (actionType) => {
+  const handleAction = async (actionType) => {
     setErrorMsg('');
     if (actionType === 'pdf') {
       if (!form.nom || !form.email) {
         setErrorMsg('Le nom et l\'adresse e-mail sont obligatoires pour recevoir le résumé PDF.');
         return;
       }
-      onSubmit({ ...form, action: 'pdf' });
     } else if (actionType === 'suivi') {
       if (!form.nom || !form.tel) {
         setErrorMsg('Le nom et le numéro de téléphone / WhatsApp sont obligatoires pour être recontacté.');
         return;
       }
-      onSubmit({ ...form, action: 'suivi' });
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Schema compliant payload mapping
+      const payload = {
+        nom: form.nom,
+        email: form.email,
+        tel: form.tel,
+        entreprise: form.entreprise,
+        full_name: form.nom,
+        company_name: form.entreprise,
+        phone: form.tel,
+        action: actionType
+      };
+
+      await onSubmit(payload);
+    } catch (err) {
+      console.error('Erreur de soumission du formulaire de contact :', err);
+      setErrorMsg(err?.message || '[submit_contact_error] Impossible d\'envoyer le formulaire. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,6 +78,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 placeholder="Ex: Koffi SOGLO"
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -69,6 +91,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 placeholder="Ex: Ets Soglo &amp; Associés"
                 value={form.entreprise}
                 onChange={(e) => setForm({ ...form, entreprise: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -81,6 +104,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 placeholder="Ex: koffi@soglo.bj"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -93,6 +117,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
                 placeholder="Ex: +229 01 90 90 90 90"
                 value={form.tel}
                 onChange={(e) => setForm({ ...form, tel: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -101,20 +126,23 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
             <Button
               variant="teal"
               onClick={() => handleAction('pdf')}
-              style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff' }}
+              disabled={isSubmitting}
+              style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff', opacity: isSubmitting ? 0.7 : 1 }}
             >
-              Télécharger mon résumé PDF
+              {isSubmitting ? 'Traitement en cours...' : 'Télécharger mon résumé PDF'}
             </Button>
             <Button
               variant="primary"
               onClick={() => handleAction('suivi')}
-              style={{ width: '100%', justifyContent: 'center', gap: '8px' }}
+              disabled={isSubmitting}
+              style={{ width: '100%', justifyContent: 'center', gap: '8px', opacity: isSubmitting ? 0.7 : 1 }}
             >
-              Demander un suivi
+              {isSubmitting ? 'Envoi en cours...' : 'Demander un suivi'}
             </Button>
             <Button
               variant="outline"
               onClick={onSkip}
+              disabled={isSubmitting}
               style={{ width: '100%', justifyContent: 'center', border: 'none', color: 'var(--slate-500)', textDecoration: 'underline' }}
             >
               Ignorer et terminer

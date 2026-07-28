@@ -82,31 +82,26 @@ export const ResultatSyntheseScreen = ({
   onCatalog,
   onEnrichment
 }) => {
-  const scoreRaw = restitution?.scoring?.credibilized_score_0_100 
-    ?? restitution?.scoring?.converted_score_0_100 
-    ?? localScore;
+  const scoring = restitution?.scoring || {};
+  const restData = restitution?.restitution || restitution || {};
+
+  const scoreRaw = scoring?.converted_score_0_100 ?? restitution?.score;
   const parsedScore = typeof scoreRaw === 'number' ? scoreRaw : Number(scoreRaw || 0);
   const score = Math.max(0, Math.min(100, Math.round(parsedScore)));
 
   const lvl = getLevel(score);
 
-  const pointsAppui = normalizeToArray(restitution?.typical_strengths);
-  const strengthsList = normalizeToArray(restitution?.strengths);
-  const weaknessesList = normalizeToArray(restitution?.weaknesses);
-  const fragilitiesList = normalizeToArray(restitution?.typical_fragilities);
-  const prioritiesList = normalizeToArray(restitution?.priorities);
+  const pointsAppui = normalizeToArray(restData?.typical_strengths || restData?.strengths || scoring?.dominant_strength);
+  const fragilitiesList = normalizeToArray(restData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
+  const prioritiesList = normalizeToArray(restData?.priorities || scoring?.priorities);
 
-/*
-  const credScore = (() => {
-    const cs = restitution?.scoring?.credibility_score;
-    if (cs === null || cs === undefined) return '0%';
-    const num = Number(cs);
-    if (isNaN(num)) return String(cs);
-    return `${Math.round(num * 100)}%`;
-  })();
-*/
+  const credScoreRaw = scoring?.credibility_score;
+  const credScore = (credScoreRaw !== null && credScoreRaw !== undefined && credScoreRaw !== '')
+    ? (typeof credScoreRaw === 'number' ? `${Math.round(credScoreRaw <= 1 ? credScoreRaw * 100 : credScoreRaw)}%` : String(credScoreRaw))
+    : null;
 
-  const isCritical = restitution?.scoring?.has_critical_red_flag || score < 40;
+  const redFlagCount = scoring?.red_flag_count;
+  const isCritical = Boolean(scoring?.has_critical_red_flag) || score < 40;
 
   // SVG Gauge calculations
   const radius = 68;
@@ -121,7 +116,7 @@ export const ResultatSyntheseScreen = ({
         {/* Top Pill Badge */}
         <div className="res-pill-badge-wrap">
           <span className="res-pill-badge">
-            RÉSULTAT DIAGNOSTIC
+            {restitution?.module_name ? `RÉSULTAT DIAGNOSTIC — ${restitution.module_name.toUpperCase()}` : 'RÉSULTAT DIAGNOSTIC'}
           </span>
         </div>
 
@@ -129,6 +124,17 @@ export const ResultatSyntheseScreen = ({
         <h1 className="res-main-headline">
           Votre <strong>performance</strong> actuelle
         </h1>
+
+        {/* Urgent Attention Alert Banner if present */}
+        {restData?.urgent_attention && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', color: '#991B1B' }}>
+            <AlertOctagon size={24} style={{ flexShrink: 0 }} />
+            <div>
+              <strong style={{ display: 'block', fontSize: '0.9rem', marginBottom: '2px' }}>ATTENTION URGENTE</strong>
+              <span style={{ fontSize: '0.88rem' }}>{restData.urgent_attention}</span>
+            </div>
+          </div>
+        )}
 
         {/* Top Hero Block: Score (Left) + Résumé Diagnostic (Right on PC) */}
         <div className="res-pc-top-hero">
@@ -164,11 +170,19 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            {/* <div className="res-score-meta">
-              Crédibilité <strong>{credScore}</strong>
-            </div> */}
+            {credScore && (
+              <div style={{ marginTop: '12px', fontSize: '0.82rem', color: '#64748B' }}>
+                Indice de crédibilité : <strong>{credScore}</strong>
+              </div>
+            )}
+            {redFlagCount !== undefined && redFlagCount !== null && redFlagCount !== '' && (
+              <div style={{ marginTop: '4px', fontSize: '0.8rem', color: Number(redFlagCount) > 0 ? '#DC2626' : '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <AlertTriangle size={14} />
+                <span>{Number(redFlagCount) > 0 ? `${redFlagCount} alerte(s) de vigilance` : 'Aucune alerte majeure'}</span>
+              </div>
+            )}
 
-            <div>
+            <div style={{ marginTop: '12px' }}>
               <span
                 className="res-critical-pill"
                 style={{
@@ -195,27 +209,27 @@ export const ResultatSyntheseScreen = ({
             </div>
 
             <div className="res-level-highlight-sub" style={{ color: isCritical ? '#DC2626' : '#10B981' }}>
-              {restitution?.scoring?.band_label || lvl.label}
+              {scoring?.band_label ?? "[scoring.band_label non disponible]"}
             </div>
 
             <p className="res-card-paragraph">
-              {restitution?.summary && (
+              {restData?.summary && (
                 <span style={{ display: 'block', marginBottom: '10px' }}>
-                  {restitution.summary}
+                  {restData.summary}
                 </span>
               )}
-              {restitution?.interpretation_text && (
+              {restData?.interpretation_text && (
                 <span style={{ display: 'block', color: '#475569', fontStyle: 'italic' }}>
-                  {restitution.interpretation_text}
+                  {restData.interpretation_text}
                 </span>
               )}
-              {!restitution?.summary && !restitution?.interpretation_text && "Non reçu"}
+              {!restData?.summary && !restData?.interpretation_text && "[summary / interpretation_text non disponible]"}
             </p>
           </div>
         </div>
 
         {/* Row 2: Points d'appui Card */}
-        {(pointsAppui.length > 0 || strengthsList.length > 0) && (
+        {pointsAppui.length > 0 && (
           <div className="res-white-card">
             <div className="res-card-header">
               <span className="res-section-tag">POINTS D'APPUI</span>
@@ -235,12 +249,12 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            {(pointsAppui.length > 0 ? pointsAppui : strengthsList).map((item, idx) => {
+            {pointsAppui.map((item, idx) => {
               const parsed = parseItem(item);
               return (
                 <div key={idx} className="res-appui-inner">
                   <div className="res-appui-title">
-                    {parsed.title || 'Pas de titre'}
+                    {parsed.title || '[typical_strengths.title non disponible]'}
                   </div>
                   <div className="res-appui-desc">
                     {parsed.desc || ''}
@@ -251,18 +265,14 @@ export const ResultatSyntheseScreen = ({
           </div>
         )}
 
-        {/* Row 3: Priorités d'Action (Dark Card — 3 Columns on PC) */}
+        {/* Row 3: Priorités d'Action (Dark Card) */}
         <div className="res-dark-card">
           <div className="res-dark-header">
             <span className="res-dark-tag">PRIORITÉS D'ACTION</span>
           </div>
 
           <div className="res-dark-items-list">
-            {(prioritiesList.length > 0 ? prioritiesList : [
-              'Identifier le problème exact',
-              'Produire un élément concret',
-              'Demander un appui personnalisé'
-            ]).map((item, idx) => {
+            {(prioritiesList.length > 0 ? prioritiesList : ['[priorities non disponible]']).map((item, idx) => {
               const parsed = parseItem(item);
               return (
                 <div key={idx} className="res-dark-item-row">
@@ -291,21 +301,20 @@ export const ResultatSyntheseScreen = ({
           </div>
         </div>
 
-        {/* Row 4: Fragilités Typiques Stack (3 Columns on PC) */}
-        {(fragilitiesList.length > 0 || weaknessesList.length > 0) && (
+        {/* Row 4: Fragilités Typiques Stack */}
+        {fragilitiesList.length > 0 && (
           <div>
             <span className="res-section-title-label">FRAGILITÉS</span>
             <div className="res-item-cards-stack">
-              {(fragilitiesList.length > 0 ? fragilitiesList : weaknessesList).map((item, idx) => {
+              {fragilitiesList.map((item, idx) => {
                 const parsed = parseItem(item);
-                const icons = [<EyeOff size={16} key={1} />, <FileMinus size={16} key={2} />, <AlertCircle size={16} key={3} />];
                 return (
                   <div key={idx} className="res-item-card">
                     <div
                       className="res-item-icon-badge"
                       style={{ background: '#FEF2F2', color: '#EF4444' }}
                     >
-                      {icons[idx % icons.length]}
+                      <AlertCircle size={16} />
                     </div>
                     <div className="res-item-content">
                       <h4 className="res-item-title">{parsed.title}</h4>
@@ -319,14 +328,19 @@ export const ResultatSyntheseScreen = ({
           </div>
         )}
 
-        {/* Row 5: Orientation Recommandée & Prochain Diagnostic (2 Columns on PC) */}
+        {/* Row 5: Orientation Recommandée & Prochain Diagnostic */}
         <div className="res-reco-row">
-          {hasContent(restitution?.orientation_text) && (
+          {hasContent(restData?.orientation_text) && (
             <div className="res-reco-box">
               <span className="res-reco-label">ORIENTATION RECOMMANDEE</span>
               <div className="res-reco-value">
-                {restitution.orientation_text}
+                {restData.orientation_text}
               </div>
+              {restData?.follow_up_recommended && (
+                <div style={{ marginTop: '8px', fontSize: '0.82rem', color: '#059669', fontWeight: 600 }}>
+                  Suivi recommandé : {restData.follow_up_recommended}
+                </div>
+              )}
             </div>
           )}
 
@@ -350,8 +364,8 @@ export const ResultatSyntheseScreen = ({
                     'GOV-08': 'Diagnostic Organisation',
                     '360-09': 'Diagnostic Complet 360°',
                   };
-                  const code = restitution?.next_module;
-                  return moduleLabels[code] || code || 'Non défini';
+                  const code = restData?.next_module;
+                  return moduleLabels[code] || code || '[next_module non disponible]';
                 })()}
               </span>
             </div>
@@ -389,8 +403,13 @@ export const ResultatSyntheseScreen = ({
         {(restitution?.disclaimer || restitution?.disclaimer_financing) && (
           <div style={{ marginTop: '24px', textAlign: 'center' }}>
             {restitution?.disclaimer && (
-              <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.5', margin: 0 }}>
+              <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.5', margin: '0 0 6px 0' }}>
                 {restitution.disclaimer}
+              </p>
+            )}
+            {restitution?.disclaimer_financing && (
+              <p style={{ fontSize: '0.75rem', color: '#94A3B8', fontStyle: 'italic', margin: 0 }}>
+                {restitution.disclaimer_financing}
               </p>
             )}
           </div>

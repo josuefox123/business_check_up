@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import DiagnosticApp from './DiagnosticApp.jsx';
 import { AdminApp } from './components/admin/AdminApp.jsx';
 import { TestCurrencyScreen } from './components/ecrans/TestCurrencyScreen.jsx';
+import { TestRestitutionScreen } from './components/ecrans/TestRestitutionScreen.jsx';
 import { ReferencesProvider } from './contexts/ReferencesContext.jsx';
 
 // Utility component to force scroll restoration to top on route change
@@ -30,6 +31,7 @@ function App() {
         <ScrollToTop />
         <Routes>
           <Route path="/test-currency" element={<TestCurrencyScreen />} />
+          <Route path="/test-restitution" element={<TestRestitutionScreen />} />
           {/* L'accès /admin reste accessible pour les administrateurs même avant le lancement */}
           <Route path="/admin/*" element={<AdminApp />} />
           <Route

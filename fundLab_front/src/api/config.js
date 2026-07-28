@@ -33,26 +33,23 @@ export async function apiFetch(endpoint, options = {}) {
     ...(options.headers || {})
   };
 
-  // Récupérer le token de session si stocké
-  const sessionId = localStorage.getItem('bc_session_id');
-  if (sessionId) {
-    headers['X-Session-ID'] = sessionId;
-  }
-
-  // Récupérer le token auth admin si connecté
-  const token = localStorage.getItem('admin_token');
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  // Si vous gardez un jeton admin classique :
+  const adminToken = localStorage.getItem('admin_token');
+  if (adminToken) {
+    headers['Authorization'] = `Bearer ${adminToken}`;
   }
 
   let response;
   try {
     response = await fetch(url, {
       ...options,
+      credentials: 'include',
       headers
     });
   } catch (err) {
-    window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.onLine === false) {
+      window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
+    }
     const error = new Error(`Network Error: Le serveur API est injoignable.`);
     error.status = 503;
     error.isNetworkError = true;
@@ -67,7 +64,6 @@ export async function apiFetch(endpoint, options = {}) {
     throw error;
   }
 
-  // Si pas de contenu (204)
   if (response.status === 204) {
     return null;
   }
