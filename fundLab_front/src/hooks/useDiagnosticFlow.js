@@ -605,7 +605,7 @@ export function useDiagnosticFlow() {
 
       navigate('/diagnostic/route');
     } catch (err) {
-      console.error('Error submitting triage to backend:', err, err.data || err.errors);
+      console.error('[Triage] Technical error submitting triage to backend:', err, err.data || err.errors);
       const errMsg = err?.message || '';
 
       if (errMsg.includes('Duplicate entry') || errMsg.includes('23000') || errMsg.includes('UniqueConstraintViolationException')) {
@@ -620,12 +620,23 @@ export function useDiagnosticFlow() {
         return;
       }
 
-      const errObj = err.data?.errors || err.errors || {};
-      let details = Object.keys(errObj).length > 0 ? ' (Champs non valides : ' + Object.keys(errObj).join(', ') + ')' : '';
-      setErrorModal({
-        title: 'Erreur de validation du serveur',
-        message: `Le serveur a rejeté la soumission : ${err.message || 'Données non valides'}.${details}`
-      });
+      const isNetworkError = err?.isNetworkError || err?.message?.includes('Network Error') || (typeof window !== 'undefined' && window.navigator?.onLine === false);
+
+      if (isNetworkError) {
+        setErrorModal({
+          title: 'Problème de connexion',
+          message: 'Un problème de connexion réseau s\'est produit. Veuillez vérifier votre connexion internet et réessayer l\'envoi.',
+          actionLabel: 'Réessayer l\'envoi',
+          onAction: () => submitTriageToBackend(answers)
+        });
+      } else {
+        setErrorModal({
+          title: 'Erreur lors de l\'envoi de la réponse',
+          message: 'Une erreur est survenue lors de l\'envoi vers le serveur. Veuillez réessayer.',
+          actionLabel: 'Réessayer',
+          onAction: () => submitTriageToBackend(answers)
+        });
+      }
     }
   };
 
@@ -836,15 +847,28 @@ export function useDiagnosticFlow() {
         } catch (err) {
           // 409 = question déjà répondue
           if (err?.status === 409) {
-            // Ignorer
+            // Ignorer et continuer
           } else {
-            console.error('Error posting answer to backend:', err, err?.data);
+            console.error('[Diagnostic] Technical error posting answer to backend:', err, err?.data);
             lastSubmittedQuestionIdRef.current = null; // Débloquer la soumission pour permettre un nouvel essai
-            const backendMsg = err?.data?.message || err?.message || 'Erreur inconnue du serveur.';
-            setErrorModal({
-              title: 'Erreur d\'enregistrement de la réponse',
-              message: `Le serveur a renvoyé l'erreur suivante : "${backendMsg}". (Question: ${targetQuestionId})`
-            });
+
+            const isNetworkError = err?.isNetworkError || err?.message?.includes('Network Error') || (typeof window !== 'undefined' && window.navigator?.onLine === false);
+
+            if (isNetworkError) {
+              setErrorModal({
+                title: 'Problème de connexion',
+                message: 'Un problème de connexion réseau s\'est produit. Veuillez vérifier votre connexion internet et réessayer l\'envoi.',
+                actionLabel: 'Réessayer l\'envoi',
+                onAction: () => onAnswer(answer, proof, confidence, evidenceType, evidenceLabel)
+              });
+            } else {
+              setErrorModal({
+                title: 'Erreur lors de l\'envoi de la réponse',
+                message: 'Une erreur est survenue lors de l\'envoi vers le serveur. Veuillez réessayer.',
+                actionLabel: 'Réessayer',
+                onAction: () => onAnswer(answer, proof, confidence, evidenceType, evidenceLabel)
+              });
+            }
             return; // Bloquer le passage à la question suivante
           }
         }
