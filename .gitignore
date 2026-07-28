@@ -25,4 +25,5 @@ dist-ssr
 
 # Backend local clone ignore
 /backend
+.agents/AGENTS.md
 
