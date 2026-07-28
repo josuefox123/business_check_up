@@ -78,7 +78,10 @@ const ErrorModal = ({ title, message, onClose, actionLabel, onAction }) => (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {actionLabel && onAction && (
           <button
-            onClick={onAction}
+            onClick={() => {
+              onClose();
+              onAction();
+            }}
             style={{
               width: '100%', padding: '13px 20px', borderRadius: '12px',
               fontWeight: 750, fontSize: '0.95rem', border: 'none',

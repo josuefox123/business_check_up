@@ -54,11 +54,11 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
     'BTP': 'BTP / immobilier',
     'Autre': 'Autre'
   };
-  const rawSectorInput = answers.sector || (s05 && s05.secteur) || 'Services';
+  const rawSectorInput = answers.sector || 'Services';
   const sector = sectorMapping[rawSectorInput] || rawSectorInput;
 
   let normalizedCommune = null;
-  const rawCommune = answers.commune || (s05 && s05.commune);
+  const rawCommune = answers.commune;
   if (rawCommune) {
     const clean = rawCommune.trim().toLowerCase();
     const match = COMMUNE_LIST.find(c => c.toLowerCase() === clean) ||
@@ -67,7 +67,7 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
   }
 
   let years_in_activity = null;
-  const rawYear = answers.year_created || (s05 && s05.creation_year);
+  const rawYear = answers.year_created;
   if (rawYear) {
     const parsedYear = parseInt(rawYear, 10);
     if (!isNaN(parsedYear)) {
@@ -90,21 +90,21 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
     '50+': '501+',
     '501+': '501+'
   };
-  const rawEmpRange = answers.employee_count_range || (s05 && s05.employee_count_range) || '1-10';
+  const rawEmpRange = answers.employee_count_range || '1-10';
   const employee_count_range = empRangeMapping[rawEmpRange] || rawEmpRange;
 
   const payload = {
     user_profile_type,
-    ...( (answers.name || answers.full_name || (answers.s05 && answers.s05.full_name)) ? { full_name: answers.name || answers.full_name || answers.s05.full_name } : {} ),
-    ...( (answers.phone || answers.phone_number || (answers.s05 && answers.s05.phone_number)) ? { phone_number: answers.phone || answers.phone_number || answers.s05.phone_number } : {} ),
-    ...( (answers.whatsapp_number || (answers.s05 && answers.s05.whatsapp_number)) ? { whatsapp_number: answers.whatsapp_number || answers.s05.whatsapp_number } : {} ),
-    ...( (answers.email || (answers.s05 && answers.s05.email)) ? { email: answers.email || answers.s05.email } : {} ),
-    business_name: answers.business_name || (s05 && s05.business_name) || null,
-    description: answers.description || answers.activity_description || (s05 && s05.activity_description) || null,
+    ...( (answers.name || answers.full_name) ? { full_name: answers.name || answers.full_name } : {} ),
+    ...( (answers.phone || answers.phone_number) ? { phone_number: answers.phone || answers.phone_number } : {} ),
+    ...( answers.whatsapp_number ? { whatsapp_number: answers.whatsapp_number } : {} ),
+    ...( answers.email ? { email: answers.email } : {} ),
+    business_name: answers.business_name || null,
+    description: answers.description || answers.activity_description || null,
     region,
     commune: normalizedCommune,
     sector,
-    sub_sector: answers.sub_sector || (s05 && s05.soussecteur) || null,
+    sub_sector: answers.sub_sector || null,
     activity_stage,
     entry_mode,
     primary_need,
@@ -115,7 +115,7 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
     years_in_activity,
     year_created: rawYear || null,
     ca_n_1: (() => {
-      const raw = answers.ca_n_1 || (answers.s05 && (answers.s05.ca_n_1 || answers.s05.last_year_turnover)) || null;
+      const raw = answers.ca_n_1 || null;
       if (!raw) return null;
       const cleaned = String(raw).replace(/[\s\.FCAfca]/g, '');
       const num = Number(cleaned);
@@ -123,7 +123,7 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
       return Math.min(999999999999.99, num).toString();
     })(),
     ca_m_1: (() => {
-      const raw = answers.ca_m_1 || (answers.s05 && (answers.s05.ca_m_1 || answers.s05.last_month_turnover)) || null;
+      const raw = answers.ca_m_1 || null;
       if (!raw) return null;
       const cleaned = String(raw).replace(/[\s\.FCAfca]/g, '');
       const num = Number(cleaned);
@@ -132,19 +132,13 @@ export async function submitTriageToBackendApi(sessionId, answers = {}) {
     })(),
     employee_count_range,
     main_offer_type: (() => {
-      const raw = answers.main_offer_type || answers.s10 || null;
+      const raw = answers.main_offer_type || null;
       if (!raw) return 'service';
       const offerMap = {
         'main_product': 'physical_product',
         'physical_product': 'physical_product',
         'digital_product': 'digital_product',
-        'professional_service': 'service',
         'service': 'service',
-        'consulting_service': 'consulting',
-        'consulting': 'consulting',
-        'subscription_service': 'subscription',
-        'subscription': 'subscription',
-        'multiple_offers': 'multiple_offers',
         'other': 'other'
       };
       return offerMap[raw] || 'service';
