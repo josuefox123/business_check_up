@@ -336,43 +336,35 @@ export function useDiagnosticFlow() {
 
   const setTA = (key, val) => setTriageAnswers(p => ({ ...p, [key]: val }));
 
-  const onS03 = (val) => {
-    setTA('s03', val);
-    if (val === 'curious') {
-      navigate('/a-propos');
-    } else {
-      setTriageStep(6);
-    }
-  };
-
-  const onS04 = (val) => {
-    setTA('s04', val);
-    setTriageStep(7);
-  };
-
   const onS00 = (val) => {
     setTA('s00', val);
-    setTriageStep(4);
+    const isAuthenticated = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    if (isAuthenticated) {
+      setTriageStep(5);
+    } else {
+      setTriageStep(4);
+    }
   };
 
   const onTriageProfileSubmit = (profileData) => {
     const updated = {
       ...triageAnswers,
-      s05: {
-        ...(triageAnswers?.s05 || {}),
-        business_name: profileData.business_name || null,
-        region: profileData.region,
-        commune: profileData.commune || null,
-        secteur: profileData.sector,
-        soussecteur: profileData.sub_sector || null,
-        creation_year: profileData.year_created || null,
-      },
-      name: profileData.full_name || null,
-      phone: profileData.phone_number || null,
+      full_name: profileData.full_name || null,
+      phone_number: profileData.phone_number || null,
+      whatsapp_number: profileData.whatsapp_number || null,
       email: profileData.email || null,
+      business_name: profileData.business_name || null,
+      region: profileData.region || 'Atlantique',
+      commune: profileData.commune || null,
+      sector: profileData.sector || null,
+      sub_sector: profileData.sub_sector || null,
+      year_created: profileData.year_created || null,
+      ca_n_1: profileData.ca_n_1 || null,
+      ca_m_1: profileData.ca_m_1 || null,
+      employee_count_range: profileData.employee_count_range || null,
+      description: profileData.activity_description || null
     };
     setTriageAnswers(updated);
-
     setTriageStep(5);
   };
 
@@ -504,21 +496,6 @@ export function useDiagnosticFlow() {
     }
   };
 
-  const onS05 = (val) => {
-    setTA('s05', val);
-    setTriageStep(5);
-  };
-
-  const onS06 = (val) => {
-    setTA('s06', val);
-    setTriageStep(8);
-  };
-
-  const onS07 = (val) => {
-    setTA('s07', val);
-    setTriageStep(9);
-  };
-
 
 
   const submitTriageToBackend = async (answers) => {
@@ -638,28 +615,6 @@ export function useDiagnosticFlow() {
         });
       }
     }
-  };
-
-  const onS08 = (val) => {
-    setTA('s08', val);
-    if (val === 'no' || val === 'idk') {
-      setTriageStep(10);
-    } else {
-      setTriageStep(11);
-    }
-  };
-
-  const onS09 = (val) => {
-    setTA('s09', val);
-    setTriageStep(11);
-  };
-
-  const onS10 = (val) => {
-    setTA('s10', val);
-    const answersWithS10 = { ...triageAnswers, s10: val };
-    setTriageAnswers(answersWithS10);
-    // Redirection directe vers la soumission backend (qui affiche l'écran d'analyse) sans étape de félicitations
-    submitTriageToBackend(answersWithS10);
   };
 
   const onConfirmTriageCompletion = () => {
@@ -1036,10 +991,10 @@ export function useDiagnosticFlow() {
       email,
       phone,
       companyName: company,
-      sector: triageAnswers.s05?.secteur || '',
-      department: triageAnswers.s05?.region || '',
-      commune: triageAnswers.s05?.commune || '',
-      profile: triageAnswers.s03 || 'active',
+      sector: triageAnswers.sector || '',
+      department: triageAnswers.region || '',
+      commune: triageAnswers.commune || '',
+      profile: triageAnswers['TRI-00-Q01'] || triageAnswers.user_profile_type || 'active',
       contactRequested: action === 'suivi',
       pdfDownloaded: action === 'pdf'
     };
@@ -1177,30 +1132,22 @@ export function useDiagnosticFlow() {
   const onProfileInitialSubmit = async (profileData) => {
     const updatedTriageAnswers = {
       ...triageAnswers,
-      s03: profileData.user_profile_type,
-      s04: profileData.activity_stage,
-      s05: {
-        ...(triageAnswers?.s05 || {}),
-        business_name: profileData.business_name || null,
-        activity_description: profileData.activity_description || null,
-        region: profileData.region,
-        commune: profileData.commune || null,
-        secteur: profileData.sector,
-        soussecteur: profileData.sub_sector || null,
-        creation_year: profileData.year_created || null,
-      },
-      name: profileData.full_name || null,
-      full_name: profileData.full_name || null,
-      phone: profileData.phone_number || null,
-      phone_number: profileData.phone_number || null,
-      email: profileData.email || null,
-      activity_description: profileData.activity_description || null,
-      description: profileData.activity_description || null,
-      s00: triageAnswers?.s00 || 'direct',
-      s06: triageAnswers?.s06 || 'global_understanding',
-      s07: triageAnswers?.s07 || [],
-      s08: triageAnswers?.s08 || 'none',
-      s09: triageAnswers?.s09 || 'full_360'
+      user_profile_type: profileData.user_profile_type || triageAnswers.user_profile_type || null,
+      activity_stage: profileData.activity_stage || triageAnswers.activity_stage || null,
+      business_name: profileData.business_name || triageAnswers.business_name || null,
+      activity_description: profileData.activity_description || triageAnswers.activity_description || null,
+      description: profileData.activity_description || triageAnswers.description || null,
+      region: profileData.region || triageAnswers.region || 'Atlantique',
+      commune: profileData.commune || triageAnswers.commune || null,
+      sector: profileData.sector || triageAnswers.sector || null,
+      sub_sector: profileData.sub_sector || triageAnswers.sub_sector || null,
+      year_created: profileData.year_created || triageAnswers.year_created || null,
+      full_name: profileData.full_name || triageAnswers.full_name || null,
+      name: profileData.full_name || triageAnswers.name || null,
+      phone_number: profileData.phone_number || triageAnswers.phone_number || null,
+      phone: profileData.phone_number || triageAnswers.phone || null,
+      email: profileData.email || triageAnswers.email || null,
+      s00: triageAnswers?.s00 || 'direct'
     };
     setTriageAnswers(updatedTriageAnswers);
 
@@ -1270,34 +1217,26 @@ export function useDiagnosticFlow() {
 
     const formattedAnswers = {
       ...triageAnswers,
-      s03: profileData.user_profile_type || triageAnswers.s03,
-      s04: profileData.activity_stage || triageAnswers.s04,
-      s05: {
-        ...(triageAnswers?.s05 || {}),
-        business_name: profileData.business_name || triageAnswers?.s05?.business_name || null,
-        activity_description: profileData.activity_description || triageAnswers?.s05?.activity_description || null,
-        region: profileData.region || triageAnswers?.s05?.region || 'Atlantique',
-        commune: profileData.commune || triageAnswers?.s05?.commune || null,
-        secteur: profileData.sector || triageAnswers?.s05?.secteur || 'Services',
-        soussecteur: profileData.sub_sector || triageAnswers?.s05?.soussecteur || null,
-        creation_year: profileData.year_created || triageAnswers?.s05?.creation_year || null,
-      },
-      name: profileData.full_name || triageAnswers.name || null,
+      user_profile_type: profileData.user_profile_type || triageAnswers['TRI-00-Q01'] || triageAnswers.user_profile_type || null,
+      activity_stage: profileData.activity_stage || triageAnswers['TRI-00-Q02'] || triageAnswers.activity_stage || null,
+      business_name: profileData.business_name || triageAnswers.business_name || null,
+      activity_description: profileData.activity_description || triageAnswers.activity_description || null,
+      description: profileData.activity_description || profileData.description || triageAnswers.description || null,
+      region: profileData.region || triageAnswers.region || 'Atlantique',
+      commune: profileData.commune || triageAnswers.commune || null,
+      sector: profileData.sector || triageAnswers.sector || 'Services',
+      sub_sector: profileData.sub_sector || triageAnswers.sub_sector || null,
+      year_created: profileData.year_created || triageAnswers.year_created || null,
       full_name: profileData.full_name || triageAnswers.full_name || triageAnswers.name || null,
-      phone: profileData.phone_number || triageAnswers.phone || null,
+      name: profileData.full_name || triageAnswers.full_name || triageAnswers.name || null,
       phone_number: profileData.phone_number || triageAnswers.phone_number || triageAnswers.phone || null,
-      whatsapp_number: '',
+      phone: profileData.phone_number || triageAnswers.phone_number || triageAnswers.phone || null,
+      whatsapp_number: profileData.whatsapp_number || triageAnswers.whatsapp_number || '',
       email: profileData.email || triageAnswers.email || null,
-      activity_description: profileData.activity_description || triageAnswers.activity_description || triageAnswers?.s05?.activity_description || null,
-      description: profileData.activity_description || profileData.description || triageAnswers.description || triageAnswers.activity_description || triageAnswers?.s05?.activity_description || null,
-      ca_n_1: profileData.ca_n_1 || null,
-      ca_m_1: profileData.ca_m_1 || null,
-      employee_count_range: profileData.employee_count_range || null,
-      s00: triageAnswers?.s00 || 'direct',
-      s06: triageAnswers?.s06 || 'global_understanding',
-      s07: triageAnswers?.s07 || [],
-      s08: triageAnswers?.s08 || 'none',
-      s09: triageAnswers?.s09 || 'full_360'
+      ca_n_1: profileData.ca_n_1 || triageAnswers.ca_n_1 || null,
+      ca_m_1: profileData.ca_m_1 || triageAnswers.ca_m_1 || null,
+      employee_count_range: profileData.employee_count_range || triageAnswers.employee_count_range || null,
+      s00: triageAnswers?.s00 || 'direct'
     };
 
     setTriageAnswers(formattedAnswers);
@@ -1369,14 +1308,6 @@ export function useDiagnosticFlow() {
     onConsent,
     onS00,
     onTriageProfileSubmit,
-    onS03,
-    onS04,
-    onS05,
-    onS06,
-    onS07,
-    onS08,
-    onS09,
-    onS10,
     onRouteStart,
     onRouteCatalog,
     onRouteBack,

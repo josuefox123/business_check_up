@@ -345,8 +345,13 @@ function DiagnosticApp() {
             {(flow.triageStep === 1 || flow.triageStep === 2 || !flow.triageStep) && (
               <TriageStartLoadingScreen
                 onComplete={() => {
-                  const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
-                  flow.setTriageStep(hasEntry ? 3 : 4);
+                  const isAuthenticated = localStorage.getItem('bc_is_authenticated') === 'true';
+                  if (isAuthenticated) {
+                    flow.setTriageStep(5);
+                  } else {
+                    const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+                    flow.setTriageStep(hasEntry ? 3 : 4);
+                  }
                 }}
               />
             )}
