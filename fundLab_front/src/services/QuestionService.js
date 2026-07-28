@@ -6,7 +6,16 @@
 import { questionsApi } from '../api/questionsApi.js';
 
 export const QuestionService = {
-  getQuestionsByModule(moduleId, questionKind = 'diagnostic') {
+  getTriageQuestions() {
+    return questionsApi.getTriageQuestions();
+  },
+  getDiagnosticQuestions(moduleCode) {
+    return questionsApi.getDiagnosticQuestions(moduleCode);
+  },
+  getEnrichmentQuestions(moduleCode) {
+    return questionsApi.getEnrichmentQuestions(moduleCode);
+  },
+  getByModule(moduleId, questionKind = 'diagnostic') {
     return questionsApi.getByModule(moduleId, questionKind);
   },
   saveQuestion(moduleId, question) {

@@ -69,7 +69,7 @@ export function useDiagnosticFlow() {
       }
       // Re-fetch triage questions if empty
       if (triageQuestions.length === 0) {
-        const qList = await questionsApi.getByModule('triage');
+        const qList = await questionsApi.getTriageQuestions();
         if (qList) {
           const filtered = qList.map(q => ({
             ...q,
@@ -121,7 +121,7 @@ export function useDiagnosticFlow() {
       });
 
     // Fetch triage questions from backend module TRI-00
-    questionsApi.getByModule('triage')
+    questionsApi.getTriageQuestions()
       .then(qList => {
         if (qList) {
           const filtered = qList.map(q => ({
@@ -227,7 +227,7 @@ export function useDiagnosticFlow() {
 
   useEffect(() => {
     if (currentModule) {
-      QuestionService.getQuestionsByModule(currentModule.id, 'diagnostic')
+      QuestionService.getDiagnosticQuestions(currentModule.id)
         .then(res => {
           if (res) {
             const filtered = res.map(q => ({
@@ -1099,7 +1099,7 @@ export function useDiagnosticFlow() {
   const onStartEnrichmentQuestions = async () => {
     if (!currentModule) return;
     try {
-      const qList = await questionsApi.getByModule(currentModule.id, 'enrichment');
+      const qList = await QuestionService.getEnrichmentQuestions(currentModule.id);
       if (qList && qList.length > 0) {
         setQuestions(qList);
         setQuestionIndex(0);

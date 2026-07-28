@@ -38,7 +38,7 @@ export const questionnairesApi = {
 
     return Promise.all([
       apiFetch(`/modules/${moduleId}`).catch(() => null),
-      questionsApi.getByModule(moduleId).catch(() => [])
+      questionsApi.getDiagnosticQuestions(moduleId).catch(() => [])
     ])
     .then(([modRes, questions]) => {
       const mod = modRes?.data || modRes;
