@@ -11,33 +11,21 @@ import { BACKEND_REFERENCES } from '../constants/referenceData.js';
  * Soumettre les réponses de triage au backend
  * POST /sessions/{sessionId}/triage
  */
-export async function submitTriageToBackendApi(sessionId, answers) {
-  const { s03, s04, s05 = {}, s06, s07 = [], s08, s09 } = answers;
-
-  // Récupérer la 1ère valeur dynamique fournie par le backend si aucune valeur n'est saisie
-  const firstProfile = BACKEND_REFERENCES.user_profile_type[0]?.value || null;
-  const firstStage = BACKEND_REFERENCES.activity_stage[0]?.value || null;
-  const firstNeed = BACKEND_REFERENCES.primary_need[0]?.value || null;
-  const firstRisk = BACKEND_REFERENCES.risk_flag[0]?.value ? [BACKEND_REFERENCES.risk_flag[0].value] : null;
-  const firstOpport = BACKEND_REFERENCES.opporttunity_type[0]?.value || null;
-  const firstTopic = BACKEND_REFERENCES.dominant_topic[0]?.value || null;
-  const firstMode = BACKEND_REFERENCES.entry_mode[0]?.value || null;
-  const firstTime = BACKEND_REFERENCES.tume_available[0]?.value || null;
-
-  const user_profile_type = answers.user_profile_type || s03 || firstProfile;
-  const activity_stage = answers.activity_stage || s04 || firstStage;
-  const primary_need = answers.primary_need || s06 || firstNeed;
+export async function submitTriageToBackendApi(sessionId, answers = {}) {
+  // Mapping strict et direct depuis les questions dynamiques TRI-00 (sans fallbacks factices)
+  const user_profile_type = answers['TRI-00-Q01'] || answers.user_profile_type || null;
+  const activity_stage = answers['TRI-00-Q02'] || answers.activity_stage || null;
+  const primary_need = answers['TRI-00-Q03'] || answers.primary_need || null;
   
-  const risk_flags = (Array.isArray(answers.risk_flags) && answers.risk_flags.length > 0)
-    ? answers.risk_flags
-    : ((Array.isArray(s07) && s07.length > 0) ? s07 : firstRisk);
+  const triQ04Risk = answers['TRI-00-Q04'] || answers.risk_flags;
+  const risk_flags = Array.isArray(triQ04Risk) ? triQ04Risk : (triQ04Risk ? [triQ04Risk] : []);
 
-  const opportunity_type = answers.opportunity_type || s08 || firstOpport;
-  const dominant_topic = answers.dominant_topic || s09 || firstTopic;
-  const entry_mode = answers.entry_mode || firstMode;
-  const time_available = answers.time_available || firstTime;
+  const opportunity_type = answers['TRI-00-Q05'] || answers.opportunity_type || null;
+  const dominant_topic = answers['TRI-00-Q06'] || answers.dominant_topic || null;
+  const entry_mode = answers.entry_mode || 'assisted';
+  const time_available = answers.time_available || '7_10_min';
 
-  const region = answers.region || (s05 && s05.region) || 'Atlantique';
+  const region = answers.region || 'Atlantique';
 
   // Normaliser le secteur vers les chaînes exactes attendues par la validation backend
   const sectorMapping = {

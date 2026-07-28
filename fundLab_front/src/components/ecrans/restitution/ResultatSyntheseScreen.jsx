@@ -96,7 +96,7 @@ export const ResultatSyntheseScreen = ({
   const fragilitiesList = normalizeToArray(restData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
   const prioritiesList = normalizeToArray(restData?.priorities || scoring?.priorities);
 
-  const credScoreRaw = scoring?.credibility_score;
+  const credScoreRaw = scoring?.credibility_score ?? "score_credibilite non disponible";
   const credScore = (credScoreRaw !== null && credScoreRaw !== undefined && credScoreRaw !== '')
     ? (typeof credScoreRaw === 'number' ? `${Math.round(credScoreRaw <= 1 ? credScoreRaw * 100 : credScoreRaw)}%` : String(credScoreRaw))
     : null;
@@ -193,9 +193,9 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            {credScore && (
+            {credScoreRaw && (
               <div style={{ marginTop: '12px', fontSize: '0.82rem', color: '#64748B' }}>
-                Indice de crédibilité : <strong>{credScore}</strong>
+                Indice de crédibilité : <strong>{credScoreRaw}</strong>
               </div>
             )}
             {redFlagCount !== undefined && redFlagCount !== null && redFlagCount !== '' && (

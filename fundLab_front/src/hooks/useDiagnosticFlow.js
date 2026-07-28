@@ -376,6 +376,20 @@ export function useDiagnosticFlow() {
     setTriageStep(5);
   };
 
+  const onTriageDynamicAnswer = (qId, ans, index) => {
+    const updated = {
+      ...triageAnswers,
+      [qId]: ans
+    };
+    setTriageAnswers(updated);
+
+    if (triageQuestions && index + 1 >= triageQuestions.length) {
+      submitTriageToBackend(updated);
+    } else {
+      setTriageStep(p => p + 1);
+    }
+  };
+
   const handleInitiateEmailVerification = async (profileData) => {
     setPendingProfileData(profileData);
 
@@ -1318,6 +1332,7 @@ export function useDiagnosticFlow() {
     retryConnection,
     references,
     triageQuestions,
+    onTriageDynamicAnswer,
     showResumeModal, setShowResumeModal,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,

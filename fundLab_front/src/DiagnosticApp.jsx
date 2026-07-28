@@ -18,7 +18,6 @@ import {
   TriageStartLoadingScreen,
   DiagnosticStartLoadingScreen,
   ChoixEntreeScreen,
-  S03Screen, S04Screen, S05Screen,
   TriageScreen,
   RouteScreen,
   CatalogScreen,
@@ -75,7 +74,7 @@ const ErrorModal = ({ title, message, onClose, actionLabel, onAction }) => (
       </div>
       <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1E293B', marginBottom: '10px' }}>{title}</h2>
       <p style={{ fontSize: '0.9rem', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>{message}</p>
-      
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {actionLabel && onAction && (
           <button
@@ -136,10 +135,10 @@ const ResumeDiagnosticModal = ({ onConfirm, onCancel }) => (
         margin: '0 auto 20px',
       }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-blue, #2659F2)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-          <path d="M16 3h5v5"/>
-          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-          <path d="M8 21H3v-5"/>
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M16 3h5v5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 21H3v-5" />
         </svg>
       </div>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#17212D', marginBottom: '10px', fontFamily: 'var(--font)' }}>Reprendre le diagnostic ?</h2>
@@ -183,10 +182,10 @@ function DiagnosticApp() {
 
   const getTriageQuestion = (role) => {
     if (role === 'main_offer_type') {
-      const q = flow.triageQuestions?.find(item => 
-        item.axe === 'main_offer_type' || 
-        item.axe === 'offer_type' || 
-        item.id === 'TRI-00-Q07' || 
+      const q = flow.triageQuestions?.find(item =>
+        item.axe === 'main_offer_type' ||
+        item.axe === 'offer_type' ||
+        item.id === 'TRI-00-Q07' ||
         item.question?.toLowerCase().includes('phare')
       );
       if (q) return q;
@@ -211,7 +210,7 @@ function DiagnosticApp() {
 
   const showNavbar = location.pathname !== '/diagnostic/fin';
 
-  const isDiagnosticPath = 
+  const isDiagnosticPath =
     location.pathname.startsWith('/triage/') ||
     location.pathname.startsWith('/diagnostic/') ||
     location.pathname === '/catalog';
@@ -226,16 +225,16 @@ function DiagnosticApp() {
             L'accès aux diagnostics nécessite une connexion au serveur. Veuillez vérifier votre réseau ou réessayer la connexion.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button 
+            <button
               onClick={flow.retryConnection}
               disabled={flow.isRetrying}
-              style={{ 
-                background: '#2563EB', 
-                color: '#FFFFFF', 
-                border: 'none', 
-                padding: '12px 24px', 
-                borderRadius: '8px', 
-                fontWeight: 700, 
+              style={{
+                background: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontWeight: 700,
                 cursor: flow.isRetrying ? 'not-allowed' : 'pointer',
                 opacity: flow.isRetrying ? 0.7 : 1,
                 display: 'inline-flex',
@@ -245,16 +244,16 @@ function DiagnosticApp() {
             >
               {flow.isRetrying ? 'Connexion en cours...' : '🔄 Réessayer'}
             </button>
-            <button 
+            <button
               onClick={() => window.location.href = '/'}
-              style={{ 
-                background: '#F1F5F9', 
-                color: '#475569', 
-                border: '1px solid #CBD5E1', 
-                padding: '12px 24px', 
-                borderRadius: '8px', 
-                fontWeight: 700, 
-                cursor: 'pointer' 
+              style={{
+                background: '#F1F5F9',
+                color: '#475569',
+                border: '1px solid #CBD5E1',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer'
               }}
             >
               Retour à l'accueil
@@ -386,67 +385,27 @@ function DiagnosticApp() {
                 />
               )
             )}
-            {flow.triageStep === 5 && <S03Screen question={getTriageQuestion('profile')} currentStep={0} totalSteps={totalTriageSteps} onContinue={flow.onS03} onBack={() => flow.setTriageStep(4)} initialAnswer={flow.triageAnswers.s03 ?? null} />}
-            {flow.triageStep === 6 && <S04Screen question={getTriageQuestion('stage')} currentStep={1} totalSteps={totalTriageSteps} onContinue={flow.onS04} onBack={() => flow.setTriageStep(5)} initialAnswer={flow.triageAnswers.s04 ?? null} />}
-            {flow.triageStep === 7 && (
-              <TriageScreen
-                step="S06"
-                question={getTriageQuestion('intention')}
-                progress={{ current: 2, total: totalTriageSteps }}
-                choices={flow.references?.primary_need || []}
-                onContinue={flow.onS06}
-                onBack={() => flow.setTriageStep(6)}
-                initialAnswer={flow.triageAnswers.s06 ?? null}
-              />
-            )}
-            {flow.triageStep === 8 && (
-              <TriageScreen
-                step="S07"
-                question={getTriageQuestion('risk')}
-                progress={{ current: 3, total: totalTriageSteps }}
-                multi
-                choices={flow.references?.risk_flag || []}
-                onContinue={flow.onS07}
-                onBack={() => flow.setTriageStep(7)}
-                initialAnswer={flow.triageAnswers.s07 ?? null}
-              />
-            )}
-            {flow.triageStep === 9 && (
-              <TriageScreen
-                step="S08"
-                question={getTriageQuestion('opportunity')}
-                progress={{ current: 4, total: totalTriageSteps }}
-                choices={flow.references?.opporttunity_type || flow.references?.opportunity_type || []}
-                onContinue={flow.onS08}
-                onBack={() => flow.setTriageStep(8)}
-                initialAnswer={flow.triageAnswers.s08 ?? null}
-              />
-            )}
-            {flow.triageStep === 10 && (
-              <TriageScreen
-                step="S09"
-                question={getTriageQuestion('topic')}
-                progress={{ current: 5, total: totalTriageSteps }}
-                choices={flow.references?.dominant_topic || []}
-                onContinue={flow.onS09}
-                onBack={() => flow.setTriageStep(9)}
-                initialAnswer={flow.triageAnswers.s09 ?? null}
-              />
-            )}
-            {flow.triageStep === 11 && (
-              <TriageScreen
-                step="S10"
-                question={getTriageQuestion('main_offer_type')}
-                progress={{ current: 6, total: totalTriageSteps }}
-                choices={getTriageQuestion('main_offer_type')?.choices || []}
-                onContinue={flow.onS10}
-                onBack={() => {
-                  const hasOpp = flow.triageAnswers.s08 && flow.triageAnswers.s08 !== 'none' && flow.triageAnswers.s08 !== 'unknown';
-                  flow.setTriageStep(hasOpp ? 9 : 10);
-                }}
-                initialAnswer={flow.triageAnswers.s10 ?? null}
-              />
-            )}
+            {flow.triageStep >= 5 && (() => {
+              const triageList = flow.triageQuestions || [];
+              const triageIndex = flow.triageStep - 5;
+              if (triageList.length > 0 && triageIndex < triageList.length) {
+                const currentQ = triageList[triageIndex];
+                const isMulti = currentQ?.type === 'multi' || currentQ?.answer_type === 'multi_choice';
+                return (
+                  <TriageScreen
+                    key={currentQ.id || `tri_${triageIndex}`}
+                    step={`TRI_${triageIndex + 1}`}
+                    question={currentQ}
+                    progress={{ current: triageIndex + 1, total: triageList.length }}
+                    multi={isMulti}
+                    onContinue={(ans) => flow.onTriageDynamicAnswer(currentQ.id, ans, triageIndex)}
+                    onBack={() => flow.setTriageStep(flow.triageStep - 1)}
+                    initialAnswer={flow.triageAnswers[currentQ.id] ?? null}
+                  />
+                );
+              }
+              return null;
+            })()}
           </>
         } />
 
@@ -568,20 +527,20 @@ function DiagnosticApp() {
               errorMsg={flow.emailVerificationError}
             />
           ) : (
-            <UserProfileFormScreen 
+            <UserProfileFormScreen
               mode="initial"
-              onSubmit={flow.handleInitiateEmailVerification} 
-              onBack={() => navigate('/diagnostic/intro')} 
+              onSubmit={flow.handleInitiateEmailVerification}
+              onBack={() => navigate('/diagnostic/intro')}
               triageAnswers={flow.triageAnswers}
             />
           )
         } />
         <Route path="/diagnostic/profil" element={
-          <UserProfileFormScreen 
+          <UserProfileFormScreen
             mode="final"
-            onSubmit={flow.onProfileSubmit} 
-            onSkip={flow.onProfileSkip} 
-            onBack={flow.onProfileBack} 
+            onSubmit={flow.onProfileSubmit}
+            onSkip={flow.onProfileSkip}
+            onBack={flow.onProfileBack}
             triageAnswers={flow.triageAnswers}
           />
         } />
