@@ -82,6 +82,7 @@ export const ResultatSyntheseScreen = ({
   onCatalog,
   onEnrichment
 }) => {
+  // Rule 9: Normalisation des données et préparation de l'état dérivé au sommet du composant
   const scoring = restitution?.scoring || {};
   const restData = restitution?.restitution || restitution || {};
 
@@ -103,6 +104,28 @@ export const ResultatSyntheseScreen = ({
   const redFlagCount = scoring?.red_flag_count;
   const isCritical = Boolean(scoring?.has_critical_red_flag) || score < 40;
 
+  const displayModuleName = restitution?.module_name ? `RÉSULTAT DIAGNOSTIC — ${restitution.module_name.toUpperCase()}` : 'RÉSULTAT DIAGNOSTIC';
+  const bandLabelText = scoring?.band_label ?? "[scoring.band_label non disponible]";
+
+  const moduleLabels = {
+    'PRJ-02': 'Diagnostic Projet',
+    'FLH-01': 'Diagnostic Flash',
+    'DIF-03': 'Diagnostic Difficulté',
+    'OPP-04': 'Diagnostic Opportunité',
+    'PRO-05': 'Diagnostic Offre/Produits',
+    'COM-06': 'Diagnostic Commercial',
+    'FIN-07': 'Diagnostic Finance',
+    'GOV-08': 'Diagnostic Organisation',
+    '360-09': 'Diagnostic Complet 360°',
+  };
+  const nextModuleCode = restData?.next_module;
+  const nextModuleName = moduleLabels[nextModuleCode] || nextModuleCode || '[next_module non disponible]';
+
+  const hasPointsAppui = pointsAppui.length > 0;
+  const hasFragilities = fragilitiesList.length > 0;
+  const hasOrientationText = hasContent(restData?.orientation_text);
+  const hasDisclaimers = Boolean(restitution?.disclaimer || restitution?.disclaimer_financing);
+
   // SVG Gauge calculations
   const radius = 68;
   const circumference = 2 * Math.PI * radius;
@@ -116,7 +139,7 @@ export const ResultatSyntheseScreen = ({
         {/* Top Pill Badge */}
         <div className="res-pill-badge-wrap">
           <span className="res-pill-badge">
-            {restitution?.module_name ? `RÉSULTAT DIAGNOSTIC — ${restitution.module_name.toUpperCase()}` : 'RÉSULTAT DIAGNOSTIC'}
+            {displayModuleName}
           </span>
         </div>
 
@@ -209,7 +232,7 @@ export const ResultatSyntheseScreen = ({
             </div>
 
             <div className="res-level-highlight-sub" style={{ color: isCritical ? '#DC2626' : '#10B981' }}>
-              {scoring?.band_label ?? "[scoring.band_label non disponible]"}
+              {bandLabelText}
             </div>
 
             <p className="res-card-paragraph">
@@ -229,7 +252,7 @@ export const ResultatSyntheseScreen = ({
         </div>
 
         {/* Row 2: Points d'appui Card */}
-        {pointsAppui.length > 0 && (
+        {hasPointsAppui && (
           <div className="res-white-card">
             <div className="res-card-header">
               <span className="res-section-tag">POINTS D'APPUI</span>
@@ -302,7 +325,7 @@ export const ResultatSyntheseScreen = ({
         </div>
 
         {/* Row 4: Fragilités Typiques Stack */}
-        {fragilitiesList.length > 0 && (
+        {hasFragilities && (
           <div>
             <span className="res-section-title-label">FRAGILITÉS</span>
             <div className="res-item-cards-stack">
@@ -330,7 +353,7 @@ export const ResultatSyntheseScreen = ({
 
         {/* Row 5: Orientation Recommandée & Prochain Diagnostic */}
         <div className="res-reco-row">
-          {hasContent(restData?.orientation_text) && (
+          {hasOrientationText && (
             <div className="res-reco-box">
               <span className="res-reco-label">ORIENTATION RECOMMANDEE</span>
               <div className="res-reco-value">
@@ -352,21 +375,7 @@ export const ResultatSyntheseScreen = ({
             >
               <Calendar size={16} style={{ color: '#10B981' }} />
               <span>
-                {(() => {
-                  const moduleLabels = {
-                    'PRJ-02': 'Diagnostic Projet',
-                    'FLH-01': 'Diagnostic Flash',
-                    'DIF-03': 'Diagnostic Difficulté',
-                    'OPP-04': 'Diagnostic Opportunité',
-                    'PRO-05': 'Diagnostic Offre/Produits',
-                    'COM-06': 'Diagnostic Commercial',
-                    'FIN-07': 'Diagnostic Finance',
-                    'GOV-08': 'Diagnostic Organisation',
-                    '360-09': 'Diagnostic Complet 360°',
-                  };
-                  const code = restData?.next_module;
-                  return moduleLabels[code] || code || '[next_module non disponible]';
-                })()}
+                {nextModuleName}
               </span>
             </div>
           </div>
@@ -400,7 +409,7 @@ export const ResultatSyntheseScreen = ({
         </div>
 
         {/* Disclaimers if present */}
-        {(restitution?.disclaimer || restitution?.disclaimer_financing) && (
+        {hasDisclaimers && (
           <div style={{ marginTop: '24px', textAlign: 'center' }}>
             {restitution?.disclaimer && (
               <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.5', margin: '0 0 6px 0' }}>

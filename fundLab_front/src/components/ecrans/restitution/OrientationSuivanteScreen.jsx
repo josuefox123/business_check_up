@@ -6,6 +6,7 @@ import { TopBackLink } from '../partage/sharedUI.jsx';
 import { generateReportPDF } from '../../../utils/generateReportPDF.js';
 
 export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onContact, onCatalog, restitution, onBack }) => {
+  // Rule 9: Normalisation des données et préparation des variables d'affichage au sommet du composant
   const restData = restitution?.restitution || restitution || {};
   const scoring = restitution?.scoring || {};
 
@@ -14,6 +15,22 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
   const isHigh = score >= 70;
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfError, setPdfError] = useState('');
+
+  const nextModuleCode = restData?.next_module || restitution?.next_module;
+  const moduleLabels = {
+    'PRJ-02': 'Diagnostic Projet',
+    'FLH-01': 'Diagnostic Flash',
+    'DIF-03': 'Diagnostic Difficulté',
+    'OPP-04': 'Diagnostic Opportunité',
+    'PRO-05': 'Diagnostic Offre/Produits',
+    'COM-06': 'Diagnostic Commercial',
+    'FIN-07': 'Diagnostic Finance',
+    'GOV-08': 'Diagnostic Organisation',
+    '360-09': 'Diagnostic Complet 360°',
+  };
+  const nextModuleName = nextModuleCode ? (moduleLabels[nextModuleCode] || nextModuleCode) : null;
+  const orientationText = restData?.orientation_text || restitution?.orientation_text;
+  const pdfBtnText = isGeneratingPDF ? 'Génération en cours...' : 'Télécharger mon rapport PDF';
 
   const handleDownload = async () => {
     setIsGeneratingPDF(true);
@@ -31,21 +48,6 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
       setIsGeneratingPDF(false);
     }
   };
-
-  const nextModuleCode = restData?.next_module || restitution?.next_module;
-  const moduleLabels = {
-    'PRJ-02': 'Diagnostic Projet',
-    'FLH-01': 'Diagnostic Flash',
-    'DIF-03': 'Diagnostic Difficulté',
-    'OPP-04': 'Diagnostic Opportunité',
-    'PRO-05': 'Diagnostic Offre/Produits',
-    'COM-06': 'Diagnostic Commercial',
-    'FIN-07': 'Diagnostic Finance',
-    'GOV-08': 'Diagnostic Organisation',
-    '360-09': 'Diagnostic Complet 360°',
-  };
-  const nextModuleName = nextModuleCode ? (moduleLabels[nextModuleCode] || nextModuleCode) : null;
-  const orientationText = restData?.orientation_text || restitution?.orientation_text;
 
   return (
     <ScreenWrapper>
@@ -140,9 +142,9 @@ export const OrientationSuivanteScreen = ({ score, onDownload, onRestart, onCont
             style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff', opacity: isGeneratingPDF ? 0.7 : 1 }}
           >
             {isGeneratingPDF ? (
-              <><Loader2 size={18} className="animate-spin" /> Génération en cours...</>
+              <><Loader2 size={18} className="animate-spin" /> {pdfBtnText}</>
             ) : (
-              <><FileText size={18} /> Télécharger mon rapport PDF</>
+              <><FileText size={18} /> {pdfBtnText}</>
             )}
           </Button>
           <Button variant="outline" onClick={onRestart} style={{ width: '100%', justifyContent: 'center', gap: '8px' }}>

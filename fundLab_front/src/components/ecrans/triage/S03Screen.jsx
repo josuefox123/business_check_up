@@ -3,6 +3,7 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { useReferences } from '../../../contexts/ReferencesContext.jsx';
+import { Check, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const PROFILE_GOOGLE_ICONS = {
   project_holder: 'lightbulb',
@@ -13,14 +14,11 @@ const PROFILE_GOOGLE_ICONS = {
   institutional_curious: 'visibility'
 };
 
-const CheckIcon = () => (
-  <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-    <path d="M1 5L4 8L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSelect, onBack, initialAnswer }) => {
   const { references } = useReferences();
+  const [selected, setSelected] = useState(initialAnswer || null);
+
+  // Rule 9: Normalisation des données et préparation des variables d'affichage au sommet du composant
   const rawProfiles = references?.user_profile_type || [];
 
   const sublabelMapping = {
@@ -40,18 +38,17 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
 
   const profilesList = resolvedChoices.map(p => ({
     id: p.id,
-    label: p.label,
+    label: p.label || '[label non disponible]',
     sublabel: p.desc || sublabelMapping[p.id] || '',
     color: '#17212D',
     colorLight: 'rgba(23, 33, 45, 0.04)',
     colorBorder: 'rgba(23, 33, 45, 0.15)'
   }));
 
-  const [selected, setSelected] = useState(initialAnswer || null);
   const handleCb = onContinue || onSelect;
-
-  const titleText = question?.question || 'Quel est votre profil ?';
-  const subtitleText = question?.hint || 'Sélectionnez la situation qui vous décrit le mieux. Nous adapterons le questionnaire à votre contexte.';
+  const titleText = question?.question ?? '[question non disponible]';
+  const subtitleText = question?.hint ?? '[hint non disponible]';
+  const canContinue = Boolean(selected);
 
   return (
     <ScreenWrapper wide>
@@ -72,11 +69,11 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
         <div className="profile-select-grid">
           {profilesList.map((profile, i) => {
             const isSelected = selected === profile.id;
-            const googleIcon = PROFILE_GOOGLE_ICONS[profile.id] || 'help';
 
             return (
               <button
                 key={profile.id}
+                type="button"
                 className={`profile-select-card animate-fade-up delay-${Math.min(i + 1, 6) * 100}${isSelected ? ' selected' : ''}`}
                 onClick={() => {
                   setSelected(profile.id);
@@ -87,18 +84,19 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
                   '--p-border': profile.colorBorder,
                 }}
               >
-
-
                 <div className="profile-card-body">
                   <div className="profile-card-label">{profile.label}</div>
-                  <div className="profile-card-sublabel">{profile.sublabel}</div>
+                  {profile.sublabel && <div className="profile-card-sublabel">{profile.sublabel}</div>}
                 </div>
 
                 <div className="profile-card-check" style={{
                   borderColor: isSelected ? profile.color : 'var(--slate-300)',
                   background: isSelected ? profile.color : 'transparent',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
-                  {isSelected && <CheckIcon />}
+                  {isSelected && <Check size={12} strokeWidth={3} style={{ color: '#ffffff' }} />}
                 </div>
               </button>
             );
@@ -111,10 +109,22 @@ export const S03Screen = ({ question, currentStep, totalSteps, onContinue, onSel
 
       </div>
 
-      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
-      <div className="screen-nav">
-        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
-        <Button variant="primary" disabled={!selected} onClick={() => { if (handleCb) handleCb(selected); }}>Continuer</Button>
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+        {onBack ? (
+          <Button variant="outline" onClick={onBack} style={{ gap: '8px' }}>
+            <ArrowLeft size={16} />
+            <span>Retour</span>
+          </Button>
+        ) : <div />}
+        <Button 
+          variant="primary" 
+          disabled={!canContinue} 
+          onClick={() => { if (handleCb && selected) handleCb(selected); }}
+          style={{ gap: '8px' }}
+        >
+          <span>Continuer</span>
+          <ArrowRight size={16} />
+        </Button>
       </div>
     </ScreenWrapper>
   );

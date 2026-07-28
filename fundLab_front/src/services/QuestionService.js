@@ -6,8 +6,8 @@
 import { questionsApi } from '../api/questionsApi.js';
 
 export const QuestionService = {
-  getQuestionsByModule(moduleId) {
-    return questionsApi.getByModule(moduleId);
+  getQuestionsByModule(moduleId, questionKind = 'diagnostic') {
+    return questionsApi.getByModule(moduleId, questionKind);
   },
   saveQuestion(moduleId, question) {
     return questionsApi.save(moduleId, question);

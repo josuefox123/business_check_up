@@ -20,12 +20,16 @@ const normalizeToArray = (value) => {
 };
 
 export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, onBack, restitution }) => {
+  // Rule 9: Normalisation des données et préparation des variables d'affichage au sommet du composant
   const restData = restitution?.restitution || restitution || {};
   const scoring = restitution?.scoring || {};
 
   const forces = normalizeToArray(restData?.typical_strengths || restData?.strengths || scoring?.dominant_strength);
   const fragilites = normalizeToArray(restData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
-  const priorityText = restData?.summary || restData?.interpretation_text || scoring?.priorities;
+  const displayPriorityText = restData?.summary || restData?.interpretation_text || scoring?.priorities || '[summary / interpretation_text non disponible]';
+
+  const hasForces = forces.length > 0;
+  const hasFragilites = fragilites.length > 0;
 
   return (
     <ScreenWrapper>
@@ -41,7 +45,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
               Vos points d'appui
             </div>
             <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', padding: 0, margin: 0 }}>
-              {forces.length > 0 ? (
+              {hasForces ? (
                 forces.map((f, i) => (
                   <li key={i} className="ff-item" style={{ fontSize: '0.88rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                     <span className="ff-item-dot green" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)', marginTop: '6px', flexShrink: 0 }} />
@@ -63,7 +67,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
               Points de vigilance
             </div>
             <ul className="ff-items" style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', padding: 0, margin: 0 }}>
-              {fragilites.length > 0 ? (
+              {hasFragilites ? (
                 fragilites.map((f, i) => (
                   <li key={i} className="ff-item" style={{ fontSize: '0.88rem', color: 'var(--slate-600)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                     <span className="ff-item-dot orange" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-warning)', marginTop: '6px', flexShrink: 0 }} />
@@ -83,7 +87,7 @@ export const ForceFragilitesScreen = ({ score, moduleId, answers, onContinue, on
         <div className="ff-priority" style={{ padding: '16px', background: 'var(--slate-50)', borderRadius: '12px', border: '1px solid var(--slate-200)', marginBottom: '24px', marginTop: '24px' }}>
           <div className="ff-priority-label" style={{ fontWeight: 800, color: 'var(--slate-800)', fontSize: '0.88rem', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Point prioritaire</div>
           <p className="ff-priority-text" style={{ fontSize: '0.9rem', color: 'var(--slate-600)', lineHeight: '1.5', margin: 0 }}>
-            {priorityText || '[summary / interpretation_text non disponible]'}
+            {displayPriorityText}
           </p>
         </div>
       </div>

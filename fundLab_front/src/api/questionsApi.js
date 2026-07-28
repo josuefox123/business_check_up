@@ -2,11 +2,10 @@ import { apiFetch } from './config.js';
 import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 export const questionsApi = {
-  getByModule(moduleId, questionKind) {
+  getByModule(moduleId, questionKind = 'diagnostic') {
     const targetModuleId = moduleId === 'triage' ? 'TRI-00' : moduleId;
-    const url = (questionKind && questionKind !== 'diagnostic')
-      ? `/modules/${targetModuleId}/questions?question_kind=${questionKind}`
-      : `/modules/${targetModuleId}/questions`;
+    const kind = questionKind || 'diagnostic';
+    const url = `/modules/${targetModuleId}/questions?question_kind=${kind}`;
 
     return apiFetch(url)
       .then(res => {
@@ -26,12 +25,18 @@ export const questionsApi = {
           else if (type === 'text_libre') type = 'short_text';
 
           const rawChoices = q.options || q.choices || [];
-          const choices = rawChoices.map(opt => ({
-            id: opt.value !== undefined ? opt.value : (opt.id || opt.code),
-            label: opt.label || opt.text || opt.title || '',
-            icon: opt.icon || null,
-            desc: opt.desc || opt.description || null
-          }));
+          const choices = rawChoices.map(opt => {
+            const optValue = opt.value !== undefined && opt.value !== null && opt.value !== ''
+              ? String(opt.value)
+              : String(opt.id || opt.code || '');
+            return {
+              id: optValue,
+              value: optValue,
+              label: opt.label || opt.text || opt.title || '',
+              icon: opt.icon || null,
+              desc: opt.desc || opt.description || null
+            };
+          });
 
           const qDbId = q.id || q.question_db_id || q.db_id || null;
           const qId = q.question_code || q.question_id || q.code || qDbId || `${targetModuleId}_Q${idx + 1}`;

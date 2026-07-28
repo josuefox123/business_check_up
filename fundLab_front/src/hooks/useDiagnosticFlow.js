@@ -227,7 +227,7 @@ export function useDiagnosticFlow() {
 
   useEffect(() => {
     if (currentModule) {
-      QuestionService.getQuestionsByModule(currentModule.id)
+      QuestionService.getQuestionsByModule(currentModule.id, 'diagnostic')
         .then(res => {
           if (res) {
             const filtered = res.map(q => ({

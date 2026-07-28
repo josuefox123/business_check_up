@@ -3,10 +3,24 @@ import { FileText, AlertOctagon } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 
-export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
-  const [form, setForm] = useState({ nom: '', email: '', tel: '', entreprise: '', accept: false });
+export const ContactSuiviScreen = ({ onSubmit, onSkip, initialData }) => {
+  const defaultNom = initialData?.full_name || initialData?.nom || localStorage.getItem('last_user_name') || '';
+  const defaultEmail = initialData?.email || localStorage.getItem('last_user_email') || '';
+  const defaultTel = initialData?.phone || initialData?.tel || localStorage.getItem('last_user_phone') || '';
+  const defaultCompany = initialData?.company_name || initialData?.entreprise || '';
+
+  const [form, setForm] = useState({
+    nom: defaultNom,
+    email: defaultEmail,
+    tel: defaultTel,
+    entreprise: defaultCompany,
+    accept: false
+  });
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const pdfBtnText = isSubmitting ? 'Traitement en cours...' : 'Télécharger mon résumé PDF';
+  const suiviBtnText = isSubmitting ? 'Envoi en cours...' : 'Demander un suivi';
 
   const handleAction = async (actionType) => {
     setErrorMsg('');
@@ -24,7 +38,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
 
     setIsSubmitting(true);
     try {
-      // Schema compliant payload mapping
+      // Schema compliant payload mapping (Rule 7)
       const payload = {
         nom: form.nom,
         email: form.email,
@@ -129,7 +143,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
               disabled={isSubmitting}
               style={{ width: '100%', justifyContent: 'center', gap: '8px', color: '#fff', opacity: isSubmitting ? 0.7 : 1 }}
             >
-              {isSubmitting ? 'Traitement en cours...' : 'Télécharger mon résumé PDF'}
+              {pdfBtnText}
             </Button>
             <Button
               variant="primary"
@@ -137,7 +151,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip }) => {
               disabled={isSubmitting}
               style={{ width: '100%', justifyContent: 'center', gap: '8px', opacity: isSubmitting ? 0.7 : 1 }}
             >
-              {isSubmitting ? 'Envoi en cours...' : 'Demander un suivi'}
+              {suiviBtnText}
             </Button>
             <Button
               variant="outline"

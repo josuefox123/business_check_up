@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Check, ArrowRight, ArrowLeft, RotateCcw, AlertOctagon } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 
 export const ConsentScreen = ({ onContinue, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Rule 9: Normalisation des variables d'affichage au sommet du composant
+  const submitBtnText = isSubmitting ? 'Validation...' : 'Accepter et continuer';
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    setErrorMsg('');
     try {
       await onContinue({ diag: true, stats: true, contact: true });
     } catch (err) {
-      console.error(err);
+      console.error('Consent submission error:', err);
+      setErrorMsg(err?.message || '[submit_consent_error] Échec de l’enregistrement de votre consentement. Veuillez ré-essayer.');
     } finally {
       setIsSubmitting(false);
     }
@@ -31,6 +37,20 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
         
         <h1 className="screen-title" style={{ textAlign: 'center', marginBottom: '24px' }}>Avant de commencer</h1>
         
+        {/* Error state with localized retry */}
+        {errorMsg && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '14px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.86rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertOctagon size={16} />
+              <span>{errorMsg}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={handleSubmit} disabled={isSubmitting} style={{ gap: '4px' }}>
+              <RotateCcw size={12} />
+              <span>Réessayer</span>
+            </Button>
+          </div>
+        )}
+
         <div style={{ 
           background: '#ffffff', 
           padding: '24px', 
@@ -48,25 +68,37 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <span style={{ color: '#17212D', fontSize: '1.2rem', lineHeight: 1 }}>•</span>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Check size={13} strokeWidth={3} />
+              </div>
               <span>J'accepte l'utilisation de mes réponses pour le diagnostic</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <span style={{ color: '#17212D', fontSize: '1.2rem', lineHeight: 1 }}>•</span>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Check size={13} strokeWidth={3} />
+              </div>
               <span>J'accepte l'usage agrégé des données</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <span style={{ color: '#17212D', fontSize: '1.2rem', lineHeight: 1 }}>•</span>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Check size={13} strokeWidth={3} />
+              </div>
               <span>J'accepte d'être recontacté</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="screen-nav">
-        {onBack && <Button variant="outline" onClick={onBack} disabled={isSubmitting}>Retour</Button>}
-        <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? 'Validation...' : 'Accepter et continuer'}
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+        {onBack ? (
+          <Button variant="outline" onClick={onBack} disabled={isSubmitting} style={{ gap: '8px' }}>
+            <ArrowLeft size={16} />
+            <span>Retour</span>
+          </Button>
+        ) : <div />}
+        <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting} style={{ gap: '8px' }}>
+          <span>{submitBtnText}</span>
+          {!isSubmitting && <ArrowRight size={16} />}
         </Button>
       </div>
     </ScreenWrapper>

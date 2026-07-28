@@ -3,6 +3,7 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard, ProgressBar } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { useReferences } from '../../../contexts/ReferencesContext.jsx';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export const AnswerConfirmModal = ({ label, onConfirm, onCancel }) => (
   <div style={{
@@ -37,11 +38,13 @@ export const AnswerConfirmModal = ({ label, onConfirm, onCancel }) => (
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
-        <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%' }}>
-          Retour
+        <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%', gap: '8px' }}>
+          <ArrowLeft size={16} />
+          <span>Retour</span>
         </Button>
-        <Button variant="primary" onClick={onConfirm} style={{ justifyContent: 'center', width: '100%' }}>
-          Continuer
+        <Button variant="primary" onClick={onConfirm} style={{ justifyContent: 'center', width: '100%', gap: '8px' }}>
+          <span>Continuer</span>
+          <ArrowRight size={16} />
         </Button>
       </div>
     </div>
@@ -118,7 +121,7 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
             }}>
               {localSub === 'yes' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffffff' }} />}
             </div>
-            <span>Oui, j\'ai au moins un client payant</span>
+            <span>Oui, j'ai au moins un client payant</span>
           </button>
 
           <button
@@ -156,16 +159,18 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
             }}>
               {localSub === 'no' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffffff' }} />}
             </div>
-            <span>Non, aucun client payant pour l\'instant</span>
+            <span>Non, aucun client payant pour l'instant</span>
           </button>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px', marginTop: '4px' }}>
-          <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%' }}>
-            Retour
+          <Button variant="outline" onClick={onCancel} style={{ justifyContent: 'center', width: '100%', gap: '8px' }}>
+            <ArrowLeft size={16} />
+            <span>Retour</span>
           </Button>
-          <Button variant="primary" disabled={localSub === null} onClick={() => onConfirm(localSub)} style={{ justifyContent: 'center', width: '100%' }}>
-            Continuer
+          <Button variant="primary" disabled={localSub === null} onClick={() => onConfirm(localSub)} style={{ justifyContent: 'center', width: '100%', gap: '8px' }}>
+            <span>Continuer</span>
+            <ArrowRight size={16} />
           </Button>
         </div>
       </div>
@@ -175,18 +180,22 @@ export const S04SubQuestionModal = ({ onConfirm, onCancel }) => {
 
 export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBack, initialAnswer }) => {
   const { references } = useReferences();
-  const rawStages = references?.activity_stage || [];
+  const [selected, setSelected] = useState(initialAnswer || null);
 
-  const resolvedChoices = question?.choices || rawStages.map(p => ({
+  // Rule 9: Normalisation des données et variables d'affichage au sommet du composant
+  const rawStages = references?.activity_stage || [];
+  const resolvedChoices = (question?.choices || rawStages.map(p => ({
     id: p.value || p.id,
     label: p.label,
     desc: p.desc || p.description
+  }))).map(c => ({
+    id: c.id,
+    label: c.label || '[label non disponible]'
   }));
-
-  const [selected, setSelected] = useState(initialAnswer || null);
 
   const titleText = question?.question || 'Votre activité vend-elle déjà des produits ou services ?';
   const subtitleText = question?.hint || 'Cette question affine votre profil et nous aide à vous orienter vers le diagnostic le plus adapté.';
+  const canContinue = Boolean(selected);
 
   return (
     <ScreenWrapper>
@@ -214,10 +223,22 @@ export const S04Screen = ({ question, currentStep, totalSteps, onContinue, onBac
 
       </div>
 
-      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
-      <div className="screen-nav">
-        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
-        <Button variant="primary" disabled={!selected} onClick={() => onContinue(selected)}>Continuer</Button>
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+        {onBack ? (
+          <Button variant="outline" onClick={onBack} style={{ gap: '8px' }}>
+            <ArrowLeft size={16} />
+            <span>Retour</span>
+          </Button>
+        ) : <div />}
+        <Button 
+          variant="primary" 
+          disabled={!canContinue} 
+          onClick={() => { if (onContinue && selected) onContinue(selected); }}
+          style={{ gap: '8px' }}
+        >
+          <span>Continuer</span>
+          <ArrowRight size={16} />
+        </Button>
       </div>
     </ScreenWrapper>
   );

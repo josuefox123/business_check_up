@@ -3,7 +3,7 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, CustomSelect } from '../../ui/index.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { REGIONS, SECTORS, DEPARTMENT_COMMUNES } from '../../../constants/locationData.js';
-import { AlertOctagon } from 'lucide-react';
+import { AlertOctagon, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
 
 const COUNTRIES = [
   { code: 'BJ', name: 'Bénin', prefix: '+229', length: 8, extra: '01' },
@@ -157,8 +157,11 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
     onContinue(submitData);
   };
 
+  // Rule 9: Normalisation des variables au sommet de la fonction
   const filteredCommunes = DEPARTMENT_COMMUNES[data.region] || [];
-  const canContinue = data.region && data.secteur && data.business_name.trim() && data.creation_year && data.phone_suffix.trim() && data.email.trim();
+  const canContinue = Boolean(data.region && data.secteur && data.business_name.trim() && data.creation_year && data.phone_suffix.trim() && data.email.trim());
+  const selectedPhoneCountry = COUNTRIES.find(c => c.code === data.phone_country) || COUNTRIES[0];
+  const selectedWaCountry = COUNTRIES.find(c => c.code === data.whatsapp_country) || COUNTRIES[0];
 
   return (
     <ScreenWrapper>
@@ -301,9 +304,9 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
                       alt="" 
                       style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
                     />
-                    <span>{COUNTRIES.find(c => c.code === data.phone_country)?.prefix}</span>
+                    <span>{selectedPhoneCountry?.prefix}</span>
                   </div>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
+                  <ChevronDown size={14} style={{ color: 'var(--slate-400)' }} />
                 </button>
                 {phoneDropdownOpen && (
                   <>
@@ -368,7 +371,7 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
               <input 
                 className="form-input" 
                 type="text"
-                maxLength={data.phone_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === data.phone_country)?.length || 10)}
+                maxLength={data.phone_country === 'BJ' ? 8 : (selectedPhoneCountry?.length || 10)}
                 placeholder={data.phone_country === 'BJ' ? "XXXXXXXX" : "Numéro de téléphone"} 
                 value={data.phone_suffix} 
                 onChange={e=>setData({...data, phone_suffix: e.target.value.replace(/[^0-9]/g, '')})} 
@@ -416,9 +419,9 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
                       alt="" 
                       style={{ width: '20px', height: 'auto', borderRadius: '2px', border: '1px solid var(--slate-200)' }} 
                     />
-                    <span>{COUNTRIES.find(c => c.code === data.whatsapp_country)?.prefix}</span>
+                    <span>{selectedWaCountry?.prefix}</span>
                   </div>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>▼</span>
+                  <ChevronDown size={14} style={{ color: 'var(--slate-400)' }} />
                 </button>
                 {whatsappDropdownOpen && (
                   <>
@@ -483,7 +486,7 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
               <input 
                 className="form-input" 
                 type="text"
-                maxLength={data.whatsapp_country === 'BJ' ? 8 : (COUNTRIES.find(c => c.code === data.whatsapp_country)?.length || 10)}
+                maxLength={data.whatsapp_country === 'BJ' ? 8 : (selectedWaCountry?.length || 10)}
                 placeholder={data.whatsapp_country === 'BJ' ? "XXXXXXXX" : "Numéro WhatsApp"} 
                 value={data.whatsapp_suffix} 
                 onChange={e=>setData({...data, whatsapp_suffix: e.target.value.replace(/[^0-9]/g, '')})} 
@@ -516,9 +519,22 @@ export const S05Screen = ({ onContinue, onBack, initialAnswer }) => {
         </div>
       </div>
 
-      <div className="screen-nav">
-        <Button variant="outline" onClick={onBack}>Retour</Button>
-        <Button variant="primary" disabled={!canContinue} onClick={handleContinue}>Continuer</Button>
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+        {onBack ? (
+          <Button variant="outline" onClick={onBack} style={{ gap: '8px' }}>
+            <ArrowLeft size={16} />
+            <span>Retour</span>
+          </Button>
+        ) : <div />}
+        <Button 
+          variant="primary" 
+          disabled={!canContinue} 
+          onClick={handleContinue}
+          style={{ gap: '8px' }}
+        >
+          <span>Continuer</span>
+          <ArrowRight size={16} />
+        </Button>
       </div>
     </ScreenWrapper>
   );

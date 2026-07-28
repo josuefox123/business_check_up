@@ -75,6 +75,27 @@ export const QuitConfirmModal = ({ onConfirm, onCancel }) => (
 );
 
 export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
+  // Rule 9 & Rule 7: Fallback si questionData est indéfini
+  if (!questionData) {
+    return (
+      <ScreenWrapper>
+        <div className="question-container animate-fade-up" style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B', maxWidth: '540px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '1.2rem', color: '#1E293B', marginBottom: '12px', fontWeight: 700 }}>
+            [questionData non disponible] Aucune question disponible
+          </h2>
+          <p style={{ fontSize: '0.9rem', marginBottom: '24px', lineHeight: 1.5 }}>
+            Le module demandé ne contient actuellement aucune question correspondant au filtre de diagnostic.
+          </p>
+          {onQuit && (
+            <Button variant="primary" onClick={onQuit}>
+              Retourner au catalogue
+            </Button>
+          )}
+        </div>
+      </ScreenWrapper>
+    );
+  }
+
   const isMulti = questionData.type === 'multi';
   const isScale = questionData.type === 'scale_1_5';
   const isText = questionData.type === 'short_text';

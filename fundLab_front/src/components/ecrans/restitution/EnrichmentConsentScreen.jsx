@@ -4,6 +4,11 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { ClipboardCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 
 export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false, estimatedDuration, moduleName }) => {
+  // Rule 9: Normalisation des données et des chaînes de texte au début du composant
+  const displayTitle = moduleName ? `Enrichir mon diagnostic — ${moduleName}` : 'Enrichir mon diagnostic';
+  const displayDuration = estimatedDuration ? `Environ ${estimatedDuration}` : '[estimated_duration non disponible]';
+  const confirmBtnText = isLoading ? 'Chargement...' : 'Accepter et continuer';
+
   return (
     <ScreenWrapper>
       <div className="animate-fade-up" style={{ maxWidth: '560px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
@@ -23,7 +28,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false
         </div>
 
         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#070E24', marginBottom: '16px', lineHeight: '1.3' }}>
-          Enrichir mon diagnostic {moduleName ? `— ${moduleName}` : ''}
+          {displayTitle}
         </h1>
 
         <p style={{ fontSize: '1rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
@@ -63,7 +68,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false
               <Check size={12} strokeWidth={3} />
             </div>
             <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: '1.4' }}>
-              <strong>Durée estimée :</strong> {estimatedDuration ? `Environ ${estimatedDuration}` : "[estimated_duration non disponible]"}
+              <strong>Durée estimée :</strong> {displayDuration}
             </p>
           </div>
         </div>
@@ -79,7 +84,7 @@ export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false
             disabled={isLoading}
             style={{ width: '100%', justifyContent: 'center', gap: '8px', height: '48px', fontSize: '0.95rem', fontWeight: 600, opacity: isLoading ? 0.7 : 1 }}
           >
-            <span>{isLoading ? 'Chargement...' : 'Accepter et continuer'}</span>
+            <span>{confirmBtnText}</span>
             {!isLoading && <ArrowRight size={16} />}
           </Button>
 

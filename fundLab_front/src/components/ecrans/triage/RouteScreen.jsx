@@ -1,43 +1,29 @@
 import React from 'react';
-import { Clock, HelpCircle, CheckSquare, Info, ArrowRight, Pencil, AlertTriangle, BarChart2 } from 'lucide-react';
+import { Clock, HelpCircle, CheckSquare, Info, ArrowRight, Pencil, AlertTriangle } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import './RouteScreen.css';
 
-export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, onBack }) => {
-  const modName = recommendedModule?.name;
-  const modDuration = recommendedModule?.duration;
-  const modDescription = recommendedModule?.description;
+export const RouteScreen = ({ routeKey, recommendedModule, reason: reasonProp, onStart, onCatalog, onBack }) => {
+  // Rule 9: Normalisation des données et préparation de l'état dérivé au sommet du composant
+  const reason = reasonProp || recommendedModule?.reason || {};
+
+  const modName = recommendedModule?.name ?? "[recommended_module.name non disponible]";
+  const modDuration = recommendedModule?.duration ?? "[duration non disponible]";
+  const modDescription = reason?.text || recommendedModule?.description || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`;
   const qCount = recommendedModule?.question_count;
+  const hasQuestionCount = qCount !== undefined && qCount !== null;
 
-  const routeDisplay = {
-    S10: {
-      cardTitle: `Votre orientation recommandée : ${modName}`,
-      body: modDescription || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses.`,
-      cta: `Démarrer le Diagnostic`,
-      warning: null,
-    },
-    S11: {
-      cardTitle: `Votre orientation recommandée : ${modName}`,
-      body: modDescription || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`,
-      cta: `Démarrer le Diagnostic`,
-      warning: 'Ce module est prioritaire. Il est fortement recommandé de le compléter avant tout autre diagnostic.',
-    },
-    S12: {
-      cardTitle: `Votre orientation recommandée : ${modName}`,
-      body: modDescription || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`,
-      cta: `Démarrer le Diagnostic`,
-      warning: 'Ce diagnostic ne constitue PAS une validation d\'éligibilité à un financement.',
-    },
-  };
+  const riskLevel = reason?.risk_level;
+  const isHighRiskOrPriority = riskLevel === 'critical' || riskLevel === 'high' || reason?.priority === 'high' || String(reason?.override_required) === 'true';
 
-  const cfg = routeDisplay[routeKey] || {
-    cardTitle: `Votre orientation recommandée : ${modName}`,
-    body: modDescription || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`,
-    cta: `Démarrer le Diagnostic`,
-    warning: null,
-  };
+  const warningText = isHighRiskOrPriority 
+    ? (riskLevel === 'critical' ? 'Ce module est critique. Il est fortement recommandé de le compléter immédiatement.' : 'Ce module est prioritaire sur la base de votre profil de risque.')
+    : null;
+
+  const cardTitle = `Votre orientation recommandée : ${modName}`;
+  const ctaText = 'Démarrer le Diagnostic';
 
   return (
     <ScreenWrapper>
@@ -46,13 +32,13 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
         <div className="route-recommendation-card">
           {/* Title & Body */}
           <h1 className="route-main-title">
-            {cfg.cardTitle}
+            {cardTitle}
           </h1>
           <p className="route-main-subtitle">
-            {cfg.body}
+            {modDescription}
           </p>
 
-          {/* 4 Feature Recommendation Cards */}
+          {/* Feature Recommendation Cards */}
           <div className="route-info-cards-list">
             {/* Card 1: Durée Estimée */}
             <div className="route-info-card">
@@ -65,16 +51,18 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
               </div>
             </div>
 
-            {/* Card 2: Nombre de questions */}
-            <div className="route-info-card">
-              <div className="route-info-icon-wrap">
-                <HelpCircle size={20} />
+            {/* Card 2: Nombre de questions (si disponible) */}
+            {hasQuestionCount && (
+              <div className="route-info-card">
+                <div className="route-info-icon-wrap">
+                  <HelpCircle size={20} />
+                </div>
+                <div className="route-info-content">
+                  <span className="route-info-label">NOMBRE DE QUESTIONS</span>
+                  <span className="route-info-value">{qCount} questions</span>
+                </div>
               </div>
-              <div className="route-info-content">
-                <span className="route-info-label">NOMBRE DE QUESTIONS</span>
-                <span className="route-info-value">{qCount} questions</span>
-              </div>
-            </div>
+            )}
 
             {/* Card 3: Vous recevrez */}
             <div className="route-info-card">
@@ -103,8 +91,8 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
             </div>
           </div>
 
-          {/* Optional Warning Alert */}
-          {cfg.warning && (
+          {/* Optional Warning Alert derived from risk_level / priority */}
+          {warningText && (
             <div
               className="alert alert-warning"
               style={{
@@ -122,7 +110,7 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
               }}
             >
               <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-              <span>{cfg.warning}</span>
+              <span>{warningText}</span>
             </div>
           )}
 
@@ -136,7 +124,7 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
               onClick={onStart}
               className="route-btn-primary"
             >
-              <span>{cfg.cta}</span>
+              <span>{ctaText}</span>
               <ArrowRight size={18} />
             </Button>
 
@@ -150,14 +138,16 @@ export const RouteScreen = ({ routeKey, recommendedModule, onStart, onCatalog, o
               Voir les autres diagnostics
             </Button>
 
-            <button
-              type="button"
-              onClick={onBack}
-              className="route-btn-link"
-            >
-              <Pencil size={15} />
-              <span>Modifier mes réponses</span>
-            </button>
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="route-btn-link"
+              >
+                <Pencil size={15} />
+                <span>Modifier mes réponses</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

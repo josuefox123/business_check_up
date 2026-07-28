@@ -3,6 +3,11 @@ import { Award, ArrowRight } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 
 export const TriageCompletionModal = ({ onConfirm }) => {
+  // Rule 9: Normalisation des variables au sommet de la fonction composant
+  const titleText = "Félicitations pour votre parcours !";
+  const descText = "Vous avez complété avec succès le questionnaire d'évaluation initial. Pour obtenir votre diagnostic recommandé sur mesure, veuillez vérifier et compléter les informations générales de votre entreprise.";
+  const btnLabelText = "COMPLÉTER MES INFORMATIONS";
+
   return (
     <div
       style={{
@@ -125,7 +130,7 @@ export const TriageCompletionModal = ({ onConfirm }) => {
             letterSpacing: '-0.02em'
           }}
         >
-          Félicitations pour votre parcours !
+          {titleText}
         </h2>
 
         {/* Modal Description */}
@@ -138,7 +143,7 @@ export const TriageCompletionModal = ({ onConfirm }) => {
             padding: '0 4px'
           }}
         >
-          Vous avez complété avec succès le questionnaire d'évaluation initial. Pour obtenir votre <strong>diagnostic recommandé sur mesure</strong>, veuillez vérifier et compléter les informations générales de votre entreprise.
+          {descText}
         </p>
 
         {/* CTA Button */}
@@ -160,7 +165,7 @@ export const TriageCompletionModal = ({ onConfirm }) => {
             gap: '8px'
           }}
         >
-          <span>COMPLÉTER MES INFORMATIONS</span>
+          <span>{btnLabelText}</span>
           <ArrowRight size={18} />
         </Button>
       </div>

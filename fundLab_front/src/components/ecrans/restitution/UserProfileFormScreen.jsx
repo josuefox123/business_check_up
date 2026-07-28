@@ -250,10 +250,16 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
     }
   };
 
-    const sectorOptions = SECTORS.includes('Autre') ? SECTORS : [...SECTORS, 'Autre'];
+  // Rule 9: Normalisation des options et des états d'affichage au sommet du composant
+  const sectorOptions = SECTORS.includes('Autre') ? SECTORS : [...SECTORS, 'Autre'];
+  const submitBtnText = isSubmitting
+    ? 'Enregistrement en cours...'
+    : (mode === 'triage' ? 'Continuer' : 'Accéder à mes résultats');
+  const isTriageMode = mode === 'triage';
+  const hasGlobalError = Boolean(errors.global);
 
-    return (
-      <ScreenWrapper wide>
+  return (
+    <ScreenWrapper wide>
         {onBack && <TopBackLink onClick={onBack} />}
 
         <style>{`

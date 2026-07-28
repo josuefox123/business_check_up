@@ -36,5 +36,19 @@
 - Ne pas réinventer ou injecter de listes de textes factices d'exemples comme fallback. Si une liste dynamique est vide ou absente de l'API, utiliser la règle de fallback explicite.
 - Préférer l'utilisation d'icônes SVG sémantiques isolées (ex: composants Lucide-react) au lieu d'emojis hardcodés directement dans les chaînes de caractères.
 
+### 9. Normalisation des Données avant le Rendu (Data Mapping & Separation of Concerns)
+- Toujours **extraire, déclarer et normaliser** les données de l'API (avec leurs valeurs de repli explicites) au début de la fonction du composant React, avant le bloc `return ()`.
+- Ne pas effectuer d'évaluations conditionnelles complexes ou de chaînages d'objets profonds directement au milieu des balises JSX.
+- Conserver le JSX pur, clair et lisible en s'appuyant exclusivement sur les variables localement préparées et normalisées.
+
+## Audit & Auto-Validation
+
+### 10. Auto-Validation Obligatoire et Indivisible (Full Compliance Verification)
+- Il est strictement interdit d'appliquer une règle de ce document en ignorant ou en altérant les exigences des autres.
+- Avant de déclarer un fichier ou un composant conforme, l'agent doit réévaluer le code modifié au filtre de **l'intégralité des règles énoncées dans ce document** sans exception.
+- Toute affirmation de conformité doit être étayée par la confirmation que TOUTES les règles en vigueur (résilience, réseau, mapping API, fallbacks explicites, absence de mock/emojis, et normalisation) ont été vérifiées conjointement.
+
+
+
 
 

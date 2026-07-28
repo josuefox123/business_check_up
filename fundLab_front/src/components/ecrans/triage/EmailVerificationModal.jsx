@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button } from '../../ui/index.jsx';
-import { Mail, CheckCircle2, AlertOctagon, ArrowLeft, RefreshCw, Lock } from 'lucide-react';
+import { Mail, CheckCircle2, AlertOctagon, ArrowLeft, ArrowRight, RefreshCw, Lock } from 'lucide-react';
 import './EmailVerification.css';
 
 export const EmailVerificationModal = ({
@@ -112,8 +112,12 @@ export const EmailVerificationModal = ({
     }
   };
 
+  // Rule 9: Normalisation des données et états d'affichage au sommet du composant
   const currentCode = digits.join('');
   const displayError = errorMsg || localError;
+  const displayEmail = email || '[email non disponible]';
+  const submitBtnText = isLoading ? 'Vérification en cours...' : 'Valider et continuer';
+  const isSubmitDisabled = isLoading || currentCode.length !== 6;
 
   return (
     <ScreenWrapper>
@@ -156,7 +160,7 @@ export const EmailVerificationModal = ({
             <br />
             <div className="email-target-pill">
               <Mail size={14} />
-              <span>{email}</span>
+              <span>{displayEmail}</span>
             </div>
           </div>
 
@@ -230,10 +234,11 @@ export const EmailVerificationModal = ({
             full
             size="lg"
             onClick={() => handleComplete(currentCode)}
-            disabled={isLoading || currentCode.length !== 6}
-            style={{ height: '52px', fontSize: '0.95rem', fontWeight: 700, marginBottom: '16px' }}
+            disabled={isSubmitDisabled}
+            style={{ height: '52px', fontSize: '0.95rem', fontWeight: 700, marginBottom: '16px', gap: '8px' }}
           >
-            {isLoading ? 'Vérification en cours...' : 'Valider et continuer →'}
+            <span>{submitBtnText}</span>
+            {!isLoading && <ArrowRight size={16} />}
           </Button>
 
           {/* Resend Option */}

@@ -161,6 +161,10 @@ const MiniCalendar = ({ selectedDate, onSelect }) => {
 
 /* ════════════════════════════════════════════ */
 export const FinParcoursScreen = ({ onRestart }) => {
+  const userName = localStorage.getItem('last_user_name') || '[last_user_name non disponible]';
+  const userEmail = localStorage.getItem('last_user_email') || '[last_user_email non disponible]';
+  const userPhone = localStorage.getItem('last_user_phone') || '[last_user_phone non disponible]';
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

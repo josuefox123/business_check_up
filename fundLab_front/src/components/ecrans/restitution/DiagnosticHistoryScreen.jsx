@@ -3,15 +3,19 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { History, Construction, ArrowLeft, Calendar, FileText, ChevronRight, AlertOctagon, RotateCcw } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 
-export const DiagnosticHistoryScreen = ({ 
-  onBack, 
-  userEmail, 
-  historyItems = [], 
-  onSelectRun, 
+export const DiagnosticHistoryScreen = ({
+  onBack,
+  userEmail,
+  historyItems = [],
+  onSelectRun,
   isLoading = false,
   isError = false,
-  onRetry 
+  onRetry
 }) => {
+  const accountEmail = userEmail || localStorage.getItem('bc_user_email') || null;
+  const hasHistoryItems = !isLoading && !isError && historyItems.length > 0;
+  const showEmptyState = !isLoading && !isError && historyItems.length === 0;
+
   return (
     <ScreenWrapper wide>
       <div style={{ maxWidth: '720px', margin: '30px auto', padding: '0 20px' }}>
@@ -32,9 +36,9 @@ export const DiagnosticHistoryScreen = ({
             Historique de vos Diagnostics
           </h1>
 
-          {userEmail && (
+          {accountEmail && (
             <div style={{ display: 'inline-block', background: '#F1F5F9', padding: '6px 16px', borderRadius: '9999px', fontSize: '0.86rem', fontWeight: 600, color: '#475569' }}>
-              Compte : {userEmail}
+              Compte : {accountEmail}
             </div>
           )}
         </div>
@@ -63,7 +67,7 @@ export const DiagnosticHistoryScreen = ({
         )}
 
         {/* Dynamic History List if available */}
-        {!isLoading && !isError && historyItems.length > 0 && (
+        {hasHistoryItems && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
             {historyItems.map((item, idx) => {
               const runId = item?.diagnostic_run_id || `RUN-${idx}`;
@@ -73,7 +77,7 @@ export const DiagnosticHistoryScreen = ({
               const bandLabel = item?.scoring?.band_label || item?.band_label;
 
               return (
-                <div 
+                <div
                   key={runId}
                   onClick={() => onSelectRun && onSelectRun(item)}
                   style={{
@@ -127,7 +131,7 @@ export const DiagnosticHistoryScreen = ({
         )}
 
         {/* Empty history state / under construction fallback */}
-        {!isLoading && !isError && historyItems.length === 0 && (
+        {showEmptyState && (
           <div style={{
             background: '#FFFFFF',
             border: '1.5px dashed #CBD5E1',
