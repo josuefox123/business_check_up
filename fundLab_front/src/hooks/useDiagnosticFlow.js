@@ -15,6 +15,7 @@ import { UtilisateurService } from '../services/UtilisateurService.js';
 import { apiFetch, formatDurationSeconds } from '../api/config.js';
 import { questionsApi } from '../api/questionsApi.js';
 import { requestEmailVerificationApi, confirmEmailVerificationApi } from '../api/authApi.js';
+import { STORAGE_KEYS, clearDiagnosticStorage } from '../constants/storageKeys.js';
 
 
 
@@ -153,7 +154,7 @@ export function useDiagnosticFlow() {
     if (state.currentRunId !== undefined) setCurrentRunId(state.currentRunId);
     if (state.restitution !== undefined) setRestitution(state.restitution);
     if (state.isEnrichmentMode !== undefined) setIsEnrichmentMode(state.isEnrichmentMode);
-    if (state.sessionId) localStorage.setItem('bc_session_id', state.sessionId);
+    if (state.sessionId) localStorage.setItem(STORAGE_KEYS.SESSION_ID, state.sessionId);
 
     if (state.currentPath && location.pathname !== state.currentPath) {
       navigate(state.currentPath);
@@ -185,7 +186,7 @@ export function useDiagnosticFlow() {
 
     if (
       location.pathname === '/triage/consent' ||
-      localStorage.getItem('bc_session_id') ||
+      localStorage.getItem(STORAGE_KEYS.SESSION_ID) ||
       Object.keys(triageAnswers).length > 0 ||
       Object.keys(moduleAnswers).length > 0 ||
       currentModule ||
@@ -205,7 +206,7 @@ export function useDiagnosticFlow() {
         consentAnswers,
         isEnrichmentMode,
         currentPath: location.pathname,
-        sessionId: localStorage.getItem('bc_session_id'),
+        sessionId: localStorage.getItem(STORAGE_KEYS.SESSION_ID),
       });
     }
   }, [
@@ -281,8 +282,8 @@ export function useDiagnosticFlow() {
   };
 
   const onConsent = async () => {
-    const isAuthenticated = Boolean(localStorage.getItem('bc_is_authenticated') === 'true' || localStorage.getItem('bc_user_profile'));
-    const hasDeviceProfile = Boolean(localStorage.getItem('bc_session_id') || isAuthenticated);
+    const isAuthenticated = Boolean(localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true' || localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+    const hasDeviceProfile = Boolean(localStorage.getItem(STORAGE_KEYS.SESSION_ID) || isAuthenticated);
 
     if (currentModule) {
       if (isAuthenticated) {
@@ -299,7 +300,7 @@ export function useDiagnosticFlow() {
       .then(res => {
         const sessionId = res?.data?.session_id || res?.session_id;
         if (sessionId) {
-          localStorage.setItem('bc_session_id', sessionId);
+          localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
           saveState({
             triageStep: 3,
             triageAnswers: {},
@@ -398,6 +399,16 @@ export function useDiagnosticFlow() {
     };
     setTriageAnswers(updated);
 
+    const isAuthenticated = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    const verifiedEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
+    const isSameVerifiedUser = isAuthenticated && verifiedEmail && verifiedEmail.toLowerCase() === profileData.email?.toLowerCase();
+
+    if (isSameVerifiedUser) {
+      // Utilisateur déjà authentifié -> Contourner la modal OTP et passer directement à l'étape suivante
+      onTriageProfileSubmit(profileData);
+      return;
+    }
+
     setEmailVerificationError('');
     setIsEmailLoading(true);
     setIsVerifyingEmail(true);
@@ -428,9 +439,9 @@ export function useDiagnosticFlow() {
       });
 
       // Enregistrer l'état d'authentification valide
-      localStorage.setItem('bc_is_authenticated', 'true');
+      localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, 'true');
       if (pendingProfileData?.email) {
-        localStorage.setItem('bc_user_email', pendingProfileData.email);
+        localStorage.setItem(STORAGE_KEYS.USER_EMAIL, pendingProfileData.email);
       }
 
       if (pendingProfileData?.is_existing_lookup) {
@@ -443,7 +454,7 @@ export function useDiagnosticFlow() {
         // Utilisateur existant → Reprise directe du dernier module et de la dernière question
         const resume = res.resume_data;
         if (resume.session_id) {
-          localStorage.setItem('bc_session_id', resume.session_id);
+          localStorage.setItem(STORAGE_KEYS.SESSION_ID, resume.session_id);
         }
 
         setIsVerifyingEmail(false);
@@ -497,7 +508,7 @@ export function useDiagnosticFlow() {
 
 
   const submitTriageToBackend = async (answers) => {
-    let sessionId = localStorage.getItem('bc_session_id');
+    let sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
 
     if (!sessionId) {
       try {
@@ -505,7 +516,7 @@ export function useDiagnosticFlow() {
         const newSessionRes = await createSessionApi();
         sessionId = newSessionRes?.data?.session_id || newSessionRes?.session_id;
         if (sessionId) {
-          localStorage.setItem('bc_session_id', sessionId);
+          localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
           // Soumettre automatiquement le consentement pour éviter "403 Diagnostic consent required"
           await submitConsentApi(sessionId, true).catch(err => console.error('Consent fallback error:', err));
         }
@@ -534,9 +545,9 @@ export function useDiagnosticFlow() {
 
       const triageId = data.triage_id;
       if (triageId) {
-        localStorage.setItem('bc_triage_id', triageId);
+        localStorage.setItem(STORAGE_KEYS.TRIAGE_ID, triageId);
       }
-      localStorage.setItem('bc_recommended_module_code', backendModuleId);
+      localStorage.setItem(STORAGE_KEYS.RECOMMENDED_MODULE, backendModuleId);
 
       const backendRoute = data.route || data.recommended_route || 'S13';
 
@@ -666,7 +677,7 @@ export function useDiagnosticFlow() {
     setCurrentRunId(null);
     setModuleAnswers({});
     setQuestionIndex(0);
-    const recommendedModuleId = localStorage.getItem('bc_recommended_module_code') || 'FLH-01';
+    const recommendedModuleId = localStorage.getItem(STORAGE_KEYS.RECOMMENDED_MODULE) || 'FLH-01';
     try {
       const res = await apiFetch(`/modules/${recommendedModuleId}`);
       const modDetail = res?.data || res || {};
@@ -688,7 +699,7 @@ export function useDiagnosticFlow() {
     setQuestionIndex(0);
     setModuleAnswers({});
 
-    let sessionId = localStorage.getItem('bc_session_id');
+    let sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
 
     // Si l'utilisateur est authentifié mais n'a pas encore de session active
     if (!sessionId) {
@@ -697,7 +708,7 @@ export function useDiagnosticFlow() {
         const newSessionRes = await createSessionApi();
         sessionId = newSessionRes?.data?.session_id || newSessionRes?.session_id;
         if (sessionId) {
-          localStorage.setItem('bc_session_id', sessionId);
+          localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
           await submitConsentApi(sessionId, true).catch(err => console.error('Consent error:', err));
         }
       } catch (sessErr) {
@@ -715,10 +726,10 @@ export function useDiagnosticFlow() {
       return;
     }
 
-    const triageId = localStorage.getItem('bc_triage_id');
+    const triageId = localStorage.getItem(STORAGE_KEYS.TRIAGE_ID);
 
     if (sessionId && currentModule) {
-      const recommendedCode = localStorage.getItem('bc_recommended_module_code');
+      const recommendedCode = localStorage.getItem(STORAGE_KEYS.RECOMMENDED_MODULE);
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
       const isOverride = !isRecommended;
       try {
@@ -734,6 +745,7 @@ export function useDiagnosticFlow() {
         const runId = res?.data?.diagnostic_run_id || res?.diagnostic_run_id;
         if (runId) {
           setCurrentRunId(runId);
+          localStorage.setItem(STORAGE_KEYS.CURRENT_RUN_ID, runId);
           await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
             .catch(err => console.error('Error tracking session intro stage:', err));
         } else {
@@ -827,8 +839,13 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       if (isEnrichmentMode) {
-        if (currentRunId) {
-          apiFetch(`/diagnostics/${currentRunId}/details`).catch(err => console.error('Error fetching diagnostic details:', err));
+        const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID);
+        if (runIdToFetch) {
+          try {
+            await apiFetch(`/diagnostics/${runIdToFetch}/details`);
+          } catch (err) {
+            console.error('Error fetching diagnostic details:', err);
+          }
         }
         setShowEnrichmentCompletionModal(true);
       } else {
@@ -858,7 +875,7 @@ export function useDiagnosticFlow() {
   };
 
   const onQuit = () => {
-    const sessionId = localStorage.getItem('bc_session_id');
+    const sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
     const screenCode = currentModule ? `QUESTION_${currentModule.id}_${questionIndex + 1}` : `QUESTION_${questionIndex + 1}`;
     if (sessionId) {
       abandonSessionApi(sessionId, screenCode)
@@ -1149,7 +1166,7 @@ export function useDiagnosticFlow() {
     };
     setTriageAnswers(updatedTriageAnswers);
 
-    let sessionId = localStorage.getItem('bc_session_id');
+    let sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
 
     // Cas où l'utilisateur vient de passer le profil après ChoixEntreeScreen (sans Triage)
     if (!currentModule) {
@@ -1167,7 +1184,7 @@ export function useDiagnosticFlow() {
     }
 
     if (sessionId && currentModule) {
-      const recommendedCode = localStorage.getItem('bc_recommended_module_code');
+      const recommendedCode = localStorage.getItem(STORAGE_KEYS.RECOMMENDED_MODULE);
       const isRecommended = recommendedCode ? (recommendedCode === currentModule.id) : true;
       const isOverride = !isRecommended;
       try {
@@ -1183,6 +1200,7 @@ export function useDiagnosticFlow() {
         const runId = res?.data?.diagnostic_run_id || res?.diagnostic_run_id;
         if (runId) {
           setCurrentRunId(runId);
+          localStorage.setItem(STORAGE_KEYS.CURRENT_RUN_ID, runId);
           await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
             .catch(err => console.error('Error tracking session intro stage:', err));
         }
@@ -1206,7 +1224,7 @@ export function useDiagnosticFlow() {
   };
 
   const onProfileSubmit = async (profileData) => {
-    const sessionId = localStorage.getItem('bc_session_id');
+    const sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
     if (!sessionId) {
       navigate('/diagnostic/fin');
       return;

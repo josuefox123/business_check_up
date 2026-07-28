@@ -11,6 +11,7 @@ import { Navbar } from './components/layout/Navbar.jsx';
 import { PublicContactScreen } from './components/ecrans/pages-fixes/PublicContact.jsx';
 import { AlertTriangle } from 'lucide-react';
 import { useDiagnosticFlow } from './hooks/useDiagnosticFlow.js';
+import { clearDiagnosticStorage } from './constants/storageKeys.js';
 
 import {
   ConsentScreen,
@@ -276,7 +277,7 @@ function DiagnosticApp() {
           }}
           onCancel={() => {
             flow.setShowResumeModal(false);
-            localStorage.clear();
+            clearDiagnosticStorage();
             flow.setIsRestored(true);
           }}
         />

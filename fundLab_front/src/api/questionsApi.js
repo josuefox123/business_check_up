@@ -3,7 +3,7 @@ import { LocalStoreRepository } from '../repositories/LocalStoreRepository.js';
 
 export const questionsApi = {
   getTriageQuestions() {
-    return this.getByModule('TRI-00', 'triage');
+    return this.getByModule('TRI-00', 'diagnostic');
   },
 
   getDiagnosticQuestions(moduleCode) {
@@ -23,13 +23,13 @@ export const questionsApi = {
       .then(res => {
         const rawQuestions = res?.data?.questions || res?.questions || res?.data || res;
         const questionsList = Array.isArray(rawQuestions) ? rawQuestions : [];
-        
+
         // Si le backend renvoie 0 questions pour cette catégorie, renvoyer un tableau vide sans lever d'exception
         if (questionsList.length === 0) {
           console.info(`[questionsApi] Zero questions returned for module "${targetModuleId}" (kind: ${kind}).`);
           return [];
         }
-        
+
         // Formater et assainir les questions du backend
         return questionsList
           .filter(Boolean)
@@ -85,35 +85,35 @@ export const questionsApi = {
         throw enrichedError;
       });
   },
-  
+
   save(moduleId, question) {
     // Admin request (authenticated via bearer token automatically inside apiFetch wrapper)
     const dbId = question.db_id;
     const method = dbId ? 'PUT' : 'POST';
     const endpoint = dbId ? `/admin/questions/${dbId}` : '/admin/questions';
-    
+
     return apiFetch(endpoint, {
       method,
       body: JSON.stringify({ module_code: moduleId, ...question })
     })
-    .catch(err => {
-      console.error('Error saving question on backend, saving locally:', err);
-      LocalStoreRepository.saveQuestion(moduleId, question);
-      return question;
-    });
+      .catch(err => {
+        console.error('Error saving question on backend, saving locally:', err);
+        LocalStoreRepository.saveQuestion(moduleId, question);
+        return question;
+      });
   },
-  
+
   delete(moduleId, qId) {
     // Si on a un identifiant technique db_id, l'utiliser, sinon repli sur l'id technique
     const targetId = typeof qId === 'object' ? qId.db_id : qId;
     return apiFetch(`/admin/questions/${targetId}`, {
       method: 'DELETE'
     })
-    .then(() => true)
-    .catch(err => {
-      console.error('Error deleting question on backend, deleting locally:', err);
-      LocalStoreRepository.deleteQuestion(moduleId, typeof qId === 'object' ? qId.id : qId);
-      return true;
-    });
+      .then(() => true)
+      .catch(err => {
+        console.error('Error deleting question on backend, deleting locally:', err);
+        LocalStoreRepository.deleteQuestion(moduleId, typeof qId === 'object' ? qId.id : qId);
+        return true;
+      });
   }
 };

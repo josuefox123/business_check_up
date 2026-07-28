@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { STORAGE_KEYS, clearDiagnosticStorage } from '../constants/storageKeys.js';
 
-const STORAGE_KEY = 'bc_diag_state';
 const SESSION_EXPIRY_DAYS = 7;
 
 export function useSessionPersist() {
@@ -33,7 +33,7 @@ export function useSessionPersist() {
         clientIp: stateData?.clientIp || clientIp,
         savedAt: new Date().toISOString(),
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      localStorage.setItem(STORAGE_KEYS.DIAG_STATE, JSON.stringify(stateToSave));
     } catch (e) {
       console.error('Error saving diagnostic state to localStorage:', e);
     }
@@ -41,7 +41,7 @@ export function useSessionPersist() {
 
   const loadState = () => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEYS.DIAG_STATE);
       if (!raw) return null;
 
       const parsed = JSON.parse(raw);
@@ -65,12 +65,7 @@ export function useSessionPersist() {
   };
 
   const clearState = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem('bc_session_id'); // Also clear backend session ID if diagnostic is cleared/finished
-    } catch (e) {
-      console.error('Error clearing diagnostic state:', e);
-    }
+    clearDiagnosticStorage();
   };
 
   return {
