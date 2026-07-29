@@ -4,15 +4,15 @@ import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
 
-import iconFinanceStrategy from '../../../assets/icone diagnostique/Icon_strategy,-strategics,-finance-strategy,-chess,-horse.png';
-import iconFlashCustom from '../../../assets/icone diagnostique/flash.png';
-import iconProjectCustom from '../../../assets/icone diagnostique/PROJET.png';
-import iconDifficultyCustom from '../../../assets/icone diagnostique/difficulté.png';
-import iconOpportunityCustom from '../../../assets/icone diagnostique/OPPORTUNITé.png';
-import iconProductCustom from '../../../assets/icone diagnostique/OFFRE PRODUIT.png';
-import iconCommercialCustom from '../../../assets/icone diagnostique/COMMERCIAL.png';
-import iconGovernanceCustom from '../../../assets/icone diagnostique/organisation.png';
-import icon360Custom from '../../../assets/icone diagnostique/360.png';
+import iconFinanceStrategy from '../../../assets/icone diagnostique/icon_strategy.png';
+import iconFlashCustom from '../../../assets/icone diagnostique/icon_flash.png';
+import iconProjectCustom from '../../../assets/icone diagnostique/icon_project.png';
+import iconDifficultyCustom from '../../../assets/icone diagnostique/icon_difficulty.png';
+import iconOpportunityCustom from '../../../assets/icone diagnostique/icon_opportunity.png';
+import iconProductCustom from '../../../assets/icone diagnostique/icon_product_offer.png';
+import iconCommercialCustom from '../../../assets/icone diagnostique/icon_commercial.png';
+import iconGovernanceCustom from '../../../assets/icone diagnostique/icon_organisation.png';
+import icon360Custom from '../../../assets/icone diagnostique/icon_360.png';
 
 const MODULE_STYLE_MAP = {
   'PRJ-02': iconProjectCustom,
