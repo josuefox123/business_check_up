@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { History, Construction, ArrowLeft, Calendar, FileText, ChevronRight, AlertOctagon, RotateCcw } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
+import { TopBackLink } from '../partage/sharedUI.jsx';
 
 export const DiagnosticHistoryScreen = ({
   onBack,
@@ -12,12 +14,26 @@ export const DiagnosticHistoryScreen = ({
   isError = false,
   onRetry
 }) => {
+  const navigate = useNavigate();
   const accountEmail = userEmail || localStorage.getItem('bc_user_email') || null;
   const hasHistoryItems = !isLoading && !isError && historyItems.length > 0;
   const showEmptyState = !isLoading && !isError && historyItems.length === 0;
 
+  // Extract, declare and normalize API data before rendering (Rule 9)
+  const normalizedHistoryItems = (historyItems || []).map((item, idx) => {
+    return {
+      runId: item?.diagnostic_run_id || `RUN-${idx}`,
+      moduleName: item?.module_name || item?.module_code || '[module_name non disponible]',
+      score: item?.scoring?.converted_score_0_100 ?? item?.score ?? null,
+      completedAt: item?.completed_at ? new Date(item.completed_at).toLocaleDateString('fr-FR') : '[completed_at non disponible]',
+      bandLabel: item?.scoring?.band_label || item?.band_label || null,
+      originalItem: item
+    };
+  });
+
   return (
     <ScreenWrapper wide>
+      <TopBackLink onClick={() => navigate(-1)} />
       <div style={{ maxWidth: '720px', margin: '30px auto', padding: '0 20px' }}>
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
@@ -69,64 +85,56 @@ export const DiagnosticHistoryScreen = ({
         {/* Dynamic History List if available */}
         {hasHistoryItems && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-            {historyItems.map((item, idx) => {
-              const runId = item?.diagnostic_run_id || `RUN-${idx}`;
-              const moduleName = item?.module_name || item?.module_code || '[module_name non disponible]';
-              const score = item?.scoring?.converted_score_0_100 ?? item?.score ?? null;
-              const completedAt = item?.completed_at ? new Date(item.completed_at).toLocaleDateString('fr-FR') : '[completed_at non disponible]';
-              const bandLabel = item?.scoring?.band_label || item?.band_label;
-
-              return (
-                <div
-                  key={runId}
-                  onClick={() => onSelectRun && onSelectRun(item)}
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: onSelectRun ? 'pointer' : 'default',
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <FileText size={20} />
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#1E293B', margin: '0 0 4px 0' }}>
-                        {moduleName}
-                      </h4>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.82rem', color: '#64748B' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Calendar size={14} />
-                          {completedAt}
-                        </span>
-                        {bandLabel && (
-                          <span style={{ fontWeight: 600, color: '#0D9488' }}>
-                            {bandLabel}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+            {normalizedHistoryItems.map((item) => (
+              <div
+                key={item.runId}
+                onClick={() => onSelectRun && onSelectRun(item.originalItem)}
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  cursor: onSelectRun ? 'pointer' : 'default',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <FileText size={20} />
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {score !== null && (
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>{score}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#64748B' }}>/100</span>
-                      </div>
-                    )}
-                    {onSelectRun && <ChevronRight size={18} style={{ color: '#CBD5E1' }} />}
+                  <div>
+                    <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#1E293B', margin: '0 0 4px 0' }}>
+                      {item.moduleName}
+                    </h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.82rem', color: '#64748B' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={14} />
+                        {item.completedAt}
+                      </span>
+                      {item.bandLabel && (
+                        <span style={{ fontWeight: 600, color: '#0D9488' }}>
+                          {item.bandLabel}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              );
-            })}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {item.score !== null && (
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>{item.score}</span>
+                      <span style={{ fontSize: '0.75rem', color: '#64748B' }}>/100</span>
+                    </div>
+                  )}
+                  {onSelectRun && <ChevronRight size={18} style={{ color: '#CBD5E1' }} />}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

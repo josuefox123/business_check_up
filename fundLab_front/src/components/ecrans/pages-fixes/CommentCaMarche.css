@@ -50,15 +50,15 @@
   gap: 0;
 }
 
-/* Vertical connector line */
+/* Vertical connector line — animated gradient */
 .hiw-steps-line {
   position: absolute;
   left: 36px;
   top: 56px;
   bottom: 56px;
   width: 2px;
-  background: linear-gradient(to bottom, var(--color-accent), var(--color-blue));
-  opacity: 0.2;
+  background: linear-gradient(to bottom, var(--color-accent) 0%, var(--color-blue) 60%, transparent 100%);
+  opacity: 0.5;
   z-index: 0;
 }
 
@@ -95,6 +95,12 @@
   border: 3px solid var(--bg-white);
   position: relative;
   z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+.hiw-step-row:hover .hiw-step-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 20px rgba(52, 190, 213, 0.35), 0 0 0 4px rgba(52, 190, 213, 0.12);
 }
 
 .hiw-step-num {
@@ -144,12 +150,13 @@
   gap: 5px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--color-accent-dark);
-  background: var(--color-accent-light);
-  border: 1px solid rgba(52, 190, 213, 0.2);
-  padding: 4px 10px;
+  color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(52,190,213,0.9), rgba(44,178,201,0.85));
+  border: none;
+  padding: 5px 12px;
   border-radius: 9999px;
   white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(52,190,213,0.3);
 }
 
 .hiw-step-desc {
@@ -175,13 +182,30 @@
   border: 1px solid var(--slate-200);
   border-radius: 18px;
   box-shadow: var(--shadow-xs);
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.hiw-feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(52,190,213,0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
 }
 
 .hiw-feature-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(52, 190, 213, 0.15);
+  border-color: rgba(52, 190, 213, 0.4);
+  transform: translateY(-3px);
+}
+
+.hiw-feature-card:hover::before {
+  opacity: 1;
 }
 
 .hiw-feature-icon {
@@ -195,12 +219,14 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hiw-feature-card:hover .hiw-feature-icon {
-  background: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-accent), #2cb2c9);
   color: var(--color-primary);
+  box-shadow: 0 4px 14px rgba(52, 190, 213, 0.35);
+  transform: scale(1.08);
 }
 
 .hiw-feature-title {
@@ -225,12 +251,24 @@
   text-align: center;
 }
 
+/* First orb — top right */
 .hiw-cta-section::before {
   content: '';
   position: absolute;
   top: -80px; right: -80px;
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(52, 190, 213, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(52, 190, 213, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Second orb — bottom left */
+.hiw-cta-section::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(52, 190, 213, 0.10) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -240,8 +278,8 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: #34BED5; /* Dark Turquoise */
-  color: #17212D; /* Bleu crépuscule */
+  background: #34BED5;
+  color: #17212D;
   font-family: var(--font, 'Inter', sans-serif);
   font-size: 1rem;
   font-weight: 800;
@@ -250,18 +288,20 @@
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(52, 190, 213, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  position: relative;
+  z-index: 1;
 }
 
 .hiw-btn-cta:hover {
   background: #2cb2c9;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(52, 190, 213, 0.45);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 32px rgba(52, 190, 213, 0.5);
 }
 
 .hiw-btn-cta:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
 }
 
 /* ═══════════════════════════════════════════════

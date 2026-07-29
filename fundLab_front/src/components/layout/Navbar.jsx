@@ -63,7 +63,6 @@ export const Navbar = ({ onGoHome }) => {
         </div>
       </nav>
 
-      {/* Mobile bottom tab navigation — Hidden during diagnostic flow so the action menu bar takes its place */}
       {!isDiagnosticFlow && (
         <nav className="bottom-nav no-print">
           {links.map(({ to, label, end, icon: Icon }) => (
@@ -73,8 +72,12 @@ export const Navbar = ({ onGoHome }) => {
               end={end}
               className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
             >
-              <Icon size={22} className="bottom-nav-icon" />
-              <span className="bottom-nav-label">{label}</span>
+              {({ isActive }) => (
+                <>
+                  <Icon size={20} className="bottom-nav-icon" />
+                  {isActive && <span className="bottom-nav-label">{label}</span>}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

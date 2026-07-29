@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import { Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
@@ -29,6 +30,7 @@ const MODULE_STYLE_MAP = {
 };
 
 export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
+  const navigate = useNavigate();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -65,7 +67,33 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }} className="no-print">
+        <TopBackLink onClick={() => navigate(-1)} />
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'none',
+              border: 'none',
+              color: '#64748B',
+              fontWeight: 650,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              fontFamily: 'inherit',
+              marginTop: '4px'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#0F172A'}
+            onMouseLeave={(e) => e.target.style.color = '#64748B'}
+          >
+            Retour à l'accueil
+          </button>
+        )}
+      </div>
       <div className="catalog-wrap animate-fade-up">
         <h1 className="screen-title">Les diagnostics disponibles</h1>
         <p className="screen-subtitle" style={{ marginBottom: 'var(--space-8)' }}>
