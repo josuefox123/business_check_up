@@ -96,10 +96,10 @@ export const ResultatSyntheseScreen = ({
   const fragilitiesList = normalizeToArray(restData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
   const prioritiesList = normalizeToArray(restData?.priorities || scoring?.priorities);
 
-  const credScoreRaw = scoring?.credibility_score ?? "score_credibilite non disponible";
-  const credScore = (credScoreRaw !== null && credScoreRaw !== undefined && credScoreRaw !== '')
-    ? (typeof credScoreRaw === 'number' ? `${Math.round(credScoreRaw <= 1 ? credScoreRaw * 100 : credScoreRaw)}%` : String(credScoreRaw))
-    : null;
+  const credScoreRaw = scoring?.credibilized_score_0_100 ?? scoring?.credibility_score ?? restitution?.credibilized_score_0_100 ?? "[credibilized_score_0_100 non disponible]";
+  const credScore = (credScoreRaw !== null && credScoreRaw !== undefined && credScoreRaw !== '' && typeof credScoreRaw === 'number')
+    ? `${Math.round(credScoreRaw <= 1 ? credScoreRaw * 100 : credScoreRaw)}%`
+    : String(credScoreRaw);
 
   const redFlagCount = scoring?.red_flag_count;
   const isCritical = Boolean(scoring?.has_critical_red_flag) || score < 40;
@@ -149,12 +149,31 @@ export const ResultatSyntheseScreen = ({
         </h1>
 
         {/* Urgent Attention Alert Banner if present */}
-        {restData?.urgent_attention && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '12px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', color: '#991B1B' }}>
-            <AlertOctagon size={24} style={{ flexShrink: 0 }} />
+        {restData?.urgent_attention && typeof restData.urgent_attention === 'string' && restData.urgent_attention.trim() !== '' && (
+          <div style={{
+            background: 'linear-gradient(135deg, #FFF5F5 0%, #FEF2F2 100%)',
+            borderLeft: '5px solid #EF4444',
+            borderTop: '1px solid #FEE2E2',
+            borderRight: '1px solid #FEE2E2',
+            borderBottom: '1px solid #FEE2E2',
+            borderRadius: '12px',
+            padding: '18px 24px',
+            marginBottom: '28px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '16px',
+            color: '#991B1B',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.05)',
+            animation: 'pulse-subtle 3s infinite ease-in-out'
+          }}>
+            <AlertOctagon size={24} style={{ flexShrink: 0, color: '#EF4444', marginTop: '2px' }} />
             <div>
-              <strong style={{ display: 'block', fontSize: '0.9rem', marginBottom: '2px' }}>ATTENTION URGENTE</strong>
-              <span style={{ fontSize: '0.88rem' }}>{restData.urgent_attention}</span>
+              <strong style={{ display: 'block', fontSize: '0.92rem', fontWeight: '700', marginBottom: '4px', letterSpacing: '0.05em', color: '#991B1B' }}>
+                ATTENTION URGENTE
+              </strong>
+              <span style={{ fontSize: '0.9rem', lineHeight: '1.5', color: '#7F1D1D' }}>
+                {restData.urgent_attention}
+              </span>
             </div>
           </div>
         )}
@@ -193,15 +212,15 @@ export const ResultatSyntheseScreen = ({
               </div>
             </div>
 
-            {credScoreRaw && (
+            {credScore && (
               <div style={{ marginTop: '12px', fontSize: '0.82rem', color: '#64748B' }}>
-                Indice de crédibilité : <strong>{credScoreRaw}</strong>
+                Indice de crédibilité : <strong>{credScore}</strong>
               </div>
             )}
-            {redFlagCount !== undefined && redFlagCount !== null && redFlagCount !== '' && (
-              <div style={{ marginTop: '4px', fontSize: '0.8rem', color: Number(redFlagCount) > 0 ? '#DC2626' : '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <AlertTriangle size={14} />
-                <span>{Number(redFlagCount) > 0 ? `${redFlagCount} alerte(s) de vigilance` : 'Aucune alerte majeure'}</span>
+            {redFlagCount !== undefined && redFlagCount !== null && redFlagCount !== '' && Number(redFlagCount) > 0 && (
+              <div style={{ marginTop: '6px', fontSize: '0.82rem', color: '#DC2626', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertTriangle size={14} style={{ color: '#EF4444' }} />
+                <span>{redFlagCount} alerte(s) de vigilance</span>
               </div>
             )}
 

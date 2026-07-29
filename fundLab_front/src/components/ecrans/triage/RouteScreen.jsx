@@ -9,16 +9,16 @@ export const RouteScreen = ({ routeKey, recommendedModule, reason: reasonProp, o
   // Rule 9: Normalisation des données et préparation de l'état dérivé au sommet du composant
   const reason = reasonProp || recommendedModule?.reason || {};
 
-  const modName = recommendedModule?.name ?? "[recommended_module.name non disponible]";
+  const modName = recommendedModule?.name ?? "[Aucun module recommandé]";
   const modDuration = recommendedModule?.duration ?? "[duration non disponible]";
-  const modDescription = reason?.text || recommendedModule?.description || `Notre outil vous recommande le module "${modName}" sur la base de votre profil et de vos réponses au triage.`;
+  const modDescription = reason?.text || recommendedModule?.description || "[description non disponible]";
   const qCount = recommendedModule?.question_count;
   const hasQuestionCount = qCount !== undefined && qCount !== null;
 
   const riskLevel = reason?.risk_level;
   const isHighRiskOrPriority = riskLevel === 'critical' || riskLevel === 'high' || reason?.priority === 'high' || String(reason?.override_required) === 'true';
 
-  const warningText = isHighRiskOrPriority 
+  const warningText = isHighRiskOrPriority
     ? (riskLevel === 'critical' ? 'Ce module est critique. Il est fortement recommandé de le compléter immédiatement.' : 'Ce module est prioritaire sur la base de votre profil de risque.')
     : null;
 
