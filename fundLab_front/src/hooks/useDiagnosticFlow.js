@@ -714,6 +714,7 @@ export function useDiagnosticFlow() {
         if (runId) {
           setCurrentRunId(runId);
           localStorage.setItem(STORAGE_KEYS.CURRENT_RUN_ID, runId);
+          localStorage.setItem('last_run_id', runId);
           await updateSessionApi(sessionId, 'in_progress', `INTRO_${currentModule.id}`)
             .catch(err => console.error('Error tracking session intro stage:', err));
         } else {
@@ -820,7 +821,7 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       if (isEnrichmentMode) {
-        const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID);
+        const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID) || localStorage.getItem('last_run_id');
         if (runIdToFetch) {
           try {
             await apiFetch(`/diagnostics/${runIdToFetch}/details`);
