@@ -35,11 +35,31 @@ export const AdminApp = () => {
     });
     AdministrationService.users.getUsers().then(setUsers);
     AdministrationService.notifications.getNotifications().then(setNotifications);
-    AdministrationService.statistics.getOverview().then(data => setStats(prev => ({ ...prev, ...data })));
+    AdministrationService.statistics.getOverview().then(data => {
+      setStats(prev => ({
+        ...prev,
+        ...data,
+        follow_ups: prev.follow_ups || data?.follow_ups
+      }));
+    });
     AdministrationService.statistics.getModuleStats().then(setModuleStats);
     AdministrationService.statistics.getScoreDistribution().then(setScoreDistrib);
     AdministrationService.statistics.getActivityChart(7).then(setActivityChart);
     AdministrationService.statistics.getTopSectors().then(setTopSectors);
+    AdministrationService.appointments.getAppointments().then(appts => {
+      const list = Array.isArray(appts) ? appts : [];
+      const total_requests = list.length;
+      const new_reqs = list.filter(a => a.status === 'requested').length;
+      const urgent_reqs = list.filter(a => a.priority === 'urgent').length;
+      setStats(prev => ({
+        ...prev,
+        follow_ups: {
+          total_requests,
+          new: new_reqs,
+          urgent: urgent_reqs
+        }
+      }));
+    });
   };
 
   useEffect(() => {

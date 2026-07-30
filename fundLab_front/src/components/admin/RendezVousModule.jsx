@@ -207,7 +207,6 @@ export const RendezVousModule = ({ users }) => {
                   <th>Date &amp; Heure</th>
                   <th>Entrepreneur</th>
                   <th>Type &amp; Priorité</th>
-                  <th>Question principale</th>
                   <th>Statut</th>
                   <th>Planification / Lieu</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
@@ -222,9 +221,9 @@ export const RendezVousModule = ({ users }) => {
                   const dateToDisplay = appt.status === 'confirmed' ? appt.confirmed_starts_at : appt.requested_starts_at;
                   const formattedDate = dateToDisplay
                     ? new Date(dateToDisplay).toLocaleDateString('fr-FR', {
-                        day: 'numeric', month: 'short', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                      })
+                      day: 'numeric', month: 'short', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit'
+                    })
                     : '[requested_starts_at non disponible]';
                   const mainQuestion = appt.main_question ?? null;
                   const meetingLinkVal = appt.meeting_link ?? null;
@@ -258,11 +257,6 @@ export const RendezVousModule = ({ users }) => {
                               <span className="admin-badge-severity faible" style={{ fontSize: '0.66rem', padding: '2px 6px', background: '#f1f5f9', color: '#64748b' }}>{priorityLabel}</span>
                             )}
                           </div>
-                        </div>
-                      </td>
-                      <td style={{ maxWidth: '240px' }}>
-                        <div style={{ fontSize: '0.82rem', color: 'var(--slate-600)', fontStyle: mainQuestion ? 'normal' : 'italic' }}>
-                          {mainQuestion ? `« ${mainQuestion} »` : 'Aucune question spécifiée'}
                         </div>
                       </td>
                       <td>{getStatusBadge(appt.status)}</td>

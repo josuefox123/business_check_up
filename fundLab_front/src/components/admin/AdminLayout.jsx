@@ -17,9 +17,9 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
   const MENU = [
     { name: 'Tableau de bord', path: '/admin', icon: <LayoutDashboard size={20} /> },
     { name: 'Modules', path: '/admin/modules', icon: <Layers size={20} /> },
-    { name: 'Diagnostics', path: '/admin/diagnostics', icon: <ClipboardList size={20} /> },
+    // { name: 'Diagnostics', path: '/admin/diagnostics', icon: <ClipboardList size={20} /> },
     { name: 'Questionnaires', path: '/admin/questionnaires', icon: <FileText size={20} /> },
-    { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: <Users size={20} /> },
+    // { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: <Users size={20} /> },
     { name: 'Rendez-vous', path: '/admin/rendezvous', icon: <Calendar size={20} /> },
     // { name: 'Paramètres', path: '/admin/parametres', icon: <Settings size={20} /> },
   ];

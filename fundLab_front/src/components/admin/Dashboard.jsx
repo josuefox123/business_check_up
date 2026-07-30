@@ -9,23 +9,23 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
   // --- Normalisation des données avant le JSX (Règle 9) ---
   // Chaque valeur est extraite avec un fallback explicite référençant son champ source (Règle 7).
 
-  const totalVisitors    = stats.traffic?.total_visitors   ?? stats.started     ?? 0;
-  const newSessions      = stats.traffic?.new_sessions     ?? 0;
-  const diagsStarted     = stats.diagnostics?.started      ?? stats.started     ?? 0;
-  const diagsCompleted   = stats.diagnostics?.completed    ?? stats.completed   ?? 0;
-  const diagsAbandoned   = stats.diagnostics?.abandoned    ?? stats.abandoned   ?? 0;
-  const completionRate   = stats.diagnostics?.completion_rate ?? 0;
-  const followUpTotal    = stats.follow_ups?.total_requests ?? 0;
-  const followUpNew      = stats.follow_ups?.new           ?? 0;
-  const followUpUrgent   = stats.follow_ups?.urgent        ?? 0;
+  const totalVisitors = stats.traffic?.total_visitors ?? stats.started ?? 0;
+  const newSessions = stats.traffic?.new_sessions ?? 0;
+  const diagsStarted = stats.diagnostics?.started ?? stats.started ?? 0;
+  const diagsCompleted = stats.diagnostics?.completed ?? stats.completed ?? 0;
+  const diagsAbandoned = stats.diagnostics?.abandoned ?? stats.abandoned ?? 0;
+  const completionRate = stats.diagnostics?.completion_rate ?? 0;
+  const followUpTotal = stats.follow_ups?.total_requests ?? 0;
+  const followUpNew = stats.follow_ups?.new ?? 0;
+  const followUpUrgent = stats.follow_ups?.urgent ?? 0;
 
   const treeChartData = {
-    total_visitors:        stats.traffic?.total_visitors        ?? stats.started ?? 0,
-    started:               stats.diagnostics?.started           ?? stats.started ?? 0,
-    abandoned_first_run:   stats.diagnostics?.abandoned_first_run ?? stats.abandoned ?? 0,
-    completed_first_only:  stats.diagnostics?.completed_first_only ?? 0,
-    completed_enrichment:  stats.diagnostics?.completed_enrichment ?? 0,
-    completed:             stats.diagnostics?.completed          ?? stats.completed ?? 0,
+    total_visitors: stats.traffic?.total_visitors ?? stats.started ?? 0,
+    started: stats.diagnostics?.started ?? stats.started ?? 0,
+    abandoned_first_run: stats.diagnostics?.abandoned_first_run ?? stats.abandoned ?? 0,
+    completed_first_only: stats.diagnostics?.completed_first_only ?? 0,
+    completed_enrichment: stats.diagnostics?.completed_enrichment ?? 0,
+    completed: stats.diagnostics?.completed ?? stats.completed ?? 0,
   };
 
   const recentDiags = stats._recentDiags ?? [];
@@ -42,7 +42,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Tableau de bord</h1>
-          <p className="admin-page-sub">Vue d'ensemble de l'activité en temps réel · FUND.lab Business Check-up</p>
+          <p className="admin-page-sub">Vue d'ensemble de l'activité en temps réel Business Check-up</p>
         </div>
         <button className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={handleRefresh}>
           <RefreshCw size={14} /> Actualiser
@@ -51,7 +51,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
 
       {/* KPI Cards */}
       <div className="admin-stats-grid">
-        <div className="admin-stat-card">
+        {/* <div className="admin-stat-card">
           <div className="admin-stat-header">
             <div>
               <div className="admin-stat-title">Sessions créées</div>
@@ -62,7 +62,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
           <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
             {newSessions} nouvelles sessions
           </div>
-        </div>
+        </div> */}
 
         <div className="admin-stat-card">
           <div className="admin-stat-header">
@@ -90,18 +90,17 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
           </div>
         </div>
 
-        <div className="admin-stat-card">
-          <div className="admin-stat-header">
-            <div>
-              <div className="admin-stat-title">Rendez-vous pris</div>
+        <Link to="/admin/rendezvous" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="admin-stat-card" style={{ cursor: 'pointer', height: '100%', boxSizing: 'border-box' }}>
+            <div className="admin-stat-header">
+              <div>
+                <div className="admin-stat-title">Rendez-vous pris</div>
+              </div>
+              <div className="admin-stat-icon" style={{ color: 'var(--color-warning)' }}><Award size={20} /></div>
             </div>
-            <div className="admin-stat-icon" style={{ color: 'var(--color-warning)' }}><Award size={20} /></div>
+            <div className="admin-stat-value">{followUpTotal}</div>
           </div>
-          <div className="admin-stat-value">{followUpTotal}</div>
-          <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
-            {followUpNew} nouveaux · {followUpUrgent} urgents
-          </div>
-        </div>
+        </Link>
       </div>
 
       {/* Row 2: Tree Chart — Tunnel de Conversion */}

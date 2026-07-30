@@ -56,9 +56,15 @@ export const Navbar = ({ onGoHome }) => {
 
           {/* CTA Desktop */}
           <div className="navbar-cta no-print">
-            <button className="navbar-cta-btn" onClick={handleStartClick}>
-              Aidez-moi
-            </button>
+            {localStorage.getItem('admin_token') || sessionStorage.getItem('admin_authenticated') === 'true' ? (
+              <button className="navbar-cta-btn" onClick={() => navigate('/admin')}>
+                Dashboard
+              </button>
+            ) : (
+              <button className="navbar-cta-btn" onClick={handleStartClick}>
+                Aidez-moi
+              </button>
+            )}
           </div>
         </div>
       </nav>
