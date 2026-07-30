@@ -1,51 +1,127 @@
-# Architecture du Projet — FUND.lab
+# Architecture du Projet — FUND.lab Business Check-up
 
-Ce document décrit l'organisation du projet FUND.lab, la structure de ses dossiers et le fonctionnement du flux de données dans cette architecture "Backend Ready".
+Ce document décrit l'organisation du projet, la structure de ses dossiers, le fonctionnement du flux de données et les décisions d'architecture du panneau d'administration.
 
 ---
 
 ## 📂 Organisation des Dossiers
 
-Le projet est structuré pour isoler le code visuel (React) des couches de logique d'affaires et de stockage :
-
 ```
 src/
-├── api/                # Abstraction des appels réseau (diagnosticsApi, questionnairesApi, etc.)
-├── mocks/              # Données simulées centralisées (mockData.js)
-├── repositories/       # Abstraction du stockage local (LocalStoreRepository.js)
-├── services/           # Services métier encapsulant la logique d'affaires
-├── components/         # Composants UI (layout, screens, ui réutilisables)
-├── data/               # Données statiques historiques de démarrage
-├── index.css           # Design system centralisé
-└── main.jsx            # Point d'entrée de l'application
+├── api/                     # Wrappers d'appels réseau vers l'API REST backend
+│   ├── config.js            # Base URL et apiFetch (wrapper fetch centralisé)
+│   ├── statistiquesApi.js   # Endpoints /admin/dashboard/* et /admin/stats/*
+│   ├── diagnosticsApi.js    # Endpoints /admin/diagnostics/*
+│   ├── questionnairesApi.js # Endpoints /admin/questionnaires/*
+│   ├── sessionsApi.js       # Endpoints de session utilisateur
+│   └── ...
+├── services/                # Services métier encapsulant la logique d'affaires
+│   ├── AdministrationService.js  # Façade admin : stats, diagnostics, users, notifications
+│   ├── StatistiqueService.js     # Agrégation des données du dashboard
+│   └── ...
+├── components/
+│   ├── admin/               # Interface administrateur (tableau de bord, modules, diagnostics)
+│   │   ├── AdminApp.jsx         # Conteneur principal admin (auth, routing, chargement données)
+│   │   ├── Dashboard.jsx        # Tableau de bord avec KPIs et graphiques
+│   │   ├── AdminLayout.jsx      # Layout admin (sidebar, navbar)
+│   │   └── charts/
+│   │       ├── AdminBubbleChart.jsx     # Bubble Chart répartition par diagnostic
+│   │       ├── AdminTreeChart.jsx       # Tree Chart entonnoir de conversion sessions
+│   │       └── AdminBreakdownWidget.jsx # Widget Région / Secteur / Profil
+│   ├── ecrans/              # Interface utilisateur (questionnaire, résultats)
+│   └── ui/                  # Composants UI réutilisables
+├── repositories/            # Abstraction du stockage local (LocalStoreRepository.js)
+├── data/                    # Données statiques de démarrage
+├── index.css                # Design system centralisé (tokens, variables, classes admin)
+└── main.jsx                 # Point d'entrée
 ```
 
 ---
 
-## 🔄 Flux de Données (Data Flow)
-
-Pour que l'application soit totalement découplée et prête à migrer vers un backend :
-1. **Composants React (Vue)** : Ils n'interrogent jamais les mocks ou les fichiers locaux directement. Ils appellent uniquement les **Services**.
-2. **Services (Métier)** : Ils valident les requêtes, exécutent les calculs métier (ex: moteur de scoring) et appellent les modules de l'**API**.
-3. **API (Réseau)** : Ils simulent des appels réseau asynchrones en renvoyant des promesses (`Promise.resolve()`) qui lisent ou écrivent dans la **Base locale** (Repository).
-4. **Repository (Persistance)** : Il gère les lectures et écritures physiques (actuellement dans le `localStorage` du navigateur).
+## 🔄 Flux de Données (Data Flow) — Dashboard Admin
 
 ```
-[Composant UI]
-      │ (Appel Service)
+[AdminApp.jsx]
+      │  loadAllData() → appelle AdministrationService.*
       ▼
-[Services Métier] (DiagnosticService, QuestionService, etc.)
-      │ (Appel API asynchrone)
+[AdministrationService.js]
+      │  Façade : .statistics.getOverview(), .statistics.getModuleStats(), ...
       ▼
-[API Mocks] (diagnosticsApi, questionsApi, etc. - retourne des Promises)
-      │ (Lecture/Écriture brute)
+[StatistiqueService.js / statistiquesApi.js]
+      │  apiFetch() vers https://business-chekcup.nicktep.com/api/bc/admin/dashboard/*
       ▼
-[Repository] (LocalStoreRepository - localStorage)
+[Backend REST API]
+      │  Réponse JSON → normalisée et mappée dans AdminApp.jsx
+      ▼
+[Dashboard.jsx] → reçoit les props : stats, moduleStats, topSectors, ...
+      │
+      ├──► [AdminTreeChart.jsx]         — data.abandoned_first_run, completed_enrichment, etc.
+      ├──► [AdminBubbleChart.jsx]       — moduleStats[].code, name, count
+      └──► [AdminBreakdownWidget.jsx]   — topSectors[].region + diagnostic_count
 ```
 
 ---
 
-## 🛡️ Avantages de cette architecture
+## ⚡ Actualisation sans rechargement de page (Règle 1 — AGENTS.md)
 
-* **Prête pour le Backend** : Pour connecter l'application à un vrai serveur REST, il suffit de modifier les fichiers de la couche `src/api/` (remplacer les retours Mock par des requêtes `fetch` ou `axios`). Le reste de l'application (Services et Composants) restera rigoureusement identique.
-* **Persistance complète** : Toutes les créations ou suppressions faites dans le panneau administrateur ou les soumissions de diagnostics utilisateurs sont conservées en local, offrant une démonstration 100% réaliste.
+Le bouton "Actualiser" du tableau de bord **ne recharge plus la page** (`window.location.reload()` supprimé).
+Il invoque le callback `onRefresh` → `loadAllData()` dans `AdminApp.jsx`, qui rappelle l'API et met à jour l'état React localement.
+
+```
+[Bouton Actualiser] → handleRefresh() → onRefresh() → loadAllData() → setState(...)
+```
+
+---
+
+## 🗂️ Normalisation des Données (Règle 9 — AGENTS.md)
+
+Tous les composants admin extraient et normalisent leurs données **avant le bloc `return()`** :
+
+- **`Dashboard.jsx`** : `totalVisitors`, `diagsStarted`, `treeChartData`, `recentDiags` — déclarés en tête de composant.
+- **`AdminTreeChart.jsx`** : `rootNode` et `branchNodes[]` — objets complets construits avant le JSX.
+- **`AdminBreakdownWidget.jsx`** : `regionData`, `sectorData`, `profileData` — mappés depuis l'API avec fallbacks explicites.
+- **`AdminBubbleChart.jsx`** : `sorted`, `maxCount`, `totalExecutions`, `topModule` — calculés avant le rendu.
+
+---
+
+## 🛡️ Mapping API & Fallbacks Explicites (Règle 7 — AGENTS.md)
+
+Les champs API sont utilisés avec leurs noms exacts. Les fallbacks utilisent des chaînes de référence pour faciliter le débogage :
+
+```js
+// ✅ Conforme
+label: s.region ?? '[region non disponible]'
+count: s.diagnostic_count ?? s.count ?? 0
+
+// ❌ Non conforme (à éviter)
+label: s.sector || s.region || 'Inconnu'
+```
+
+---
+
+## 🧩 Composants du Dashboard Admin
+
+### `AdminBubbleChart`
+- **Props** : `moduleStats[]` — tableau d'objets `{ code, name, count }`
+- **Comportement** : Taille des bulles proportionnelle à `count`. Tooltip unique rendu via `ReactDOM.createPortal()` dans `document.body` (évite les conflits CSS avec les `transform` parents).
+
+### `AdminTreeChart`
+- **Props** : `data` — objet `{ total_visitors, started, abandoned_first_run, completed_first_only, completed_enrichment, completed }`
+- **Comportement** : Affiche l'entonnoir de conversion en 1 nœud racine + 3 branches. Tous les calculs de pourcentage se font avant le rendu.
+
+### `AdminBreakdownWidget`
+- **Props** : `topSectors[]`, `userProfiles[]`, `sectorStats[]`
+- **Comportement** : Widget à onglets (Régions / Secteurs / Profil). Aucune donnée fictive — si les props sont vides, un message explicite est affiché.
+- **Champs attendus par onglet** :
+  - Région : `{ region, diagnostic_count }`
+  - Secteur : `{ sector, diagnostic_count }`
+  - Profil : `{ profile, diagnostic_count }`
+
+---
+
+## 🔁 Connexion Backend
+
+Le client HTTP central est dans `src/api/config.js` (`apiFetch`). Il gère :
+- L'injection du header `Authorization: Bearer <token>`
+- La base URL (`VITE_API_URL` ou `https://business-chekcup.nicktep.com/api/bc`)
+- Les erreurs HTTP (retourne des exceptions catchées par les Services)

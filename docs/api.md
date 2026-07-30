@@ -1,8 +1,8 @@
 # FUND.lab — Spécification des API Backend
 
-Ce document liste l'ensemble des endpoints REST à implémenter côté backend pour remplacer les mocks du frontend.
+Ce document liste l'ensemble des endpoints REST intégrés côté backend.
 
-> **Base URL** : `https://api.fundlab.cci.bj/api/v1`
+> **Base URL** : `https://business-chekcup.nicktep.com/api/bc`
 > **Auth** : Toutes les routes `/admin/*` nécessitent un header `Authorization: Bearer <token>`
 
 ---
@@ -33,33 +33,78 @@ Retourne l'utilisateur connecté à partir du token.
 
 ---
 
-## 📊 Statistiques — Dashboard
+## 📊 Statistiques — Dashboard Admin
 
-### `GET /admin/stats/overview`
-Retourne les KPIs globaux pour les 4 cartes du haut du tableau de bord.
+### `GET /admin/dashboard/overview`
+Retourne les KPIs globaux et les données agrégées du tableau de bord.
 
 **Réponse 200**
 ```json
 {
-  "totalDiagnostics": 42,
-  "totalUsers": 18,
-  "avgScore": 61,
-  "unreadNotifications": 3,
-  "diagsThisWeek": 7,
-  "diagsTrend": 17,
-  "usersTrend": -5,
-  "scoreTrend": 4,
-  "mostUsedModule": "FLH-01",
-  "mostUsedModuleName": "Diagnostic Flash",
-  "mostUsedModulePercentage": 38,
-  "moduleCounts": {
-    "FLH-01": 16, "DIF-03": 10, "PRJ-02": 8
+  "success": true,
+  "message": "Success",
+  "data": {
+    "traffic": {
+      "total_visitors": 55,
+      "new_sessions": 12
+    },
+    "diagnostics": {
+      "started": 42,
+      "completed": 30,
+      "abandoned": 12,
+      "completion_rate": 71,
+      "abandoned_first_run": 8,
+      "completed_first_only": 14,
+      "completed_enrichment": 16
+    },
+    "follow_ups": {
+      "total_requests": 7,
+      "new": 3,
+      "urgent": 1
+    },
+    "sectors": [
+      { "sector": "Commerce général", "diagnostic_count": 7 },
+      { "sector": "Agriculture", "diagnostic_count": 4 }
+    ],
+    "user_profiles": [
+      { "profile": "PME / Entreprise formalisée", "diagnostic_count": 16 },
+      { "profile": "Porteur de projet / Idée", "diagnostic_count": 12 }
+    ]
   }
 }
 ```
 
+> **Mapping frontend** : Les champs `traffic`, `diagnostics`, `follow_ups`, `sectors` et `user_profiles` sont mappés directement dans le composant `Dashboard.jsx` via les variables normalisées.
+
+---
+
+### `GET /admin/dashboard/territory`
+Retourne la répartition géographique des diagnostics par région.
+
+**Réponse 200**
+```json
+{
+  "success": true,
+  "message": "Success",
+  "data": {
+    "regions": [
+      { "region": "Atlantique", "diagnostic_count": 15 },
+      { "region": "Littoral",   "diagnostic_count": 13 },
+      { "region": "Atacora",    "diagnostic_count": 1  },
+      { "region": "Donga",      "diagnostic_count": 1  },
+      { "region": "Borgou",     "diagnostic_count": 1  },
+      { "region": "Mono",       "diagnostic_count": 1  }
+    ]
+  }
+}
+```
+
+> **Mapping frontend** : Utilisé dans le composant `AdminBreakdownWidget.jsx` (onglet "Régions"). Le champ clé est `region` et le compteur est `diagnostic_count`.
+
+---
+
 ### `GET /admin/stats/activity?days=7`
-Retourne le nombre de diagnostics par jour pour les N derniers jours (graphe d'activité).
+Retourne le nombre de diagnostics par jour pour les N derniers jours.
 
 **Query params** : `days` (integer, défaut: 7)
 
@@ -72,24 +117,38 @@ Retourne le nombre de diagnostics par jour pour les N derniers jours (graphe d'a
 ]
 ```
 
+---
+
 ### `GET /admin/stats/modules`
 Retourne la répartition et les statistiques par module de diagnostic.
+Utilisé dans le **Bubble Chart** (`AdminBubbleChart.jsx`).
 
 **Réponse 200**
 ```json
 [
   {
-    "moduleId": "FLH-01",
+    "code": "FLH-01",
     "name": "Diagnostic Flash",
     "count": 16,
     "avgScore": 65,
     "percentage": 38
+  },
+  {
+    "code": "DIF-03",
+    "name": "Diagnostic Difficulté",
+    "count": 10,
+    "avgScore": 58,
+    "percentage": 24
   }
 ]
 ```
 
+> **Mapping frontend** : Les champs `code`, `name` et `count` sont utilisés. Les bulles sont dimensionnées proportionnellement à `count`.
+
+---
+
 ### `GET /admin/stats/scores/distribution`
-Retourne la répartition des scores par tranche pour le graphe de distribution.
+Retourne la répartition des scores par tranche.
 
 **Réponse 200**
 ```json
@@ -101,6 +160,8 @@ Retourne la répartition des scores par tranche pour le graphe de distribution.
   { "label": "Excellent", "min": 85, "max": 100, "color": "#0d9488", "count": 3,  "percentage": 7  }
 ]
 ```
+
+---
 
 ### `GET /admin/stats/sectors`
 Retourne le top 5 des secteurs d'activité des prospects enregistrés.
@@ -407,6 +468,7 @@ Liste de toutes les entreprises (dérivées des profils prospects).
 ## 📤 Soumission Publique (Flux utilisateur)
 
 Ces endpoints sont appelés depuis le questionnaire utilisateur, **sans authentification admin**.
+L'utilisateur **doit obligatoirement renseigner son email** avant l'envoi des réponses d'enrichissement.
 
 ### `POST /submit/user`
 Enregistrement d'un prospect à la fin du questionnaire (formulaire de contact).
@@ -432,50 +494,22 @@ Enregistrement du diagnostic complet après soumission.
 
 ---
 
-## 📌 Résumé — 43 endpoints au total
+## 📌 Résumé des Endpoints Actifs
 
-| Groupe | Count | Endpoints |
+| Groupe | Endpoints clés | Statut |
 |---|---|---|
-| **Auth** | 3 | POST login · POST logout · GET me |
-| **Stats Dashboard** | 5 | GET overview · GET activity · GET modules · GET score-distrib · GET sectors |
-| **Diagnostics** | 4 | GET list · GET :id · POST · DELETE :id |
-| **Utilisateurs** | 5 | GET list · GET :id · POST · PUT :id · DELETE :id |
-| **Questionnaires** | 2 | GET list · GET :moduleId |
-| **Questions** | 4 | GET :moduleId · POST :moduleId · PUT :moduleId/:qId · DELETE :moduleId/:qId |
-| **Rapports** | 3 | POST generate · GET list · GET :diagId |
-| **Notifications** | 4 | GET list · PATCH :id/read · POST · DELETE :id |
-| **Paramètres** | 2 | GET · PUT |
-| **Entreprises** | 1 | GET list |
-| **Soumission publique** | 2 | POST /submit/user · POST /submit/diagnostic |
-
----
-
-## 🔁 Comment connecter le backend au frontend
-
-Pour chaque endpoint, ouvrir le fichier correspondant dans `src/api/` et remplacer `Promise.resolve(...)` par un appel `fetch` ou `axios` :
-
-```js
-// AVANT (mock localStorage)
-getAll() {
-  return Promise.resolve(LocalStoreRepository.getDiagnostics());
-}
-
-// APRÈS (vrai backend REST)
-async getAll() {
-  const res = await fetch(`${API_BASE_URL}/admin/diagnostics`, {
-    headers: { Authorization: `Bearer ${getToken()}` }
-  });
-  return res.json();
-}
-```
-
-Fichiers à modifier par ordre de priorité :
-1. `src/api/diagnosticsApi.js`
-2. `src/api/utilisateursApi.js`
-3. `src/api/statistiquesApi.js`
-4. `src/api/notificationsApi.js`
-5. `src/api/questionnairesApi.js`
-6. `src/api/questionsApi.js`
-7. `src/api/parametresApi.js`
-8. `src/api/rapportsApi.js`
-9. `src/api/entreprisesApi.js`
+| **Auth** | POST login · POST logout · GET me | ✅ Intégré |
+| **Dashboard Overview** | GET /admin/dashboard/overview | ✅ Intégré |
+| **Dashboard Territory** | GET /admin/dashboard/territory | ✅ Intégré |
+| **Stats Activité** | GET /admin/stats/activity | ✅ Intégré |
+| **Stats Modules** | GET /admin/stats/modules | ✅ Intégré (Bubble Chart) |
+| **Stats Scores** | GET /admin/stats/scores/distribution | ✅ Intégré |
+| **Stats Secteurs** | GET /admin/stats/sectors | ✅ Intégré |
+| **Diagnostics** | GET list · GET :id · POST · DELETE :id | ✅ Intégré |
+| **Utilisateurs** | GET list · GET :id · POST · PUT :id · DELETE :id | ✅ Intégré |
+| **Questionnaires** | GET list · GET :moduleId | ✅ Intégré |
+| **Questions** | GET · POST · PUT · DELETE | ✅ Intégré |
+| **Rapports** | POST generate · GET list · GET :diagId | ✅ Intégré |
+| **Notifications** | GET list · PATCH read · POST · DELETE | ✅ Intégré |
+| **Paramètres** | GET · PUT | ✅ Intégré |
+| **Soumission publique** | POST /submit/user · POST /submit/diagnostic | ✅ Intégré |
