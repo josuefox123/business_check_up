@@ -9,6 +9,23 @@ export const Navbar = ({ onGoHome }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const checkAdminAuth = () =>
+    Boolean(localStorage.getItem('admin_token')) || sessionStorage.getItem('admin_authenticated') === 'true';
+
+  const [isAdminConnected, setIsAdminConnected] = useState(checkAdminAuth);
+
+  // Re-check on route changes (covers login redirect back to landing page)
+  useEffect(() => {
+    setIsAdminConnected(checkAdminAuth());
+  }, [location.pathname]);
+
+  // Listen for storage events (cross-tab logout)
+  useEffect(() => {
+    const onStorage = () => setIsAdminConnected(checkAdminAuth());
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
   const handleLogoClick = () => {
     if (onGoHome) {
       onGoHome();
@@ -56,7 +73,7 @@ export const Navbar = ({ onGoHome }) => {
 
           {/* CTA Desktop */}
           <div className="navbar-cta no-print">
-            {localStorage.getItem('admin_token') || sessionStorage.getItem('admin_authenticated') === 'true' ? (
+            {isAdminConnected ? (
               <button className="navbar-cta-btn" onClick={() => navigate('/admin')}>
                 Dashboard
               </button>

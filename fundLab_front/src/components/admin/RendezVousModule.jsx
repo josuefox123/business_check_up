@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, Phone, Mail, Briefcase, Check, XCircle, ExternalLink, MapPin, RotateCcw, AlertCircle } from 'lucide-react';
+import { Calendar, User, Phone, Mail, Briefcase, Check, XCircle, ExternalLink, MapPin, RotateCcw, AlertCircle, Download } from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
+import { exportToExcel } from '../../utils/exportToExcel.js';
 
 // Rule 7: Mapping complet des valeurs exactes de l'API vers des libellés lisibles
 const RDV_TYPE_LABELS = {
   'urgent_stabilization': 'Stabilisation urgente',
+  'pwin_opportunity': 'Opportunité pWIN',
+  'orientation': 'Orientation',
   'project_framing': 'Cadrage projet',
   'opportunity_study': 'Étude d\'opportunité',
   'general_support': 'Accompagnement général',
@@ -15,6 +18,13 @@ const PRIORITY_LABELS = {
   'urgent': 'Urgent',
   'high': 'Haute',
   'normal': 'Normal',
+};
+
+const USER_PROFILE_LABELS = {
+  'structured_sme': 'PME structurée',
+  'informal_sme': 'PME / Indépendant',
+  'project_holder': 'Porteur de projet',
+  'cooperative': 'Coopérative / Groupement',
 };
 
 export const RendezVousModule = ({ users }) => {
@@ -62,8 +72,8 @@ export const RendezVousModule = ({ users }) => {
     } catch {
       setConfirmedDate('');
     }
-    setMeetingLink('');
-    setMeetingLocation('');
+    setMeetingLink(appt.meeting_link ?? '');
+    setMeetingLocation(appt.location ?? '');
     setShowConfirmModal(true);
   };
 
@@ -78,6 +88,7 @@ export const RendezVousModule = ({ users }) => {
     try {
       await AdministrationService.appointments.confirmAppointment(selectedAppt.id, dateUtc, meetingLink, meetingLocation);
       setShowConfirmModal(false);
+      setSelectedAppt(null);
       loadAppointments();
     } catch (err) {
       console.error('[RendezVousModule] confirmAppointment error:', err);
@@ -88,6 +99,7 @@ export const RendezVousModule = ({ users }) => {
   };
 
   const handleCancel = async (id) => {
+    if (!window.confirm('Voulez-vous vraiment annuler ce rendez-vous ?')) return;
     setActionErrorMsg('');
     setIsSubmittingAction(true);
     try {
@@ -116,16 +128,45 @@ export const RendezVousModule = ({ users }) => {
   };
 
   // Rule 9: Normalisation des données avant le rendu
-  // getUserInfo cherche d'abord dans la liste users passée en props
-  // Si l'utilisateur est inconnu (diagnostic_run === null côté API), on affiche le user_id en fallback
+  // getUserInfo cherche d'abord dans appt.user (retourné par l'API backend) puis fallback sur la liste users en prop
+  // N'affiche aucun champ null/incomplet
   const getUserInfo = (appt) => {
+    const apiUser = appt.user ?? null;
+    if (apiUser) {
+      const profileLabel = USER_PROFILE_LABELS[apiUser.user_profile_type] ?? apiUser.user_profile_type ?? null;
+      return {
+        name: apiUser.full_name ?? apiUser.name ?? 'Entrepreneur',
+        email: apiUser.email ?? null,
+        phone: apiUser.phone_number ?? apiUser.phone ?? null,
+        whatsapp: apiUser.whatsapp_number ?? null,
+        companyName: apiUser.institution_name ?? apiUser.companyName ?? null,
+        profileType: profileLabel,
+        channel: apiUser.preferred_contact_channel ?? null,
+        role: apiUser.role_in_business ?? null,
+        gender: apiUser.gender_optional ?? null,
+        ageRange: apiUser.age_range_optional ?? null,
+      };
+    }
+
     const userId = appt.user_id ?? null;
     const u = users?.find(user => user.id === userId || user.user_id === userId);
-    if (u) return { name: u.name ?? u.full_name ?? '[name non disponible]', email: u.email ?? '', phone: u.phone ?? u.phone_number ?? '', companyName: u.companyName ?? u.business_name ?? '' };
-    return { name: 'Entrepreneur inconnu', email: '', phone: '', companyName: '' };
+    if (u) {
+      return {
+        name: u.name ?? u.full_name ?? 'Entrepreneur',
+        email: u.email ?? null,
+        phone: u.phone ?? u.phone_number ?? null,
+        whatsapp: u.whatsapp_number ?? null,
+        companyName: u.companyName ?? u.business_name ?? null,
+        profileType: USER_PROFILE_LABELS[u.user_profile_type] ?? u.user_profile_type ?? null,
+        channel: u.preferred_contact_channel ?? null,
+        role: u.role_in_business ?? null,
+        gender: u.gender_optional ?? null,
+        ageRange: u.age_range_optional ?? null,
+      };
+    }
+
+    return { name: 'Entrepreneur (Non renseigné)', email: null, phone: null, whatsapp: null, companyName: null, profileType: null, channel: null, role: null, gender: null, ageRange: null };
   };
-
-
 
   const getRdvTypeLabel = (rdvType) =>
     RDV_TYPE_LABELS[rdvType] ?? rdvType ?? '[rdv_type non disponible]';
@@ -153,11 +194,36 @@ export const RendezVousModule = ({ users }) => {
     }
   };
 
+  const handleExport = () => {
+    const headers = ['Date demandée', 'Entrepreneur', 'Email', 'Téléphone', 'Type RDV', 'Priorité', 'Statut', 'Date confirmée', 'Lien réunion', 'Lieu'];
+    const rows = filtered.map(appt => {
+      const ui = getUserInfo(appt);
+      return [
+        appt.requested_starts_at ? new Date(appt.requested_starts_at).toLocaleDateString('fr-FR') : '',
+        ui.name ?? '',
+        ui.email ?? '',
+        ui.phone ?? '',
+        getRdvTypeLabel(appt.rdv_type),
+        getPriorityLabel(appt.priority),
+        appt.status ?? '',
+        appt.confirmed_starts_at ? new Date(appt.confirmed_starts_at).toLocaleDateString('fr-FR') : '',
+        appt.meeting_link ?? '',
+        appt.location ?? '',
+      ];
+    });
+    exportToExcel([headers, ...rows], 'rendezvous_export');
+  };
+
   return (
     <div className="admin-page animate-fade-up">
       <div className="admin-page-header">
-        <h1 className="admin-page-title">Rendez-vous</h1>
-        <p className="admin-page-sub">Gérez et planifiez les rendez-vous d'accompagnement demandés par les entrepreneurs</p>
+        <div>
+          <h1 className="admin-page-title">Rendez-vous</h1>
+          <p className="admin-page-sub">Gérez et planifiez les rendez-vous d'accompagnement demandés par les entrepreneurs</p>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="Exporter en Excel">
+          <Download size={14} /> Exporter
+        </button>
       </div>
 
       {/* Rule 4: Feedback contextuel d'erreur localisé */}
@@ -240,10 +306,42 @@ export const RendezVousModule = ({ users }) => {
                       <td>
                         <div>
                           <div style={{ fontWeight: 700, color: '#0f172a' }}>{userInfo.name}</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px', fontSize: '0.8rem', color: 'var(--slate-500)' }}>
-                            {userInfo.email && <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Mail size={12} /> {userInfo.email}</div>}
-                            {userInfo.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Phone size={12} /> {userInfo.phone}</div>}
-                            {userInfo.companyName && <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: 'var(--color-teal)' }}><Briefcase size={12} /> {userInfo.companyName}</div>}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px', fontSize: '0.78rem', color: 'var(--slate-500)' }}>
+                            {userInfo.profileType && (
+                              <div style={{ display: 'inline-block', width: 'fit-content', background: '#F1F5F9', color: '#334155', fontWeight: 600, fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', marginBottom: '2px' }}>
+                                {userInfo.profileType}
+                              </div>
+                            )}
+                            {userInfo.companyName && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: 'var(--color-teal)' }}>
+                                <Briefcase size={12} /> {userInfo.companyName} {userInfo.role ? `(${userInfo.role})` : ''}
+                              </div>
+                            )}
+                            {userInfo.email && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Mail size={12} /> {userInfo.email}
+                              </div>
+                            )}
+                            {userInfo.phone && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Phone size={12} /> {userInfo.phone}
+                              </div>
+                            )}
+                            {userInfo.whatsapp && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#16A34A', fontWeight: 600 }}>
+                                <Phone size={12} /> WhatsApp: {userInfo.whatsapp}
+                              </div>
+                            )}
+                            {userInfo.channel && (
+                              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>
+                                Canal pref: {userInfo.channel}
+                              </div>
+                            )}
+                            {(userInfo.gender || userInfo.ageRange) && (
+                              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>
+                                {[userInfo.gender, userInfo.ageRange].filter(Boolean).join(' • ')}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -272,7 +370,6 @@ export const RendezVousModule = ({ users }) => {
                               <MapPin size={13} color="var(--slate-400)" /> {locationVal}
                             </div>
                           )}
-                          {!meetingLinkVal && !locationVal && <span style={{ color: 'var(--slate-400)', fontStyle: 'italic' }}>—</span>}
                         </div>
                       </td>
                       <td style={{ textAlign: 'right' }}>

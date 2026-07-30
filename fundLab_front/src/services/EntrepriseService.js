@@ -3,10 +3,10 @@
  * Domain service logic for querying registered companies.
  */
 
-import { entreprisesApi } from '../api/entreprisesApi.js';
+import { pmeApi } from '../api/pmeApi.js';
 
 export const EntrepriseService = {
   getEnterprises() {
-    return entreprisesApi.getAll();
+    return pmeApi.getAll();
   }
 };

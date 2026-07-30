@@ -9,12 +9,13 @@ import { UtilisateursModule } from './UtilisateursModule.jsx';
 import { ParametresModule } from './ParametresModule.jsx';
 import { ModulesModule } from './ModulesModule.jsx';
 import { RendezVousModule } from './RendezVousModule.jsx';
+import { PmeModule } from './PmeModule.jsx';
 import { AdminLogin } from './AdminLogin.jsx';
 import './admin.css';
 
 export const AdminApp = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('admin_authenticated') === 'true'
+    Boolean(localStorage.getItem('admin_token')) || sessionStorage.getItem('admin_authenticated') === 'true'
   );
   // Core lists
   const [diagnostics, setDiagnostics] = useState([]);
@@ -141,6 +142,7 @@ export const AdminApp = () => {
         <Route path="/rendezvous" element={
           <RendezVousModule users={users} />
         } />
+        <Route path="/pmes" element={<PmeModule />} />
         {/* <Route path="/parametres" element={<ParametresModule />} /> */}
       </Routes>
     </AdminLayout>

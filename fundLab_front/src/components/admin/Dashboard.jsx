@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, Activity, Users, BarChart2, Award } from 'lucide-react';
+import { RefreshCw, Activity, Users, BarChart2, Award, Building2 } from 'lucide-react';
 import { AdminTreeChart } from './charts/AdminTreeChart.jsx';
 import { AdminBubbleChart } from './charts/AdminBubbleChart.jsx';
 import { AdminBreakdownWidget } from './charts/AdminBreakdownWidget.jsx';
@@ -18,6 +18,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
   const followUpTotal = stats.follow_ups?.total_requests ?? 0;
   const followUpNew = stats.follow_ups?.new ?? 0;
   const followUpUrgent = stats.follow_ups?.urgent ?? 0;
+  const pmeCount = stats.pme ?? 0;
 
   const treeChartData = {
     total_visitors: stats.traffic?.total_visitors ?? stats.started ?? 0,
@@ -89,6 +90,18 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             {diagsAbandoned} abandonnés
           </div>
         </div>
+
+        <Link to="/admin/pmes" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="admin-stat-card" style={{ cursor: 'pointer', height: '100%', boxSizing: 'border-box' }}>
+            <div className="admin-stat-header">
+              <div>
+                <div className="admin-stat-title">Nombre de PME</div>
+              </div>
+              <div className="admin-stat-icon" style={{ color: 'var(--color-indigo, #6366f1)' }}><Building2 size={20} /></div>
+            </div>
+            <div className="admin-stat-value">{pmeCount}</div>
+          </div>
+        </Link>
 
         <Link to="/admin/rendezvous" style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="admin-stat-card" style={{ cursor: 'pointer', height: '100%', boxSizing: 'border-box' }}>
