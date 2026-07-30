@@ -306,6 +306,16 @@ function DiagnosticApp() {
           onConfirm={flow.onConfirmTriageCompletion}
         />
       )}
+      {flow.isVerifyingEmail && location.pathname !== '/triage/wizard' && location.pathname !== '/diagnostic/profil-initial' && (
+        <EmailVerificationModal
+          email={flow.pendingProfileData?.email || flow.triageAnswers?.email || ''}
+          onVerify={flow.handleConfirmEmailCode}
+          onResendCode={() => flow.handleInitiateEmailVerification(flow.pendingProfileData)}
+          onEditEmail={() => flow.setIsVerifyingEmail(false)}
+          isLoading={flow.isEmailLoading}
+          errorMsg={flow.emailVerificationError}
+        />
+      )}
 
       <Routes>
         <Route path="/diagnostic/historique" element={

@@ -373,7 +373,7 @@ export function useDiagnosticFlow() {
   const handleInitiateEmailVerification = async (profileData) => {
     setPendingProfileData(profileData);
 
-    // Save profileData to triageAnswers immediately so UserProfileFormScreen retains all values on Back
+    // Save profileData to triageAnswers and localStorage immediately
     const updated = {
       ...triageAnswers,
       s05: {
@@ -392,33 +392,35 @@ export function useDiagnosticFlow() {
       activity_description: profileData.activity_description || null
     };
     setTriageAnswers(updated);
+    if (profileData.email) {
+      localStorage.setItem(STORAGE_KEYS.USER_EMAIL, profileData.email);
+    }
+    localStorage.setItem('bc_user_profile', JSON.stringify(updated));
 
-    const isAuthenticated = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
-    const verifiedEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
-    const isSameVerifiedUser = isAuthenticated && verifiedEmail && verifiedEmail.toLowerCase() === profileData.email?.toLowerCase();
+    // CAS 1 (Flow 3) : Clic sur "J'ai déjà effectué un diagnostic" -> Déclencher l'OTP pour valider l'accès à l'historique
+    if (profileData?.is_existing_lookup) {
+      setEmailVerificationError('');
+      setIsEmailLoading(true);
+      setIsVerifyingEmail(true);
 
-    if (isSameVerifiedUser) {
-      // Utilisateur déjà authentifié -> Contourner la modal OTP et passer directement à l'étape suivante
-      onTriageProfileSubmit(profileData);
+      try {
+        await requestEmailVerificationApi({
+          email: profileData.email,
+          full_name: profileData.full_name,
+          diagnostic_run_id: currentRunId
+        });
+      } catch (err) {
+        console.error('Error requesting email verification code for existing lookup:', err);
+        setEmailVerificationError(err.message || 'Impossible d’envoyer le code de vérification.');
+      } finally {
+        setIsEmailLoading(false);
+      }
       return;
     }
 
-    setEmailVerificationError('');
-    setIsEmailLoading(true);
-    setIsVerifyingEmail(true);
-
-    try {
-      await requestEmailVerificationApi({
-        email: profileData.email,
-        full_name: profileData.full_name,
-        diagnostic_run_id: currentRunId
-      });
-    } catch (err) {
-      console.error('Error requesting email verification code:', err);
-      setEmailVerificationError(err.message || 'Impossible d’envoyer le code de vérification.');
-    } finally {
-      setIsEmailLoading(false);
-    }
+    // CAS 2 (Flow 1 & Flow 2) : Nouvelle saisie de profil -> SANS OTP ! Passage direct à la suite.
+    setIsVerifyingEmail(false);
+    onTriageProfileSubmit(profileData);
   };
 
   const handleConfirmEmailCode = async (code) => {
@@ -441,6 +443,12 @@ export function useDiagnosticFlow() {
       if (pendingProfileData?.is_existing_lookup) {
         setIsVerifyingEmail(false);
         navigate('/diagnostic/historique');
+        return res;
+      }
+
+      if (pendingProfileData?.is_post_enrichment) {
+        setIsVerifyingEmail(false);
+        navigate('/diagnostic/fin');
         return res;
       }
 
@@ -839,9 +847,37 @@ export function useDiagnosticFlow() {
     }
   };
 
-  const onConfirmEnrichmentCompletion = () => {
+  const onConfirmEnrichmentCompletion = async () => {
     setShowEnrichmentCompletionModal(false);
-    navigate('/diagnostic/fin');
+
+    const isDeviceVerified = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    const userEmail = pendingProfileData?.email || triageAnswers?.email || localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
+
+    if (!isDeviceVerified && userEmail) {
+      setPendingProfileData({
+        ...(pendingProfileData || {}),
+        email: userEmail,
+        is_post_enrichment: true
+      });
+      setEmailVerificationError('');
+      setIsEmailLoading(true);
+      setIsVerifyingEmail(true);
+
+      try {
+        await requestEmailVerificationApi({
+          email: userEmail,
+          full_name: triageAnswers?.full_name || triageAnswers?.name || '',
+          diagnostic_run_id: currentRunId
+        });
+      } catch (err) {
+        console.error('Error requesting OTP verification code after enrichment:', err);
+        navigate('/diagnostic/fin');
+      } finally {
+        setIsEmailLoading(false);
+      }
+    } else {
+      navigate('/diagnostic/fin');
+    }
   };
 
   const onQuestionBack = () => {
