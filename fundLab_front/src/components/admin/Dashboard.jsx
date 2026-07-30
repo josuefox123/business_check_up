@@ -1,20 +1,41 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { RefreshCw, AlertTriangle, Info, Activity, Users, BarChart2, Award } from 'lucide-react';
+import { RefreshCw, Activity, Users, BarChart2, Award } from 'lucide-react';
+import { AdminTreeChart } from './charts/AdminTreeChart.jsx';
+import { AdminBubbleChart } from './charts/AdminBubbleChart.jsx';
+import { AdminBreakdownWidget } from './charts/AdminBreakdownWidget.jsx';
 
-export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, topSectors, notifications, onMarkRead }) => {
-  const trend = (val) => {
-    if (val === null || val === undefined) return null;
-    if (val > 0) return { label: `+${val}% vs sem. passée`, cls: 'positive' };
-    if (val < 0) return { label: `${val}% vs sem. passée`, cls: 'negative' };
-    return { label: 'Stable cette semaine', cls: '' };
+export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, topSectors, notifications, onMarkRead, onRefresh }) => {
+  // --- Normalisation des données avant le JSX (Règle 9) ---
+  // Chaque valeur est extraite avec un fallback explicite référençant son champ source (Règle 7).
+
+  const totalVisitors    = stats.traffic?.total_visitors   ?? stats.started     ?? 0;
+  const newSessions      = stats.traffic?.new_sessions     ?? 0;
+  const diagsStarted     = stats.diagnostics?.started      ?? stats.started     ?? 0;
+  const diagsCompleted   = stats.diagnostics?.completed    ?? stats.completed   ?? 0;
+  const diagsAbandoned   = stats.diagnostics?.abandoned    ?? stats.abandoned   ?? 0;
+  const completionRate   = stats.diagnostics?.completion_rate ?? 0;
+  const followUpTotal    = stats.follow_ups?.total_requests ?? 0;
+  const followUpNew      = stats.follow_ups?.new           ?? 0;
+  const followUpUrgent   = stats.follow_ups?.urgent        ?? 0;
+
+  const treeChartData = {
+    total_visitors:        stats.traffic?.total_visitors        ?? stats.started ?? 0,
+    started:               stats.diagnostics?.started           ?? stats.started ?? 0,
+    abandoned_first_run:   stats.diagnostics?.abandoned_first_run ?? stats.abandoned ?? 0,
+    completed_first_only:  stats.diagnostics?.completed_first_only ?? 0,
+    completed_enrichment:  stats.diagnostics?.completed_enrichment ?? 0,
+    completed:             stats.diagnostics?.completed          ?? stats.completed ?? 0,
   };
 
-  const diagsTrend = trend(stats.diagsTrend);
-  const usersTrend = trend(stats.usersTrend);
-  const scoreTrend = trend(stats.scoreTrend);
+  const recentDiags = stats._recentDiags ?? [];
 
-  const maxActivity = activityChart.length > 0 ? Math.max(...activityChart.map(d => d.count), 1) : 1;
+  // Gestionnaire d'actualisation sans rechargement brutal de page (Règle 1)
+  const handleRefresh = () => {
+    if (typeof onRefresh === 'function') {
+      onRefresh();
+    }
+  };
 
   return (
     <div className="admin-page animate-fade-up">
@@ -23,7 +44,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
           <h1 className="admin-page-title">Tableau de bord</h1>
           <p className="admin-page-sub">Vue d'ensemble de l'activité en temps réel · FUND.lab Business Check-up</p>
         </div>
-        <button className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => window.location.reload()}>
+        <button className="btn btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={handleRefresh}>
           <RefreshCw size={14} /> Actualiser
         </button>
       </div>
@@ -37,9 +58,9 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--brand-blue)' }}><Activity size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.traffic?.total_visitors ?? 0}</div>
+          <div className="admin-stat-value">{totalVisitors}</div>
           <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
-            {stats.traffic?.new_sessions ?? 0} nouvelles sessions
+            {newSessions} nouvelles sessions
           </div>
         </div>
 
@@ -50,9 +71,9 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-blue)' }}><BarChart2 size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.diagnostics?.started ?? 0}</div>
+          <div className="admin-stat-value">{diagsStarted}</div>
           <div className="admin-stat-trend" style={{ color: 'var(--color-teal)', fontWeight: 600 }}>
-            {stats.diagnostics?.completed ?? 0} complétés
+            {diagsCompleted} complétés
           </div>
         </div>
 
@@ -63,9 +84,9 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-teal)' }}><Users size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.diagnostics?.completion_rate ?? 0}%</div>
+          <div className="admin-stat-value">{completionRate}%</div>
           <div className="admin-stat-trend" style={{ color: '#ef4444' }}>
-            {stats.diagnostics?.abandoned ?? 0} abandonnés
+            {diagsAbandoned} abandonnés
           </div>
         </div>
 
@@ -76,51 +97,30 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             </div>
             <div className="admin-stat-icon" style={{ color: 'var(--color-warning)' }}><Award size={20} /></div>
           </div>
-          <div className="admin-stat-value">{stats.follow_ups?.total_requests ?? 0}</div>
+          <div className="admin-stat-value">{followUpTotal}</div>
           <div className="admin-stat-trend" style={{ color: 'var(--slate-500)' }}>
-            {stats.follow_ups?.new ?? 0} nouveaux · {stats.follow_ups?.urgent ?? 0} urgents
+            {followUpNew} nouveaux · {followUpUrgent} urgents
           </div>
         </div>
       </div>
 
-      {/* Row 2: Activity */}
-      <div style={{ marginTop: '20px' }}>
-        {/* Activity Chart */}
-        <div className="admin-card">
-          <div className="admin-card-header">
-            <h2>Activité — 7 derniers jours</h2>
-            <span style={{ fontSize: '0.78rem', color: 'var(--adm-muted)', fontWeight: 600 }}>{stats.diagsThisWeek ?? 0} cette semaine</span>
-          </div>
-          <div style={{ padding: '20px 24px 16px' }}>
-            {activityChart.length > 0 ? (
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '90px' }}>
-                {activityChart.map((day) => {
-                  const h = maxActivity > 0 ? Math.round((day.count / maxActivity) * 90) : 0;
-                  return (
-                    <div key={day.date} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <div
-                        title={`${day.count} diagnostic(s)`}
-                        style={{
-                          width: '100%',
-                          height: `${Math.max(h, day.count > 0 ? 6 : 3)}px`,
-                          background: day.count > 0 ? 'var(--adm-accent-dk)' : '#e2e8f0',
-                          borderRadius: '4px 4px 0 0',
-                          transition: 'height 0.4s ease',
-                          cursor: 'default',
-                        }}
-                      />
-                      <span style={{ fontSize: '0.62rem', color: 'var(--adm-muted)', textAlign: 'center', whiteSpace: 'nowrap' }}>{day.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ color: 'var(--adm-muted)', textAlign: 'center', padding: '20px 0', fontSize: '0.875rem' }}>Aucune activité récente</p>
-            )}
-          </div>
-        </div>
+      {/* Row 2: Tree Chart — Tunnel de Conversion */}
+      <div style={{ marginTop: '24px' }}>
+        <AdminTreeChart data={treeChartData} />
       </div>
 
+      {/* Row 3: Bubble Chart & Activity Chart Grid */}
+      <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
+        <AdminBubbleChart moduleStats={moduleStats} />
+
+      </div>
+
+      {/* Row 4: Multi-criteria Breakdown Widget (Région, Secteur, Profil) */}
+      <AdminBreakdownWidget
+        topSectors={topSectors}
+        userProfiles={stats.user_profiles}
+        sectorStats={stats.sectors}
+      />
 
 
       {/* Recent Diagnostics Quick List */}
@@ -141,25 +141,29 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
               </tr>
             </thead>
             <tbody>
-              {(stats._recentDiags || []).slice(0, 5).map(d => (
-                <tr key={d.id}>
-                  <td>
-                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{d.userName}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--adm-muted)' }}>{d.userEmail || 'Sans email'}</div>
-                  </td>
-                  <td><span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>{d.moduleId}</span></td>
-                  <td>
-                    <span className={`badge ${d.score >= 70 ? 'badge-green' : d.score >= 40 ? 'badge-amber' : 'badge-red'}`}>
-                      {d.score}/100
-                    </span>
-                  </td>
-                  <td style={{ fontSize: '0.8rem', color: 'var(--adm-muted)' }}>{d.confidence || '—'}</td>
-                  <td style={{ fontSize: '0.78rem', color: 'var(--adm-muted)' }}>
-                    {new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                </tr>
-              ))}
-              {(!stats._recentDiags || stats._recentDiags.length === 0) && (
+              {recentDiags.slice(0, 5).map(d => {
+                const scoreBadge = (d.score ?? 0) >= 70 ? 'badge-green' : (d.score ?? 0) >= 40 ? 'badge-amber' : 'badge-red';
+                const dateFormatted = d.date ? new Date(d.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '[date non disponible]';
+                const userEmail = d.userEmail ?? '[userEmail non disponible]';
+                const confidence = d.confidence ?? '—';
+                return (
+                  <tr key={d.id}>
+                    <td>
+                      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{d.userName}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--adm-muted)' }}>{userEmail}</div>
+                    </td>
+                    <td><span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>{d.moduleId}</span></td>
+                    <td>
+                      <span className={`badge ${scoreBadge}`}>
+                        {d.score ?? 0}/100
+                      </span>
+                    </td>
+                    <td style={{ fontSize: '0.8rem', color: 'var(--adm-muted)' }}>{confidence}</td>
+                    <td style={{ fontSize: '0.78rem', color: 'var(--adm-muted)' }}>{dateFormatted}</td>
+                  </tr>
+                );
+              })}
+              {recentDiags.length === 0 && (
                 <tr><td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--adm-muted)' }}>Aucun diagnostic pour le moment</td></tr>
               )}
             </tbody>

@@ -99,7 +99,8 @@ export const AdminApp = () => {
             activityChart={activityChart}
             topSectors={topSectors}
             notifications={notifications} 
-            onMarkRead={handleMarkReadNotif} 
+            onMarkRead={handleMarkReadNotif}
+            onRefresh={loadAllData}
           />
         } />
         <Route path="/modules" element={<ModulesModule />} />

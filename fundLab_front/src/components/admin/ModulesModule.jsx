@@ -60,9 +60,7 @@ export const ModulesModule = () => {
                 <tr>
                   <th>Code</th>
                   <th>Nom du module</th>
-                  <th>Durée estimée</th>
                   <th>Questions</th>
-                  <th>Statut</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,18 +73,7 @@ export const ModulesModule = () => {
                       <div style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{m.name}</div>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem' }}>
-                        <Clock size={13} color="var(--slate-400)" />
-                        {m.target_duration}
-                      </div>
-                    </td>
-                    <td>
                       <span className="badge badge-slate" style={{ fontWeight: 700 }}>{m.question_count}</span>
-                    </td>
-                    <td>
-                      <span className={`admin-badge-severity ${m.status === 'mvp' || m.status === 'mvp_recommended' ? 'moyen' : 'faible'}`} style={{ textTransform: 'uppercase', fontSize: '0.68rem', fontWeight: 700 }}>
-                        {m.status}
-                      </span>
                     </td>
                   </tr>
                 ))}

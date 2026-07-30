@@ -286,41 +286,91 @@ export const DiagnosticsModule = ({ diagnostics, onDelete }) => {
       {/* Diagnostics Detail Modal */}
       {selectedDiag && (
         <div className="admin-modal-backdrop" onClick={() => setSelectedDiag(null)}>
-          <div className="admin-modal" onClick={e => e.stopPropagation()}>
+          <div className="admin-modal wide animate-scale-up" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3>Détails du Diagnostic</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3>Détails du Diagnostic — {selectedDiag.moduleName || selectedDiag.moduleId}</h3>
+                <span className="badge badge-blue">{selectedDiag.moduleId}</span>
+              </div>
               <button className="admin-close-btn" onClick={() => setSelectedDiag(null)}><X size={18} /></button>
             </div>
             <div className="admin-modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', padding: '16px', background: 'var(--slate-50)', borderRadius: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px', padding: '16px 20px', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Entrepreneur</div>
-                  <div style={{ fontWeight: 700, color: 'var(--slate-900)' }}>{selectedDiag.userName}</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700 }}>Entrepreneur</div>
+                  <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.95rem' }}>{selectedDiag.userName || '[Non renseigné]'}</div>
+                  <div style={{ fontSize: '0.76rem', color: '#64748B' }}>{selectedDiag.userEmail || 'Sans e-mail'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Module</div>
-                  <div style={{ fontWeight: 700, color: 'var(--slate-900)' }}>{selectedDiag.moduleName} ({selectedDiag.moduleId})</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700 }}>Module Diagnostic</div>
+                  <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.95rem' }}>{selectedDiag.moduleName || selectedDiag.moduleId}</div>
+                  <div style={{ fontSize: '0.76rem', color: '#64748B' }}>Code : {selectedDiag.moduleId}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', textTransform: 'uppercase' }}>Score Global</div>
-                  <div style={{ fontWeight: 900, color: selectedDiag.score >= 70 ? 'var(--color-success)' : selectedDiag.score >= 40 ? 'var(--color-warning)' : 'var(--color-danger)' }}>{selectedDiag.score}/100</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700 }}>Score Global</div>
+                  <div style={{ fontWeight: 900, fontSize: '1.2rem', color: selectedDiag.score >= 70 ? '#10B981' : selectedDiag.score >= 40 ? '#F59E0B' : '#EF4444' }}>
+                    {selectedDiag.score}/100
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748B', textTransform: 'uppercase', fontWeight: 700 }}>Date d'exécution</div>
+                  <div style={{ fontWeight: 700, color: '#334155', fontSize: '0.88rem' }}>
+                    {new Date(selectedDiag.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               </div>
 
-              <h4 style={{ marginBottom: '12px', fontSize: '0.95rem', fontWeight: 800 }}>Réponses fournies</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {Object.entries(selectedDiag.answers).map(([qId, val]) => {
-                  if (qId.endsWith('_proof')) return null;
+              <h4 style={{ marginBottom: '14px', fontSize: '0.98rem', fontWeight: 800, color: '#0F172A' }}>
+                Questionnaire & Réponses fournies ({Object.keys(selectedDiag.answers || {}).filter(k => !k.endsWith('_proof') && !k.endsWith('_confidence') && !k.endsWith('_evidence_type') && !k.endsWith('_evidence_label')).length} questions)
+              </h4>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
+                {Object.entries(selectedDiag.answers || {}).map(([qId, val]) => {
+                  if (qId.endsWith('_proof') || qId.endsWith('_confidence') || qId.endsWith('_evidence_type') || qId.endsWith('_evidence_label')) return null;
                   const proofVal = selectedDiag.answers[`${qId}_proof`];
+                  const confidenceVal = selectedDiag.answers[`${qId}_confidence`];
+                  const evidenceLabelVal = selectedDiag.answers[`${qId}_evidence_label`];
+
                   return (
-                    <div key={qId} style={{ borderBottom: '1px solid var(--slate-100)', paddingBottom: '8px' }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--slate-500)' }}>Question ID: {qId}</div>
-                      <div style={{ fontSize: '0.88rem', color: 'var(--slate-800)', marginTop: '2px' }}>
-                        Réponse : <strong>{Array.isArray(val) ? val.join(', ') : String(val)}</strong>
+                    <div
+                      key={qId}
+                      style={{
+                        padding: '14px 16px',
+                        background: '#FFFFFF',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span className="badge badge-blue" style={{ fontSize: '0.72rem', fontWeight: 700 }}>
+                          Question {qId}
+                        </span>
+                        {confidenceVal && (
+                          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>
+                            Indice confiance : <strong>{confidenceVal}/5</strong>
+                          </span>
+                        )}
                       </div>
-                      {proofVal && (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-blue)', background: 'var(--color-blue-light)', padding: '4px 8px', borderRadius: '4px', marginTop: '4px' }}>
-                          Preuve d'activité : <em>{proofVal}</em>
+
+                      <div style={{ fontSize: '0.9rem', color: '#1E293B', fontWeight: 600, marginTop: '2px' }}>
+                        Réponse : <span style={{ color: '#2563EB', fontWeight: 700 }}>{Array.isArray(val) ? val.join(', ') : String(val)}</span>
+                      </div>
+
+                      {(proofVal || evidenceLabelVal) && (
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                          {proofVal && (
+                            <span style={{ fontSize: '0.76rem', color: '#0284C7', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '3px 8px', borderRadius: '6px' }}>
+                              Preuve : <em>{proofVal}</em>
+                            </span>
+                          )}
+                          {evidenceLabelVal && (
+                            <span style={{ fontSize: '0.76rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '3px 8px', borderRadius: '6px' }}>
+                              Justificatif : <em>{evidenceLabelVal}</em>
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>

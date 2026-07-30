@@ -92,6 +92,7 @@ export function useDiagnosticFlow() {
   const [emailVerificationError, setEmailVerificationError] = useState('');
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [showEnrichmentCompletionModal, setShowEnrichmentCompletionModal] = useState(false);
+  const [showPostEnrichmentEmailModal, setShowPostEnrichmentEmailModal] = useState(false);
   const [showTriageCompletionModal, setShowTriageCompletionModal] = useState(false);
   const lastSubmittedQuestionIdRef = useRef(null);
 
@@ -853,30 +854,68 @@ export function useDiagnosticFlow() {
     const isDeviceVerified = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
     const userEmail = pendingProfileData?.email || triageAnswers?.email || localStorage.getItem(STORAGE_KEYS.USER_EMAIL);
 
-    if (!isDeviceVerified && userEmail) {
-      setPendingProfileData({
-        ...(pendingProfileData || {}),
-        email: userEmail,
-        is_post_enrichment: true
-      });
-      setEmailVerificationError('');
-      setIsEmailLoading(true);
-      setIsVerifyingEmail(true);
-
-      try {
-        await requestEmailVerificationApi({
+    if (!isDeviceVerified) {
+      if (userEmail) {
+        setPendingProfileData({
+          ...(pendingProfileData || {}),
           email: userEmail,
-          full_name: triageAnswers?.full_name || triageAnswers?.name || '',
-          diagnostic_run_id: currentRunId
+          is_post_enrichment: true
         });
-      } catch (err) {
-        console.error('Error requesting OTP verification code after enrichment:', err);
-        navigate('/diagnostic/fin');
-      } finally {
-        setIsEmailLoading(false);
+        setEmailVerificationError('');
+        setIsEmailLoading(true);
+        setIsVerifyingEmail(true);
+
+        try {
+          await requestEmailVerificationApi({
+            email: userEmail,
+            full_name: triageAnswers?.full_name || triageAnswers?.name || '',
+            diagnostic_run_id: currentRunId
+          });
+        } catch (err) {
+          console.error('Error requesting OTP verification code after enrichment:', err);
+          setEmailVerificationError(err.message || 'Impossible d’envoyer le code de vérification.');
+        } finally {
+          setIsEmailLoading(false);
+        }
+      } else {
+        // Email non renseigné : afficher la modal de saisie d'e-mail
+        setShowPostEnrichmentEmailModal(true);
       }
     } else {
       navigate('/diagnostic/fin');
+    }
+  };
+
+  const handlePostEnrichmentEmailSubmit = async ({ full_name, email }) => {
+    setShowPostEnrichmentEmailModal(false);
+
+    const updatedProfile = {
+      ...(pendingProfileData || {}),
+      full_name,
+      email,
+      is_post_enrichment: true
+    };
+    setPendingProfileData(updatedProfile);
+
+    if (email) {
+      localStorage.setItem(STORAGE_KEYS.USER_EMAIL, email);
+    }
+
+    setEmailVerificationError('');
+    setIsEmailLoading(true);
+    setIsVerifyingEmail(true);
+
+    try {
+      await requestEmailVerificationApi({
+        email,
+        full_name,
+        diagnostic_run_id: currentRunId
+      });
+    } catch (err) {
+      console.error('Error requesting OTP code for post-enrichment email:', err);
+      setEmailVerificationError(err.message || 'Impossible d’envoyer le code de vérification.');
+    } finally {
+      setIsEmailLoading(false);
     }
   };
 
@@ -1377,6 +1416,9 @@ export function useDiagnosticFlow() {
     showEnrichmentCompletionModal,
     setShowEnrichmentCompletionModal,
     onConfirmEnrichmentCompletion,
+    showPostEnrichmentEmailModal,
+    setShowPostEnrichmentEmailModal,
+    handlePostEnrichmentEmailSubmit,
 
     // Triage Completion Modal
     showTriageCompletionModal,

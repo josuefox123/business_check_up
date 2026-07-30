@@ -36,6 +36,7 @@ import {
   EnrichmentConsentScreen
 } from './components/ecrans/partage/DiagnosticScreens.jsx';
 import { EmailVerificationModal } from './components/ecrans/triage/EmailVerificationModal.jsx';
+import { PostEnrichmentEmailModal } from './components/ecrans/triage/PostEnrichmentEmailModal.jsx';
 import { EnrichmentCompletionModal } from './components/ecrans/questionnaire/EnrichmentCompletionModal.jsx';
 import { TriageCompletionModal } from './components/ecrans/triage/TriageCompletionModal.jsx';
 import { DiagnosticHistoryScreen } from './components/ecrans/restitution/DiagnosticHistoryScreen.jsx';
@@ -301,6 +302,13 @@ function DiagnosticApp() {
           onConfirm={flow.onConfirmEnrichmentCompletion}
         />
       )}
+      {flow.showPostEnrichmentEmailModal && (
+        <PostEnrichmentEmailModal
+          onSubmit={flow.handlePostEnrichmentEmailSubmit}
+          onCancel={() => flow.setShowPostEnrichmentEmailModal(false)}
+          isLoading={flow.isEmailLoading}
+        />
+      )}
       {flow.showTriageCompletionModal && (
         <TriageCompletionModal
           onConfirm={flow.onConfirmTriageCompletion}
@@ -311,7 +319,12 @@ function DiagnosticApp() {
           email={flow.pendingProfileData?.email || flow.triageAnswers?.email || ''}
           onVerify={flow.handleConfirmEmailCode}
           onResendCode={() => flow.handleInitiateEmailVerification(flow.pendingProfileData)}
-          onEditEmail={() => flow.setIsVerifyingEmail(false)}
+          onEditEmail={() => {
+            flow.setIsVerifyingEmail(false);
+            if (flow.pendingProfileData?.is_post_enrichment) {
+              flow.setShowPostEnrichmentEmailModal(true);
+            }
+          }}
           isLoading={flow.isEmailLoading}
           errorMsg={flow.emailVerificationError}
         />
