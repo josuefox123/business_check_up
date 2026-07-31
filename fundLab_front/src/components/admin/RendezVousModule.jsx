@@ -21,10 +21,12 @@ const PRIORITY_LABELS = {
 };
 
 const USER_PROFILE_LABELS = {
-  'structured_sme': 'PME structurée',
+  'structured_sme': 'PME structuré',
+  'active_entrepreneur': 'Entrepreneur actif',
   'informal_sme': 'PME / Indépendant',
   'project_holder': 'Porteur de projet',
   'cooperative': 'Coopérative / Groupement',
+  'opportunity_seeker': 'Recherche d\'opportunité',
 };
 
 export const RendezVousModule = ({ users }) => {

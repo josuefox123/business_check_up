@@ -581,6 +581,9 @@ function DiagnosticApp() {
         <Route path="/diagnostic/test-pdf" element={
           <PdfTestScreen />
         } />
+        <Route path="/diagnostics" element={
+          <DiagnosticHistoryScreen />
+        } />
       </Routes>
     </>
   );

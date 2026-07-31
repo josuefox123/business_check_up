@@ -6,7 +6,7 @@ import { ClipboardCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 export const EnrichmentConsentScreen = ({ onConfirm, onCancel, isLoading = false, estimatedDuration, moduleName }) => {
   // Rule 9: Normalisation des données et des chaînes de texte au début du composant
   const displayTitle = moduleName ? `Enrichir mon diagnostic — ${moduleName}` : 'Enrichir mon diagnostic';
-  const displayDuration = estimatedDuration ? `Environ ${estimatedDuration}` : '[estimated_duration non disponible]';
+  const displayDuration = estimatedDuration ? `Environ ${estimatedDuration}` : '7 à 15 min';
   const confirmBtnText = isLoading ? 'Chargement...' : 'Accepter et continuer';
 
   return (
