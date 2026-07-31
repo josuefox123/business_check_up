@@ -29,12 +29,12 @@ const formatDate = (iso) => {
 };
 
 const DIMENSION_COLORS = {
-  finance:       { bg: '#EFF6FF', text: '#2563EB' },
-  commercial:    { bg: '#FDF4FF', text: '#9333EA' },
-  operations:    { bg: '#FFF7ED', text: '#D97706' },
-  gouvernance:   { bg: '#F0FDF4', text: '#16A34A' },
-  produit:       { bg: '#FEF2F2', text: '#DC2626' },
-  meta:          { bg: '#F8FAFC', text: '#475569' },
+  finance: { bg: '#EFF6FF', text: '#2563EB' },
+  commercial: { bg: '#FDF4FF', text: '#9333EA' },
+  operations: { bg: '#FFF7ED', text: '#D97706' },
+  gouvernance: { bg: '#F0FDF4', text: '#16A34A' },
+  produit: { bg: '#FEF2F2', text: '#DC2626' },
+  meta: { bg: '#F8FAFC', text: '#475569' },
 };
 
 const dimensionStyle = (dim) =>
@@ -44,71 +44,60 @@ const dimensionStyle = (dim) =>
 
 export const DiagnosticRunDetailScreen = () => {
   const { runId } = useParams();
-  const location  = useLocation();
-  const navigate  = useNavigate();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Data passed from list via navigation state (used as fast initial render)
   const passedState = location.state || {};
 
   // ── Fetch state ──
-  const [detailData, setDetailData]     = useState(passedState.detail || null);
-  const [isLoading, setIsLoading]       = useState(!passedState.detail);
-  const [isError, setIsError]           = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [detailData, setDetailData] = useState(passedState.detail || null);
+  // Data passed via navigation state — always available from the list
+  const passedRun = passedState.run ?? null;
+  const passedUserId = passedState.userId ?? passedRun?.user_id ?? null;
 
-  const userId = passedState.run?.user_id ?? detailData?.user_id ?? null;
+  // detailData: richer data from /historical if available, falls back to passedRun
+  const [enrichError, setEnrichError] = useState(false);
 
-  const loadDetail = async () => {
-    if (!userId) {
-      setIsError(true);
-      setErrorMessage('[user_id non disponible] Impossible d\'identifier l\'utilisateur.');
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setIsError(false);
-    setErrorMessage('');
+  // Attempt silent enrichment from /historical — non-blocking, errors are silent
+  const tryEnrichDetail = async () => {
+    if (!passedUserId) return;
     try {
-      const res  = await apiFetch(`/admin/dashboard/${userId}/historical`);
-      const list = Array.isArray(res) ? res : (res?.data || []);
-      const matched = list.find(r => r?.diagnostic_run_id === runId) || list[0] || null;
-      setDetailData(matched);
-    } catch (err) {
-      console.error('[DiagnosticRunDetailScreen] fetch error:', err);
-      setIsError(true);
-      setErrorMessage(err?.message || '[fetch_run_detail_error] Impossible de charger le détail du diagnostic.');
-    } finally {
-      setIsLoading(false);
+      const res = await apiFetch(`/admin/dashboard/${passedUserId}/historical`);
+      const list = Array.isArray(res) ? res : (res?.data ?? []);
+      const matched = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
+      if (matched) setDetailData(matched);
+    } catch {
+      // Silent failure — detail page still renders from passedRun data
+      setEnrichError(true);
     }
   };
 
   useEffect(() => {
-    if (!passedState.detail) {
-      loadDetail();
-    }
+    tryEnrichDetail();
   }, [runId]);
 
   // ─── Normalization (Rule 9) ───────────────────────────────────────────────
 
-  const run         = detailData ?? passedState.run ?? {};
-  const business    = detailData?.business ?? null;
+  const run = detailData ?? passedState.run ?? {};
+  const business = detailData?.business ?? null;
 
-  const runId_display       = run?.diagnostic_run_id ?? runId ?? '[diagnostic_run_id non disponible]';
-  const moduleCode          = run?.module_code         ?? '[module_code non disponible]';
-  const moduleFamily        = run?.module_family        ?? '[module_family non disponible]';
-  const completionStatus    = run?.completion_status    ?? '[completion_status non disponible]';
-  const isCompleted         = completionStatus === 'completed';
-  const startedAt           = formatDate(run?.started_at);
-  const completedAt         = run?.completed_at ? formatDate(run.completed_at) : null;
+  const runId_display = run?.diagnostic_run_id ?? runId ?? '[diagnostic_run_id non disponible]';
+  const moduleCode = run?.module_code ?? '[module_code non disponible]';
+  const moduleFamily = run?.module_family ?? '[module_family non disponible]';
+  const completionStatus = run?.completion_status ?? '[completion_status non disponible]';
+  const isCompleted = completionStatus === 'completed';
+  const startedAt = formatDate(run?.started_at);
+  const completedAt = run?.completed_at ? formatDate(run.completed_at) : null;
   const questionCountExpected = run?.question_count_expected ?? 0;
   const questionCountAnswered = run?.question_count_answered ?? 0;
 
-  const businessName    = business?.business_name ?? passedState.businessName ?? '[business_name non disponible]';
-  const businessSector  = business?.sector        ?? null;
-  const businessRegion  = business?.region        ?? null;
-  const businessCountry = business?.country       ?? null;
+  const businessName = business?.business_name ?? passedState.businessName ?? '[business_name non disponible]';
+  const businessSector = business?.sector ?? null;
+  const businessRegion = business?.region ?? null;
+  const businessCountry = business?.country ?? null;
 
-  const userName  = passedState.userName  ?? null;
+  const userName = passedState.userName ?? null;
   const userEmail = passedState.userEmail ?? null;
 
   // Question responses normalization
@@ -120,7 +109,7 @@ export const DiagnosticRunDetailScreen = () => {
       ?? `[question_id ${resp?.question_id ?? idx} non disponible]`;
 
     const answerLabel = resp?.answer_label ?? null;
-    const answerText  = resp?.answer_text  ?? null;
+    const answerText = resp?.answer_text ?? null;
     const answerValue = resp?.answer_value ?? null;
 
     let displayAnswer = answerLabel || answerText;
@@ -132,18 +121,18 @@ export const DiagnosticRunDetailScreen = () => {
     if (!displayAnswer) displayAnswer = '[Aucune réponse fournie]';
 
     return {
-      id:                resp?.response_id  ?? `RESP-${idx}`,
-      questionId:        resp?.question_id  ?? '[question_id non disponible]',
+      id: resp?.response_id ?? `RESP-${idx}`,
+      questionId: resp?.question_id ?? '[question_id non disponible]',
       questionText,
       displayAnswer,
-      dimension:         resp?.question_dimension    ?? 'meta',
-      answerType:        resp?.answer_type           ?? 'single_choice',
-      isCritical:        Boolean(resp?.is_critical_question),
-      redFlagTriggered:  Boolean(resp?.red_flag_triggered),
-      redFlagCode:       resp?.red_flag_code ?? null,
-      score15:           resp?.score_1_5    ?? null,
-      answeredAt:        resp?.answered_at ? formatDate(resp.answered_at) : null,
-      weight:            resp?.weight ?? null,
+      dimension: resp?.question_dimension ?? 'meta',
+      answerType: resp?.answer_type ?? 'single_choice',
+      isCritical: Boolean(resp?.is_critical_question),
+      redFlagTriggered: Boolean(resp?.red_flag_triggered),
+      redFlagCode: resp?.red_flag_code ?? null,
+      score15: resp?.score_1_5 ?? null,
+      answeredAt: resp?.answered_at ? formatDate(resp.answered_at) : null,
+      weight: resp?.weight ?? null,
     };
   });
 
@@ -172,29 +161,7 @@ export const DiagnosticRunDetailScreen = () => {
         </div>
       </div>
 
-      {/* ── Error state ── */}
-      {isError && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600, marginBottom: '20px' }}>
-          <span><AlertTriangle size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />{errorMessage}</span>
-          <button
-            onClick={loadDetail}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid #FCA5A5', borderRadius: '8px', padding: '6px 12px', color: '#991B1B', cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem' }}
-          >
-            <RotateCcw size={14} /> Réessayer
-          </button>
-        </div>
-      )}
-
-      {/* ── Loading ── */}
-      {isLoading && (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--slate-400)' }}>
-          <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #E2E8F0', borderTopColor: '#1A9DB8', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '10px' }} />
-          <p style={{ margin: 0, fontWeight: 600 }}>Chargement du diagnostic…</p>
-        </div>
-      )}
-
-      {!isLoading && !isError && (
-        <>
+      {/* ── Summary cards ── */}
           {/* ── Summary cards ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
 
@@ -259,9 +226,6 @@ export const DiagnosticRunDetailScreen = () => {
                 {isCompleted ? <CheckCircle2 size={14} /> : <Clock size={14} />}
                 {isCompleted ? 'Terminé' : 'En cours'}
               </span>
-              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '4px' }}>
-                {questionCountAnswered}/{questionCountExpected} questions
-              </div>
             </div>
 
             {/* Red flags */}
@@ -409,8 +373,6 @@ export const DiagnosticRunDetailScreen = () => {
               </div>
             )}
           </div>
-        </>
-      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
