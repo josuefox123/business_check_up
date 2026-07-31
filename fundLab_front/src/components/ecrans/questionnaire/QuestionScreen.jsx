@@ -74,7 +74,7 @@ export const QuitConfirmModal = ({ onConfirm, onCancel }) => (
   </div>
 );
 
-export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onBack, onQuit }) => {
+export const QuestionScreen = ({ moduleId, questionData, current, total, savedAnswer, onContinue, onSkip, onBack, onQuit }) => {
   // Rule 9 & Rule 7: Fallback si questionData est indéfini
   if (!questionData) {
     return (
@@ -164,7 +164,14 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
           <ProgressBar current={current} total={total} />
         </div>
 
-        <h1 className="question-text">{questionData.question}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <h1 className="question-text" style={{ margin: 0 }}>{questionData.question}</h1>
+          {(questionData.isOptional || onSkip) && (
+            <span style={{ fontSize: '0.78rem', color: '#64748B', background: '#F1F5F9', padding: '3px 9px', borderRadius: '6px', fontWeight: 600, flexShrink: 0, marginLeft: '12px' }}>
+              Facultatif
+            </span>
+          )}
+        </div>
         {questionData.hint && <p className="question-desc" style={{ marginBottom: 'var(--space-6)' }}>{questionData.hint}</p>}
 
         {questionData.relance && (
@@ -239,15 +246,28 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         </div>
       </div>
 
-      <div className="screen-nav">
-        {onBack && (
-          <Button variant="outline" onClick={onBack}>
-            Retour
+      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              Retour
+            </Button>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {(questionData?.isOptional || onSkip) && (
+            <Button
+              variant="ghost"
+              onClick={() => onSkip ? onSkip() : onContinue(null, null, null, null, null)}
+              style={{ color: '#64748B', fontWeight: 600 }}
+            >
+              Passer cette question
+            </Button>
+          )}
+          <Button variant="primary" disabled={!canContinue && !(questionData?.isOptional || onSkip) || isSubmitting} onClick={handleContinue}>
+            {isSubmitting ? 'Enregistrement...' : 'Continuer'}
           </Button>
-        )}
-        <Button variant="primary" disabled={!canContinue || isSubmitting} onClick={handleContinue}>
-          {isSubmitting ? 'Enregistrement...' : 'Continuer'}
-        </Button>
+        </div>
       </div>
     </ScreenWrapper>
   );
