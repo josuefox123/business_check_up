@@ -95,6 +95,7 @@ export function useDiagnosticFlow() {
   const [showPostEnrichmentEmailModal, setShowPostEnrichmentEmailModal] = useState(false);
   const [showTriageCompletionModal, setShowTriageCompletionModal] = useState(false);
   const lastSubmittedQuestionIdRef = useRef(null);
+  const sessionCreationPromiseRef = useRef(null);
 
   useEffect(() => {
     lastSubmittedQuestionIdRef.current = null;
@@ -693,11 +694,14 @@ export function useDiagnosticFlow() {
 
     let sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
 
-    // 3. Si l'utilisateur n'a pas encore de session active, création de la session
+    // 3. Si l'utilisateur n'a pas encore de session active, réutilisation de la session en cours ou création unique
     if (!sessionId) {
       try {
         console.warn('Création d\'une nouvelle session pour l\'utilisateur connecté...');
-        const newSessionRes = await createSessionApi();
+        if (!sessionCreationPromiseRef.current) {
+          sessionCreationPromiseRef.current = createSessionApi();
+        }
+        const newSessionRes = await sessionCreationPromiseRef.current;
         sessionId = newSessionRes?.data?.session_id || newSessionRes?.session_id;
         if (sessionId) {
           localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
@@ -707,6 +711,8 @@ export function useDiagnosticFlow() {
         console.error('Erreur lors de la création de session:', sessErr);
         navigate('/triage/consent');
         return;
+      } finally {
+        sessionCreationPromiseRef.current = null;
       }
     }
 
