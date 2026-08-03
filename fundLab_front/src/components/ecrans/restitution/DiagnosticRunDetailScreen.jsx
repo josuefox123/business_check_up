@@ -162,217 +162,216 @@ export const DiagnosticRunDetailScreen = () => {
       </div>
 
       {/* ── Summary cards ── */}
-          {/* ── Summary cards ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+      {/* ── Summary cards ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
 
-            {/* Entreprise */}
-            <div className="admin-card" style={{ padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <Building2 size={16} color="#2563EB" />
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Entreprise</span>
-              </div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)' }}>{businessName}</div>
-              {businessSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>{businessSector}</div>}
-              {(businessRegion || businessCountry) && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                  {[businessRegion, businessCountry].filter(Boolean).join(' · ')}
-                </div>
-              )}
-            </div>
-
-            {/* Contact */}
-            <div className="admin-card" style={{ padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <User size={16} color="#9333EA" />
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Renseigné par</span>
-              </div>
-              <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>{userName || '—'}</div>
-              {userEmail && (
-                <a href={`mailto:${userEmail}`} style={{ fontSize: '0.78rem', color: '#1A9DB8', textDecoration: 'none' }}>{userEmail}</a>
-              )}
-            </div>
-
-            {/* Module */}
-            <div className="admin-card" style={{ padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <ClipboardList size={16} color="#1A9DB8" />
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Module</span>
-              </div>
-              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1A9DB8' }}>{moduleCode}</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px', textTransform: 'capitalize' }}>{moduleFamily}</div>
-            </div>
-
-            {/* Date */}
-            <div className="admin-card" style={{ padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <Calendar size={16} color="#D97706" />
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Date</span>
-              </div>
-              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--adm-text)' }}>{startedAt}</div>
-              {completedAt && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>Terminé : {completedAt}</div>}
-            </div>
-
-            {/* Statut */}
-            <div className="admin-card" style={{ padding: '16px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                {isCompleted ? <CheckCircle2 size={16} color="#10B981" /> : <Clock size={16} color="#F59E0B" />}
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Statut</span>
-              </div>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                fontWeight: 800, fontSize: '0.88rem',
-                color: isCompleted ? '#166534' : '#92400E',
-              }}>
-                {isCompleted ? <CheckCircle2 size={14} /> : <Clock size={14} />}
-                {isCompleted ? 'Terminé' : 'En cours'}
-              </span>
-            </div>
-
-            {/* Red flags */}
-            {redFlagCount > 0 && (
-              <div className="admin-card" style={{ padding: '16px 20px', borderLeft: '3px solid #EF4444' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <Flag size={16} color="#EF4444" />
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Signaux d'alerte</span>
-                </div>
-                <div style={{ fontWeight: 900, fontSize: '1.4rem', color: '#EF4444' }}>{redFlagCount}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>red flag{redFlagCount > 1 ? 's' : ''} déclenchés</div>
-              </div>
-            )}
+        {/* Entreprise */}
+        <div className="admin-card" style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Building2 size={16} color="#2563EB" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Entreprise</span>
           </div>
-
-          {/* ── Q&A Table ── */}
-          <div className="admin-card">
-            <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--adm-border)' }}>
-              <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <MessageSquare size={18} color="#1A9DB8" />
-                Questions &amp; Réponses
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-400)' }}>({normalizedResponses.length})</span>
-              </h2>
+          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)' }}>{businessName}</div>
+          {businessSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>{businessSector}</div>}
+          {(businessRegion || businessCountry) && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
+              {[businessRegion, businessCountry].filter(Boolean).join(' · ')}
             </div>
+          )}
+        </div>
 
-            {normalizedResponses.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '36px', color: 'var(--slate-400)' }}>
-                <MessageSquare size={32} style={{ marginBottom: '8px', opacity: 0.35 }} />
-                <p style={{ fontWeight: 600, margin: 0 }}>Aucune réponse enregistrée pour ce diagnostic.</p>
-              </div>
-            ) : (
-              <div className="admin-table-wrap">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px' }}>#</th>
-                      <th style={{ width: '110px' }}>ID Question</th>
-                      <th>Question</th>
-                      <th>Réponse</th>
-                      <th style={{ width: '100px' }}>Dimension</th>
-                      <th style={{ width: '70px', textAlign: 'center' }}>Score</th>
-                      <th style={{ width: '80px', textAlign: 'center' }}>Alerte</th>
+        {/* Contact */}
+        <div className="admin-card" style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <User size={16} color="#9333EA" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Renseigné par</span>
+          </div>
+          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>{userName || '—'}</div>
+          {userEmail && (
+            <a href={`mailto:${userEmail}`} style={{ fontSize: '0.78rem', color: '#1A9DB8', textDecoration: 'none' }}>{userEmail}</a>
+          )}
+        </div>
+
+        {/* Module */}
+        <div className="admin-card" style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <ClipboardList size={16} color="#1A9DB8" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Module</span>
+          </div>
+          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1A9DB8' }}>{moduleCode}</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px', textTransform: 'capitalize' }}>{moduleFamily}</div>
+        </div>
+
+        {/* Date */}
+        <div className="admin-card" style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Calendar size={16} color="#D97706" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Date</span>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--adm-text)' }}>{startedAt}</div>
+          {completedAt && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>Terminé : {completedAt}</div>}
+        </div>
+
+        {/* Statut */}
+        <div className="admin-card" style={{ padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            {isCompleted ? <CheckCircle2 size={16} color="#10B981" /> : <Clock size={16} color="#F59E0B" />}
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Statut</span>
+          </div>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '5px',
+            fontWeight: 800, fontSize: '0.88rem',
+            color: isCompleted ? '#166534' : '#92400E',
+          }}>
+            {isCompleted ? <CheckCircle2 size={14} /> : <Clock size={14} />}
+            {isCompleted ? 'Terminé' : 'En cours'}
+          </span>
+        </div>
+
+        {/* Red flags */}
+        {redFlagCount > 0 && (
+          <div className="admin-card" style={{ padding: '16px 20px', borderLeft: '3px solid #EF4444' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Flag size={16} color="#EF4444" />
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Signaux d'alerte</span>
+            </div>
+            <div style={{ fontWeight: 900, fontSize: '1.4rem', color: '#EF4444' }}>{redFlagCount}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>red flag{redFlagCount > 1 ? 's' : ''} déclenchés</div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Q&A Table ── */}
+      <div className="admin-card">
+        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--adm-border)' }}>
+          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <MessageSquare size={18} color="#1A9DB8" />
+            Questions &amp; Réponses
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-400)' }}>({normalizedResponses.length})</span>
+          </h2>
+        </div>
+
+        {normalizedResponses.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '36px', color: 'var(--slate-400)' }}>
+            <MessageSquare size={32} style={{ marginBottom: '8px', opacity: 0.35 }} />
+            <p style={{ fontWeight: 600, margin: 0 }}>Aucune réponse enregistrée pour ce diagnostic.</p>
+          </div>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '40px' }}>#</th>
+                  <th style={{ width: '110px' }}>ID Question</th>
+                  <th>Question</th>
+                  <th>Réponse</th>
+                  <th style={{ width: '100px' }}>Dimension</th>
+                  <th style={{ width: '70px', textAlign: 'center' }}>Score</th>
+                  <th style={{ width: '80px', textAlign: 'center' }}>Alerte</th>
+                </tr>
+              </thead>
+              <tbody>
+                {normalizedResponses.map((resp, i) => {
+                  const dimStyle = dimensionStyle(resp.dimension);
+                  return (
+                    <tr
+                      key={resp.id}
+                      style={{
+                        background: resp.redFlagTriggered ? 'rgba(239,68,68,0.03)' : '',
+                        borderLeft: resp.redFlagTriggered ? '3px solid #FCA5A5' : '3px solid transparent',
+                      }}
+                    >
+                      {/* # */}
+                      <td style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontWeight: 700 }}>
+                        {i + 1}
+                      </td>
+
+                      {/* ID */}
+                      <td>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#1A9DB8', fontWeight: 700 }}>
+                          {resp.questionId}
+                        </span>
+                        {resp.isCritical && (
+                          <div style={{ fontSize: '0.66rem', color: '#D97706', fontWeight: 700, marginTop: '1px' }}>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Question */}
+                      <td style={{ maxWidth: '280px' }}>
+                        <span style={{ fontSize: '0.87rem', color: 'var(--adm-text)', fontWeight: 600, lineHeight: 1.4 }}>
+                          {resp.questionText}
+                        </span>
+                      </td>
+
+                      {/* Réponse */}
+                      <td style={{ maxWidth: '220px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          color: '#0F172A',
+                          background: '#F1F5F9',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          lineHeight: 1.45,
+                        }}>
+                          {resp.displayAnswer}
+                        </span>
+                      </td>
+
+                      {/* Dimension */}
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          textTransform: 'capitalize',
+                          background: dimStyle.bg,
+                          color: dimStyle.text,
+                          padding: '2px 7px',
+                          borderRadius: '5px',
+                        }}>
+                          {resp.dimension}
+                        </span>
+                      </td>
+
+                      {/* Score */}
+                      <td style={{ textAlign: 'center' }}>
+                        {resp.score15 !== null ? (
+                          <span style={{
+                            fontWeight: 800,
+                            fontSize: '0.9rem',
+                            color: resp.score15 >= 4 ? '#10B981' : resp.score15 >= 2 ? '#F59E0B' : '#EF4444',
+                          }}>
+                            {resp.score15}/5
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
+                        )}
+                      </td>
+
+                      {/* Alerte */}
+                      <td style={{ textAlign: 'center' }}>
+                        {resp.redFlagTriggered ? (
+                          <span
+                            title={resp.redFlagCode ?? 'Red flag'}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '2px 7px', borderRadius: '5px' }}
+                          >
+                            <Flag size={11} /> {resp.redFlagCode ? resp.redFlagCode.split('_').slice(-1)[0] : 'Flag'}
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
+                        )}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {normalizedResponses.map((resp, i) => {
-                      const dimStyle = dimensionStyle(resp.dimension);
-                      return (
-                        <tr
-                          key={resp.id}
-                          style={{
-                            background: resp.redFlagTriggered ? 'rgba(239,68,68,0.03)' : '',
-                            borderLeft: resp.redFlagTriggered ? '3px solid #FCA5A5' : '3px solid transparent',
-                          }}
-                        >
-                          {/* # */}
-                          <td style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontWeight: 700 }}>
-                            {i + 1}
-                          </td>
-
-                          {/* ID */}
-                          <td>
-                            <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#1A9DB8', fontWeight: 700 }}>
-                              {resp.questionId}
-                            </span>
-                            {resp.isCritical && (
-                              <div style={{ fontSize: '0.66rem', color: '#D97706', fontWeight: 700, marginTop: '1px' }}>
-                                ★ Critique
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Question */}
-                          <td style={{ maxWidth: '280px' }}>
-                            <span style={{ fontSize: '0.87rem', color: 'var(--adm-text)', fontWeight: 600, lineHeight: 1.4 }}>
-                              {resp.questionText}
-                            </span>
-                          </td>
-
-                          {/* Réponse */}
-                          <td style={{ maxWidth: '220px' }}>
-                            <span style={{
-                              display: 'inline-block',
-                              fontSize: '0.85rem',
-                              fontWeight: 700,
-                              color: '#0F172A',
-                              background: '#F1F5F9',
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              lineHeight: 1.45,
-                            }}>
-                              {resp.displayAnswer}
-                            </span>
-                          </td>
-
-                          {/* Dimension */}
-                          <td>
-                            <span style={{
-                              display: 'inline-block',
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              textTransform: 'capitalize',
-                              background: dimStyle.bg,
-                              color: dimStyle.text,
-                              padding: '2px 7px',
-                              borderRadius: '5px',
-                            }}>
-                              {resp.dimension}
-                            </span>
-                          </td>
-
-                          {/* Score */}
-                          <td style={{ textAlign: 'center' }}>
-                            {resp.score15 !== null ? (
-                              <span style={{
-                                fontWeight: 800,
-                                fontSize: '0.9rem',
-                                color: resp.score15 >= 4 ? '#10B981' : resp.score15 >= 2 ? '#F59E0B' : '#EF4444',
-                              }}>
-                                {resp.score15}/5
-                              </span>
-                            ) : (
-                              <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
-                            )}
-                          </td>
-
-                          {/* Alerte */}
-                          <td style={{ textAlign: 'center' }}>
-                            {resp.redFlagTriggered ? (
-                              <span
-                                title={resp.redFlagCode ?? 'Red flag'}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '2px 7px', borderRadius: '5px' }}
-                              >
-                                <Flag size={11} /> {resp.redFlagCode ? resp.redFlagCode.split('_').slice(-1)[0] : 'Flag'}
-                              </span>
-                            ) : (
-                              <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+        )}
+      </div>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

@@ -165,23 +165,30 @@ export const CcibReportModule = () => {
 
   const totalPme = distinctPmeList.length > 0 ? distinctPmeList.length : (overviewStats?.diagnostics?.started || pmesList.length || 0);
 
-  // Sectors calculation (matching AdminBreakdownWidget.jsx)
-  const rawSectors = topSectorsList.length > 0 ? topSectorsList : [
-    { label: 'Services & Conseil', count: 40 },
-    { label: 'Commerce & Distribution', count: 30 },
-    { label: 'Agro-industrie', count: 18 },
-    { label: 'BTP & Infrastructures', count: 12 },
-  ];
-  const sectorTotalCount = rawSectors.reduce((sum, s) => sum + (s.count || s.diagnostic_count || 1), 0) || 1;
-  const sectors = rawSectors.map(s => {
-    const label = s.sector || s.region || s.label || 'Autre';
-    const count = s.diagnostic_count || s.count || 0;
-    return {
-      label,
-      count,
-      pct: Math.round((count / sectorTotalCount) * 100) || 10,
-    };
-  });
+  // ── Dynamic Sector Breakdown (Matching Dashboard sectorStats / overviewStats.sectors) ──
+  let rawSectors = [];
+  if (Array.isArray(overviewStats?.sectors) && overviewStats.sectors.length > 0) {
+    rawSectors = overviewStats.sectors.map(s => ({
+      label: s.sector ?? s.name ?? s.label ?? 'Autre',
+      count: s.diagnostic_count ?? s.count ?? 0,
+    }));
+  } else {
+    const sectorMap = {};
+    distinctPmeList.forEach(pme => {
+      const sec = pme.sector || pme.business?.sector || 'Autres';
+      sectorMap[sec] = (sectorMap[sec] || 0) + 1;
+    });
+    rawSectors = Object.entries(sectorMap)
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  const sectorTotalCount = rawSectors.reduce((sum, s) => sum + s.count, 0) || 1;
+  const sectors = rawSectors.map(s => ({
+    label: s.label,
+    count: s.count,
+    pct: Math.round((s.count / sectorTotalCount) * 100)
+  }));
 
   // Maturity distribution calculation
   const maturityData = {
@@ -190,14 +197,30 @@ export const CcibReportModule = () => {
     stable: totalPme > 0 ? 33 : 0,
   };
 
-  // Geographical distribution
-  const geoData = [
-    { zone: 'Littoral', count: Math.round(totalPme * 0.65) || 65 },
-    { zone: 'Borgou', count: Math.round(totalPme * 0.14) || 14 },
-    { zone: 'Ouémé', count: Math.round(totalPme * 0.12) || 12 },
-    { zone: 'Mono', count: Math.round(totalPme * 0.09) || 9 },
-    { zone: 'Autres', count: Math.round(totalPme * 0.06) || 6 },
-  ];
+  // ── Dynamic Geographical Breakdown (Matching Dashboard topSectors / regionData) ──
+  let rawGeo = [];
+  if (Array.isArray(topSectorsList) && topSectorsList.length > 0) {
+    rawGeo = topSectorsList.map(s => ({
+      zone: s.region ?? s.sector ?? s.label ?? 'Littoral',
+      count: s.diagnostic_count ?? s.count ?? 0,
+    }));
+  } else {
+    const geoMap = {};
+    distinctPmeList.forEach(pme => {
+      const zone = pme.region || pme.commune || pme.city || pme.business?.city || 'Littoral';
+      geoMap[zone] = (geoMap[zone] || 0) + 1;
+    });
+    rawGeo = Object.entries(geoMap)
+      .map(([zone, count]) => ({ zone, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  const geoTotalCount = rawGeo.reduce((sum, g) => sum + g.count, 0) || 1;
+  const geoData = rawGeo.map(g => ({
+    zone: g.zone,
+    count: g.count,
+    pct: Math.round((g.count / geoTotalCount) * 100)
+  }));
 
   // Needs per service
   const serviceNeeds = [
@@ -254,9 +277,55 @@ export const CcibReportModule = () => {
     enterpriseRows,
   };
 
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
   // ── Handlers ──
-  const handleDownloadPdf = () => {
-    window.print();
+  const handleDownloadPdf = async () => {
+    if (!reportRef.current) return;
+    try {
+      setDownloadingPdf(true);
+      const [{ jsPDF }, html2canvas] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas').then(m => m.default),
+      ]);
+
+      const pages = Array.from(reportRef.current.querySelectorAll('.ccib-report-page'));
+      if (pages.length === 0) {
+        window.print();
+        return;
+      }
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+
+      for (let i = 0; i < pages.length; i++) {
+        if (i > 0) pdf.addPage();
+        const canvas = await html2canvas(pages[i], {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+      }
+
+      const cleanPeriod = periodLabel ? periodLabel.replace(/[^a-zA-Z0-9]/g, '_') : 'period';
+      const fileName = `Rapport_Pilotage_CCIB_${cleanPeriod}.pdf`;
+      pdf.save(fileName);
+    } catch (err) {
+      console.error('[handleDownloadPdf] Error generating PDF, fallback to print:', err);
+      window.print();
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   const handleSendEmail = (e) => {
@@ -324,8 +393,13 @@ export const CcibReportModule = () => {
         </div>
 
         <div className="ccib-actions">
-          <button className="btn-ccib-secondary" onClick={handleDownloadPdf} title="Imprimer ou Télécharger en PDF">
-            <Download size={17} /> Télécharger en PDF
+          <button
+            className="btn-ccib-secondary"
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+            title="Télécharger directement le rapport en fichier PDF"
+          >
+            <Download size={17} /> {downloadingPdf ? 'Génération du PDF...' : 'Télécharger en PDF'}
           </button>
           <button className="btn-ccib-primary" onClick={() => setShowEmailModal(true)}>
             <Mail size={17} /> Envoyer par mail

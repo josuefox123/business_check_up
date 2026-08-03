@@ -151,6 +151,11 @@
 
 .ccib-doc-title-block {
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
 }
 
 .ccib-doc-main-title {
@@ -160,24 +165,29 @@
   color: #0b2545;
   text-transform: uppercase;
   margin: 0;
+  line-height: 1.2;
 }
 
 .ccib-doc-sub-title {
   font-size: 0.95rem;
   font-weight: 700;
   color: #007A3D;
-  margin-top: 2px;
+  margin: 0;
 }
 
 .ccib-period-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: #f1f5f9;
   color: #475569;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 4px 12px;
+  line-height: 1.2;
   border-radius: 12px;
-  margin-top: 4px;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .ccib-confidential-pill {

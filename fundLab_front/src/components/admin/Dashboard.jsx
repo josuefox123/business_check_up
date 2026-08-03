@@ -100,6 +100,9 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
               <div className="admin-stat-icon" style={{ color: 'var(--color-indigo, #6366f1)' }}><Building2 size={20} /></div>
             </div>
             <div className="admin-stat-value">{pmeCount}</div>
+            {/* <div className="admin-stat-trend" style={{ color: 'var(--slate-500)', fontSize: '0.76rem', fontWeight: 600 }}>
+              (avec doublons)
+            </div> */}
           </div>
         </Link>
 
@@ -136,7 +139,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
 
 
       {/* Recent Diagnostics Quick List */}
-      <div className="admin-card" style={{ marginTop: '20px' }}>
+      {/* <div className="admin-card" style={{ marginTop: '20px' }}>
         <div className="admin-card-header">
           <h2>Derniers diagnostics soumis</h2>
           <Link to="/admin/diagnostics" className="btn btn-ghost btn-sm">Voir tout</Link>
@@ -181,7 +184,7 @@ export const Dashboard = ({ stats, moduleStats, scoreDistrib, activityChart, top
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

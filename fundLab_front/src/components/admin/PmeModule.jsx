@@ -160,6 +160,7 @@ export const PmeModule = () => {
     setCurrentPage(1);
   };
 
+  /*
   // Deduplicate PMEs by contact email (or fallback to business name/id)
   const seenEmails = new Set();
   const distinctPmes = pmes.filter(pme => {
@@ -171,8 +172,9 @@ export const PmeModule = () => {
     seenEmails.add(key);
     return true;
   });
+  */
 
-  const filteredPmes = distinctPmes.filter(pme => {
+  const filteredPmes = pmes.filter(pme => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     const userName = pme.user?.full_name?.toLowerCase() ?? '';

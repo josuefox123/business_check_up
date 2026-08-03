@@ -77,7 +77,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
         <img src={logoFundlab} alt="FUND.lab Logo" className="ccib-footer-logo-fundlab" />
       </div>
       <div className="ccib-footer-meta">
-        www.ccib.bj &nbsp;•&nbsp; contact@fundlab.bj &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {generationDate} | PAGE {pageNum}/{totalPages}
+        www.cci.bj &nbsp;•&nbsp; contact@fundlab.bj &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {generationDate} | PAGE {pageNum}/{totalPages}
       </div>
     </div>
   );
@@ -124,8 +124,8 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                     <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>[Aucune donnée sectorielle disponible]</div>
                   ) : (
                     sectors.slice(0, 5).map((sec, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.72rem' }}>
-                        <span style={{ width: '110px', fontWeight: 600, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '26px', padding: '2px 0' }}>
+                        <span style={{ width: '135px', flexShrink: 0, fontWeight: 600, fontSize: '0.72rem', color: '#334155', lineHeight: '1.5', display: 'inline-block' }}>
                           {sec.label}
                         </span>
                         <div style={{ flex: 1, background: '#f1f5f9', height: '12px', borderRadius: '6px', overflow: 'hidden' }}>
@@ -138,7 +138,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#475569', minWidth: '28px', textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#475569', minWidth: '30px', textAlign: 'right', lineHeight: '1.5' }}>
                           {sec.pct}%
                         </span>
                       </div>
