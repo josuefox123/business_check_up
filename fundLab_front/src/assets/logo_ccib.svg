@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <!-- Outer orange gear rays -->
+  <g fill="#E0561B">
+    <path d="M 60,30 L 70,10 L 80,30 Z"/>
+    <path d="M 85,35 L 98,18 L 105,38 Z"/>
+    <path d="M 110,48 L 125,32 L 128,54 Z"/>
+    <path d="M 130,68 L 148,58 L 146,78 Z"/>
+    <rect x="72" y="30" width="8" height="90" rx="4" transform="rotate(-15 76 75)" />
+    <rect x="92" y="25" width="8" height="110" rx="4" transform="rotate(-15 96 80)" />
+    <rect x="112" y="28" width="8" height="120" rx="4" transform="rotate(-15 116 88)" />
+    <rect x="132" y="40" width="8" height="110" rx="4" transform="rotate(-15 136 95)" />
+  </g>
+  <!-- Green gear shape -->
+  <g fill="none" stroke="#007A3D" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M 40,110 A 85,85 0 1,0 150,170" />
+    <path d="M 75,105 A 50,50 0 1,0 140,140" />
+  </g>
+  <!-- Green gear teeth -->
+  <g fill="#007A3D">
+    <rect x="15" y="105" width="16" height="14" rx="3" transform="rotate(-10 23 112)"/>
+    <rect x="25" y="70" width="16" height="14" rx="3" transform="rotate(20 33 77)"/>
+    <rect x="50" y="40" width="16" height="14" rx="3" transform="rotate(50 58 47)"/>
+    <rect x="85" y="25" width="16" height="14" rx="3" transform="rotate(80 93 32)"/>
+    <rect x="125" y="30" width="16" height="14" rx="3" transform="rotate(110 133 37)"/>
+    <rect x="155" y="55" width="16" height="14" rx="3" transform="rotate(140 163 62)"/>
+    <rect x="165" y="95" width="16" height="14" rx="3" transform="rotate(170 173 102)"/>
+    <rect x="155" y="135" width="16" height="14" rx="3" transform="rotate(200 163 142)"/>
+    <rect x="125" y="165" width="16" height="14" rx="3" transform="rotate(230 133 172)"/>
+    <rect x="85" y="180" width="16" height="14" rx="3" transform="rotate(260 93 187)"/>
+    <rect x="45" y="170" width="16" height="14" rx="3" transform="rotate(290 53 177)"/>
+  </g>
+  <!-- Cowry shell outline inside -->
+  <ellipse cx="110" cy="112" rx="26" ry="18" fill="#FFFFFF" stroke="#1A1A1A" stroke-width="3" transform="rotate(-20 110 112)" />
+  <path d="M 90,118 Q 110,105 130,110" fill="none" stroke="#1A1A1A" stroke-width="3" />
+  <path d="M 98,114 Q 110,122 122,112" fill="none" stroke="#1A1A1A" stroke-width="2.5" />
+
+  <!-- Text: Chambre de Commerce et d'Industrie du Bénin -->
+  <text x="185" y="90" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="700" font-size="24" fill="#000000">Chambre de Commerce</text>
+  <text x="185" y="125" font-family="'Inter', 'Segoe UI', sans-serif" font-weight="700" font-size="24" fill="#000000">et d'Industrie du Bénin</text>
+</svg>

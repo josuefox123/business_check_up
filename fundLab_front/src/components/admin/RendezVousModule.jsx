@@ -27,6 +27,7 @@ const USER_PROFILE_LABELS = {
   'project_holder': 'Porteur de projet',
   'cooperative': 'Coopérative / Groupement',
   'opportunity_seeker': 'Recherche d\'opportunité',
+  'distressed_business': 'Entreprise en difficulté',
 };
 
 export const RendezVousModule = ({ users }) => {

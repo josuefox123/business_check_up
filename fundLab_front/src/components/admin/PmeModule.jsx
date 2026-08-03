@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Building2, Search, Info, X, MapPin, Phone, Mail, User, CheckCircle2, XCircle, RotateCcw, Download } from 'lucide-react';
+import { Building2, Search, Info, X, MapPin, Phone, Mail, User, CheckCircle2, XCircle, RotateCcw, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EntrepriseService } from '../../services/EntrepriseService.js';
 import { exportToExcel } from '../../utils/exportToExcel.js';
 
@@ -27,6 +27,7 @@ const USER_PROFILE_LABELS = {
   'cooperative': 'Coopérative / Groupement',
   'entrepreneur': 'Entrepreneur',
   'individual': 'Particulier',
+  'active_entrepreneur': 'Entrepreneur actif',
 };
 
 const formatActivityStage = (stage) => {
@@ -54,8 +55,8 @@ const InfoPopover = ({ pme, onClose }) => {
     pme.sales_channel_main && { label: 'Canal vente', value: pme.sales_channel_main },
     pme.years_in_activity != null && { label: 'Années d\'activité', value: `${pme.years_in_activity} an(s)` },
     pme.description && { label: 'Description', value: pme.description },
-    user?.preferred_contact_channel && { label: 'Canal contact pref.', value: user.preferred_contact_channel },
-    user?.user_profile_type && { label: 'Profil user', value: formatUserProfile(user.user_profile_type) },
+    user?.preferred_contact_channel && { label: 'Contact pref.', value: user.preferred_contact_channel },
+    user?.user_profile_type && { label: 'Profil', value: formatUserProfile(user.user_profile_type) },
   ].filter(Boolean);
 
   const docs = [];
@@ -151,7 +152,27 @@ export const PmeModule = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filteredPmes = pmes.filter(pme => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Deduplicate PMEs by contact email (or fallback to business name/id)
+  const seenEmails = new Set();
+  const distinctPmes = pmes.filter(pme => {
+    const user = pme.user ?? null;
+    const email = (user?.email || pme.email || pme.user_email || '').trim().toLowerCase();
+    const key = email || (pme.business_name || pme.name || pme.business_id || pme.id);
+    if (!key) return true;
+    if (seenEmails.has(key)) return false;
+    seenEmails.add(key);
+    return true;
+  });
+
+  const filteredPmes = distinctPmes.filter(pme => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     const userName = pme.user?.full_name?.toLowerCase() ?? '';
@@ -167,6 +188,9 @@ export const PmeModule = () => {
       userPhone.includes(term)
     );
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredPmes.length / itemsPerPage));
+  const paginatedPmes = filteredPmes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleExport = () => {
     const headers = ['Nom Entreprise', 'Contact Nom', 'Email', 'Téléphone', 'WhatsApp', 'Secteur', 'Sous-secteur', 'Région', 'Commune', 'Pays', 'Stade d\'activité', 'Statut légal', 'Effectif', 'CA mensuel (FCFA)', 'Années d\'activité', 'IFU', 'RCCM', 'Compte bancaire'];
@@ -227,7 +251,7 @@ export const PmeModule = () => {
             type="text"
             placeholder="Rechercher par PME, contact, secteur..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             style={{ width: '100%', paddingLeft: '36px', height: '40px', borderRadius: '10px', border: '1px solid var(--adm-border)', outline: 'none', fontSize: '0.875rem', background: 'var(--adm-bg)', color: 'var(--adm-text)', boxSizing: 'border-box' }}
           />
         </div>
@@ -247,149 +271,200 @@ export const PmeModule = () => {
             </button>
           </div>
         ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Entreprise</th>
-                  <th>Contact / Dirigeant</th>
-                  <th>Secteur / Sous-secteur</th>
-                  <th>Localisation</th>
-                  <th>Stade d'activité</th>
-                  <th style={{ textAlign: 'right' }}>Détails</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPmes.map((pme, idx) => {
-                  // Rule 9: normalisation avant le rendu JSX
-                  const pmeId = pme.business_id ?? pme.id ?? idx;
-                  const name = pme.business_name ?? 'Nom non spécifié';
-                  const sector = pme.sector ?? null;
-                  const subSector = pme.sub_sector ?? null;
-                  const region = pme.region ?? null;
-                  const commune = pme.commune ?? null;
-                  const country = pme.country ?? null;
-                  const activityStageLabel = formatActivityStage(pme.activity_stage);
-                  const isOpen = openPopoverId === pmeId;
+          <>
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Entreprise</th>
+                    <th>Contact / Dirigeant</th>
+                    <th>Secteur / Sous-secteur</th>
+                    <th>Localisation</th>
+                    <th>Stade d'activité</th>
+                    <th style={{ textAlign: 'right' }}>Détails</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedPmes.map((pme, idx) => {
+                    // Rule 9: normalisation avant le rendu JSX
+                    const pmeId = pme.business_id ?? pme.id ?? idx;
+                    const name = pme.business_name ?? 'Nom non spécifié';
+                    const sector = pme.sector ?? null;
+                    const subSector = pme.sub_sector ?? null;
+                    const region = pme.region ?? null;
+                    const commune = pme.commune ?? null;
+                    const country = pme.country ?? null;
+                    const activityStageLabel = formatActivityStage(pme.activity_stage);
+                    const isOpen = openPopoverId === pmeId;
 
-                  // Normalisation des infos utilisateur liées
-                  const user = pme.user ?? null;
-                  const contactName = user?.full_name ?? null;
-                  const contactEmail = user?.email ?? null;
-                  const contactPhone = user?.phone_number ?? null;
-                  const contactWhatsapp = user?.whatsapp_number ?? null;
-                  const userProfileLabel = formatUserProfile(user?.user_profile_type);
+                    // Normalisation des infos utilisateur liées
+                    const user = pme.user ?? null;
+                    const contactName = user?.full_name ?? null;
+                    const contactEmail = user?.email ?? null;
+                    const contactPhone = user?.phone_number ?? null;
+                    const contactWhatsapp = user?.whatsapp_number ?? null;
+                    const userProfileLabel = formatUserProfile(user?.user_profile_type);
 
-                  return (
-                    <tr key={pmeId} data-popover-row="true" style={{ position: 'relative' }}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <Building2 size={18} />
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: 'var(--adm-text, #0F172A)', fontSize: '0.9rem' }}>{name}</div>
-                            {pme.year_created && <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>Créée en {pme.year_created}</div>}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        {user ? (
-                          <div>
-                            {contactName && (
-                              <div style={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <User size={13} color="var(--brand-blue)" /> {contactName}
-                              </div>
-                            )}
-                            {userProfileLabel && (
-                              <div style={{ fontSize: '0.72rem', color: '#475569', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', width: 'fit-content', marginTop: '2px', fontWeight: 600 }}>
-                                {userProfileLabel}
-                              </div>
-                            )}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '3px', fontSize: '0.78rem', color: 'var(--slate-500)' }}>
-                              {contactEmail && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <Mail size={12} color="var(--slate-400)" />
-                                  <a href={`mailto:${contactEmail}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactEmail}</a>
-                                </div>
-                              )}
-                              {contactPhone && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <Phone size={12} color="var(--slate-400)" />
-                                  <a href={`tel:${contactPhone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactPhone}</a>
-                                </div>
-                              )}
-                              {contactWhatsapp && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#16A34A', fontWeight: 600 }}>
-                                  <Phone size={12} /> WA: {contactWhatsapp}
-                                </div>
-                              )}
+                    return (
+                      <tr key={pmeId} data-popover-row="true" style={{ position: 'relative' }}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <Building2 size={18} />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, color: 'var(--adm-text, #0F172A)', fontSize: '0.9rem' }}>{name}</div>
+                              {pme.year_created && <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>Créée en {pme.year_created}</div>}
                             </div>
                           </div>
-                        ) : (
-                          <span style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontStyle: 'italic' }}>Non renseigné</span>
-                        )}
-                      </td>
-                      <td>
-                        {sector && (
-                          <div>
-                            <div style={{ fontWeight: 600, color: 'var(--slate-700)', fontSize: '0.84rem' }}>{sector}</div>
-                            {subSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>{subSector}</div>}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {(region || commune || country) && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: 'var(--slate-600)' }}>
-                            <MapPin size={13} color="var(--slate-400)" />
-                            {[commune, region, country].filter(Boolean).join(', ')}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {activityStageLabel && (
-                          <span style={{ background: '#E0F2FE', color: '#0369A1', fontWeight: 600, fontSize: '0.76rem', padding: '3px 8px', borderRadius: '6px' }}>
-                            {activityStageLabel}
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ textAlign: 'right', position: 'relative' }}>
-                        <button
-                          onClick={() => setOpenPopoverId(isOpen ? null : pmeId)}
-                          style={{
-                            background: isOpen ? '#1E293B' : 'transparent',
-                            border: '1px solid',
-                            borderColor: isOpen ? '#1E293B' : 'var(--adm-border, #E2E8F0)',
-                            color: isOpen ? '#F1F5F9' : '#2563EB',
-                            borderRadius: '8px', padding: '5px 8px',
-                            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '3px',
-                            fontSize: '0.75rem', fontWeight: 600,
-                            transition: 'all 0.15s ease',
-                          }}
-                          title="Voir les informations détaillées"
-                        >
-                          <Info size={15} />
-                        </button>
+                        </td>
+                        <td>
+                          {user ? (
+                            <div>
+                              {contactName && (
+                                <div style={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <User size={13} color="var(--brand-blue)" /> {contactName}
+                                </div>
+                              )}
+                              {userProfileLabel && (
+                                <div style={{ fontSize: '0.72rem', color: '#475569', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', width: 'fit-content', marginTop: '2px', fontWeight: 600 }}>
+                                  {userProfileLabel}
+                                </div>
+                              )}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '3px', fontSize: '0.78rem', color: 'var(--slate-500)' }}>
+                                {contactEmail && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Mail size={12} color="var(--slate-400)" />
+                                    <a href={`mailto:${contactEmail}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactEmail}</a>
+                                  </div>
+                                )}
+                                {contactPhone && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Phone size={12} color="var(--slate-400)" />
+                                    <a href={`tel:${contactPhone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactPhone}</a>
+                                  </div>
+                                )}
+                                {contactWhatsapp && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#16A34A', fontWeight: 600 }}>
+                                    <Phone size={12} /> WA: {contactWhatsapp}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontStyle: 'italic' }}>Non renseigné</span>
+                          )}
+                        </td>
+                        <td>
+                          {sector && (
+                            <div>
+                              <div style={{ fontWeight: 600, color: 'var(--slate-700)', fontSize: '0.84rem' }}>{sector}</div>
+                              {subSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>{subSector}</div>}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {(region || commune || country) && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: 'var(--slate-600)' }}>
+                              <MapPin size={13} color="var(--slate-400)" />
+                              {[commune, region, country].filter(Boolean).join(', ')}
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          {activityStageLabel && (
+                            <span style={{ background: '#E0F2FE', color: '#0369A1', fontWeight: 600, fontSize: '0.76rem', padding: '3px 8px', borderRadius: '6px' }}>
+                              {activityStageLabel}
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right', position: 'relative' }}>
+                          <button
+                            onClick={() => setOpenPopoverId(isOpen ? null : pmeId)}
+                            style={{
+                              background: isOpen ? '#1E293B' : 'transparent',
+                              border: '1px solid',
+                              borderColor: isOpen ? '#1E293B' : 'var(--adm-border, #E2E8F0)',
+                              color: isOpen ? '#F1F5F9' : '#2563EB',
+                              borderRadius: '8px', padding: '5px 8px',
+                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '3px',
+                              fontSize: '0.75rem', fontWeight: 600,
+                              transition: 'all 0.15s ease',
+                            }}
+                            title="Voir les informations détaillées"
+                          >
+                            <Info size={15} />
+                          </button>
 
-                        {/* Inline tooltip popover */}
-                        {isOpen && (
-                          <InfoPopover pme={pme} onClose={() => setOpenPopoverId(null)} />
-                        )}
+                          {/* Inline tooltip popover */}
+                          {isOpen && (
+                            <InfoPopover pme={pme} onClose={() => setOpenPopoverId(null)} />
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {filteredPmes.length === 0 && (
+                    <tr>
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>
+                        Aucune PME trouvée
                       </td>
                     </tr>
-                  );
-                })}
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                {filteredPmes.length === 0 && (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>
-                      Aucune PME trouvée
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+            {/* Pagination Controls Footer */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--adm-border, #E2E8F0)', background: 'var(--adm-bg, #FFFFFF)', borderRadius: '0 0 16px 16px' }}>
+                <span style={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 600 }}>
+                  Page <strong>{currentPage}</strong> sur <strong>{totalPages}</strong> ({filteredPmes.length} PME)
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    style={{
+                      border: '1px solid #CBD5E1',
+                      background: currentPage === 1 ? '#F1F5F9' : '#FFFFFF',
+                      color: currentPage === 1 ? '#94A3B8' : '#0F172A',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.82rem',
+                      fontWeight: 700
+                    }}
+                  >
+                    <ChevronLeft size={16} /> Précédent
+                  </button>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    style={{
+                      border: '1px solid #CBD5E1',
+                      background: currentPage === totalPages ? '#F1F5F9' : '#FFFFFF',
+                      color: currentPage === totalPages ? '#94A3B8' : '#0F172A',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.82rem',
+                      fontWeight: 700
+                    }}
+                  >
+                    Suivant <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

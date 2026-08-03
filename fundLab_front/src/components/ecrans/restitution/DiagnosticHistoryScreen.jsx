@@ -22,6 +22,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
+import { statistiquesApi } from '../../../api/statistiquesApi.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,12 +51,23 @@ export const DiagnosticHistoryScreen = () => {
   // ── State ──
   const [currentPage, setCurrentPage]   = useState(1);
   const [historyData, setHistoryData]   = useState(null);
+  const [globalStats, setGlobalStats]   = useState(null);
   const [isLoading, setIsLoading]       = useState(true);
   const [isError, setIsError]           = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm]     = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
   const [statusTab, setStatusTab]       = useState('completed'); // 'completed' | 'all' | 'started'
+
+  // ── Fetch global overview stats (matching Dashboard) ──
+  const fetchGlobalStats = async () => {
+    try {
+      const overview = await statistiquesApi.getOverview();
+      setGlobalStats(overview || null);
+    } catch (err) {
+      console.error('[DiagnosticHistoryScreen] fetch global stats error:', err);
+    }
+  };
 
   // ── Fetch paginated list ──
   const fetchDiagnostics = async (page = 1) => {
@@ -78,6 +90,10 @@ export const DiagnosticHistoryScreen = () => {
   useEffect(() => {
     fetchDiagnostics(currentPage);
   }, [currentPage]);
+
+  useEffect(() => {
+    fetchGlobalStats();
+  }, []);
 
   // ─── Normalization (Rule 9) ────────────────────────────────────────────────
   const rawItems = historyData?.data ?? [];
@@ -124,11 +140,23 @@ export const DiagnosticHistoryScreen = () => {
     };
   });
 
-  // ── Stats calculées sur la page courante ──
-  const totalOnPage = normalizedItems.length;
-  const completedCount = normalizedItems.filter(i => i.isCompleted).length;
-  const startedCount = totalOnPage - completedCount;
-  const completionRate = totalOnPage > 0 ? Math.round((completedCount / totalOnPage) * 100) : 0;
+  // ── Stats sur la page courante (pour les onglets de filtres de la liste) ──
+  const totalOnPage     = normalizedItems.length;
+  const completedOnPage = normalizedItems.filter(i => i.isCompleted).length;
+  const startedOnPage   = totalOnPage - completedOnPage;
+
+  // ── Stats globales de l'application (repli sur calcul de la page si non disponible) ──
+  const globalDiags        = globalStats?.diagnostics;
+  const hasGlobalDiags     = Boolean(globalDiags && typeof globalDiags.started === 'number');
+
+  const totalDiagsCount    = hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length);
+  const completedCount     = hasGlobalDiags ? globalDiags.completed : completedOnPage;
+  const startedCount       = hasGlobalDiags
+    ? (globalDiags.abandoned ?? Math.max(0, totalDiagsCount - completedCount))
+    : startedOnPage;
+  const completionRate     = hasGlobalDiags
+    ? (globalDiags.completion_rate ?? (totalDiagsCount > 0 ? Math.round((completedCount / totalDiagsCount) * 100) : 0))
+    : (totalOnPage > 0 ? Math.round((completedOnPage / totalOnPage) * 100) : 0);
 
   // ── Client-side filters ──
   const filteredItems = normalizedItems.filter(item => {
@@ -202,7 +230,7 @@ export const DiagnosticHistoryScreen = () => {
               <CheckCheck size={22} />
             </div>
             <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase' }}>Complétés (page)</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase' }}>Complétés</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#166534', lineHeight: 1.2 }}>{completedCount}</div>
             </div>
           </div>
@@ -251,7 +279,7 @@ export const DiagnosticHistoryScreen = () => {
                 transition: 'all 0.15s ease'
               }}
             >
-              Diagnostics finalisés ({completedCount})
+              Diagnostics finalisés ({completedOnPage})
             </button>
             <button
               type="button"
@@ -287,7 +315,7 @@ export const DiagnosticHistoryScreen = () => {
                 transition: 'all 0.15s ease'
               }}
             >
-              En cours / Non finalisés ({startedCount})
+              En cours / Non finalisés ({startedOnPage})
             </button>
           </div>
 

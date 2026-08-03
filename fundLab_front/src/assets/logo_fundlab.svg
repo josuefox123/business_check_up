@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" width="320" height="120">
+  <!-- FL box framing -->
+  <g>
+    <!-- Cyan framing rectangle -->
+    <rect x="8" y="8" width="90" height="96" fill="none" stroke="#00B8D9" stroke-width="4" />
+    <!-- Inner Dark Box -->
+    <rect x="25" y="20" width="75" height="80" fill="#132338" />
+    <!-- Stylized white FL text inside box -->
+    <text x="32" y="76" font-family="'Georgia', serif" font-weight="bold" font-size="52" fill="#FFFFFF">F</text>
+    <text x="50" y="84" font-family="'Georgia', serif" font-weight="bold" font-size="44" fill="#00B8D9">L</text>
+
+    <!-- FUND.lab text -->
+    <text x="115" y="76" font-family="'Inter', 'Arial Black', sans-serif" font-weight="900" font-size="46" fill="#132338" letter-spacing="-1">FUND</text>
+    <text x="248" y="76" font-family="'Inter', sans-serif" font-weight="500" font-size="46" fill="#00B8D9">.lab</text>
+  </g>
+</svg>

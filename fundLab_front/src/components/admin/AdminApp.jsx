@@ -5,6 +5,7 @@ import { AdminLayout } from './AdminLayout.jsx';
 import { Dashboard } from './Dashboard.jsx';
 import { DiagnosticsModule } from './DiagnosticsModule.jsx';
 import { ReportsModule } from './ReportsModule.jsx';
+import { CcibReportModule } from './CcibReportModule.jsx';
 import { DiagnosticRunDetailScreen } from '../ecrans/restitution/DiagnosticRunDetailScreen.jsx';
 import { QuestionnairesModule } from './QuestionnairesModule.jsx';
 import { UtilisateursModule } from './UtilisateursModule.jsx';
@@ -130,6 +131,7 @@ export const AdminApp = () => {
         <Route path="/diagnostics" element={<DiagnosticsModule />} />
         <Route path="/diagnostics/:runId" element={<DiagnosticRunDetailScreen />} />
         <Route path="/rapports" element={<ReportsModule />} />
+        <Route path="/rapport-ccib" element={<CcibReportModule />} />
         <Route path="/questionnaires" element={<QuestionnairesModule />} />
         <Route path="/utilisateurs" element={
           <UtilisateursModule 
