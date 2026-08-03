@@ -50,16 +50,16 @@ export const UserProfileFormScreen = ({ onSubmit, onSkip, onBack, triageAnswers,
         id: 'email',
         question: "Quelle est votre adresse e-mail ?",
         hint: "Adresse obligatoire pour l'envoi de votre rapport.",
-        type: 'short_text',
+        type: 'email',
         placeholder: 'ex: dirigeant@entreprise.com',
         isOptional: false
       },
       {
         id: 'phone_suffix',
         question: "Quel est votre numéro de téléphone ?",
-        hint: "Numéro obligatoire de contact.",
-        type: 'short_text',
-        placeholder: 'ex: 0197000000',
+        hint: "Numéro obligatoire de contact (8 chiffres min.).",
+        type: 'phone',
+        placeholder: 'ex: +229 01 97 00 00 00',
         isOptional: false
       },
       {

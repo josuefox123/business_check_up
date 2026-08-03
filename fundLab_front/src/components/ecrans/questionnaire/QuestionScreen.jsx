@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, MessageSquare } from 'lucide-react';
+import { AlertTriangle, MessageSquare, Mail, Phone, AlertCircle } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea, CurrencyInput } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { TopBackLink } from '../partage/sharedUI.jsx';
@@ -99,26 +99,29 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
   const isMulti = questionData.type === 'multi';
   const isScale = questionData.type === 'scale_1_5';
   const isText = questionData.type === 'short_text';
+  const isEmail = questionData.type === 'email';
+  const isPhone = questionData.type === 'phone';
   const isCurrency = questionData.type === 'currency_xof' || questionData.type === 'currency_xof_with_period';
+  const isTextInput = isText || isEmail || isPhone || isCurrency;
   const maxLength = questionData.maxLength || 500;
   const themeClass = getModuleThemeClass(moduleId || questionData?.moduleId);
 
   const [answer, setAnswer] = useState(
-    (!isMulti && !isText && !isCurrency && savedAnswer !== null) ? savedAnswer : null
+    (!isMulti && !isTextInput && savedAnswer !== null) ? savedAnswer : null
   );
   const [multiAnswer, setMultiAnswer] = useState(
     isMulti && Array.isArray(savedAnswer) ? savedAnswer : []
   );
   const [textVal, setTextVal] = useState(
-    (isText || isCurrency) && typeof savedAnswer === 'string' ? savedAnswer : ''
+    isTextInput && typeof savedAnswer === 'string' ? savedAnswer : ''
   );
   const [showQuitModal, setShowQuitModal] = useState(false);
 
   useEffect(() => {
-    setAnswer((!isMulti && !isText && !isCurrency && savedAnswer !== null) ? savedAnswer : null);
+    setAnswer((!isMulti && !isTextInput && savedAnswer !== null) ? savedAnswer : null);
     setMultiAnswer(isMulti && Array.isArray(savedAnswer) ? savedAnswer : []);
-    setTextVal((isText || isCurrency) && typeof savedAnswer === 'string' ? savedAnswer : '');
-  }, [questionData?.id, savedAnswer, isMulti, isText, isCurrency]);
+    setTextVal(isTextInput && typeof savedAnswer === 'string' ? savedAnswer : '');
+  }, [questionData?.id, savedAnswer, isMulti, isTextInput]);
 
   const toggleMulti = (id) => {
     if (id === 'idk') { setMultiAnswer(['idk']); return; }
@@ -128,14 +131,22 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     });
   };
 
-  const canContinue = isMulti ? multiAnswer.length > 0 : (isText || isCurrency) ? textVal.trim().length > 0 : answer !== null;
+  const isEmailValid = isEmail ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(textVal.trim()) : true;
+  const phoneDigits = isPhone ? textVal.replace(/\D/g, '') : '';
+  const isPhoneValid = isPhone ? phoneDigits.length >= 8 && phoneDigits.length <= 15 : true;
+
+  const canContinue = isMulti
+    ? multiAnswer.length > 0
+    : isTextInput
+      ? (textVal.trim().length > 0 && isEmailValid && isPhoneValid)
+      : answer !== null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContinue = async () => {
-    if (isSubmitting) return;
+    if (isSubmitting || !canContinue) return;
     setIsSubmitting(true);
-    const ans = isMulti ? multiAnswer : (isText || isCurrency) ? textVal : answer;
+    const ans = isMulti ? multiAnswer : isTextInput ? textVal : answer;
     try {
       await onContinue(ans, null, null, null, null);
     } finally {
@@ -195,6 +206,81 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
                 value={textVal}
                 onChange={(val) => setTextVal(val)}
               />
+            );
+          }
+          if (isEmail) {
+            return (
+              <div style={{ width: '100%' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Mail size={18} color="var(--slate-400, #94a3b8)" style={{ position: 'absolute', left: '16px', pointerEvents: 'none' }} />
+                  <input
+                    type="email"
+                    value={textVal}
+                    onChange={e => setTextVal(e.target.value)}
+                    placeholder={questionData.placeholder || 'ex: dirigeant@entreprise.com'}
+                    style={{
+                      width: '100%',
+                      height: '52px',
+                      paddingLeft: '44px',
+                      paddingRight: '16px',
+                      borderRadius: '12px',
+                      border: textVal.length > 0 && !isEmailValid ? '2px solid #ef4444' : '1.5px solid var(--slate-200, #cbd5e1)',
+                      outline: 'none',
+                      fontSize: '1rem',
+                      fontFamily: 'inherit',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                {textVal.length > 0 && !isEmailValid && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#dc2626', fontSize: '0.82rem', fontWeight: 600 }}>
+                    <AlertCircle size={15} /> Veuillez entrer une adresse e-mail valide (ex: contact@entreprise.bj)
+                  </div>
+                )}
+              </div>
+            );
+          }
+          if (isPhone) {
+            return (
+              <div style={{ width: '100%' }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Phone size={18} color="var(--slate-400, #94a3b8)" style={{ position: 'absolute', left: '16px', pointerEvents: 'none' }} />
+                  <input
+                    type="tel"
+                    value={textVal}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (/^[0-9\s+\-()]*$/.test(val)) {
+                        setTextVal(val);
+                      }
+                    }}
+                    placeholder={questionData.placeholder || 'ex: +229 01 97 00 00 00'}
+                    style={{
+                      width: '100%',
+                      height: '52px',
+                      paddingLeft: '44px',
+                      paddingRight: '16px',
+                      borderRadius: '12px',
+                      border: textVal.length > 0 && !isPhoneValid ? '2px solid #ef4444' : '1.5px solid var(--slate-200, #cbd5e1)',
+                      outline: 'none',
+                      fontSize: '1rem',
+                      fontFamily: 'inherit',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                {textVal.length > 0 && !isPhoneValid && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px', color: '#dc2626', fontSize: '0.82rem', fontWeight: 600 }}>
+                    <AlertCircle size={15} /> Le numéro de téléphone doit contenir au moins 8 chiffres (ex: 0197000000)
+                  </div>
+                )}
+              </div>
             );
           }
           if (isText) {

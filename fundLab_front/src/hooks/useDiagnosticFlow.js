@@ -676,9 +676,24 @@ export function useDiagnosticFlow() {
     setQuestionIndex(0);
     setModuleAnswers({});
 
+    // 1. Vérification de la présence du profil PME initial
+    const isAuthenticated = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === 'true';
+    const userEmail = localStorage.getItem(STORAGE_KEYS.USER_EMAIL) || triageAnswers?.email || pendingProfileData?.email;
+    const hasFullName = triageAnswers?.full_name || triageAnswers?.name || pendingProfileData?.full_name;
+
+    if (!isAuthenticated && (!userEmail || !hasFullName)) {
+      console.warn('[onIntroStart] Nouveau profil détecté sans profil PME. Redirection vers UserProfileFormScreen...');
+      setTriageStep(4);
+      navigate('/triage/wizard');
+      return;
+    }
+
+    // 2. Navigation immédiate vers l'écran de chargement pour éliminer tout gel d'interface
+    navigate('/diagnostic/loading');
+
     let sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
 
-    // Si l'utilisateur est authentifié mais n'a pas encore de session active
+    // 3. Si l'utilisateur n'a pas encore de session active, création de la session
     if (!sessionId) {
       try {
         console.warn('Création d\'une nouvelle session pour l\'utilisateur connecté...');
@@ -694,9 +709,6 @@ export function useDiagnosticFlow() {
         return;
       }
     }
-
-    // Navigation immédiate vers la page de chargement du diagnostic
-    navigate('/diagnostic/loading');
 
     // Si un run existe déjà (retour arrière depuis les questions), on l'utilise
     if (currentRunId) {
