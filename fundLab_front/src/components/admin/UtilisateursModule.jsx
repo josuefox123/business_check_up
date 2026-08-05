@@ -49,7 +49,8 @@ export const UtilisateursModule = ({ users, onDelete, onAdd }) => {
   };
 
   return (
-    <div className="admin-page animate-fade-up">
+    <>
+      <div className="admin-page animate-fade-up">
       <div className="admin-page-header">
         <h1 className="admin-page-title">Utilisateurs</h1>
       </div>
@@ -139,69 +140,70 @@ export const UtilisateursModule = ({ users, onDelete, onAdd }) => {
           </table>
         </div>
       </div>
-
-      {/* Add User Modal */}
-      {showAddModal && (
-        <div className="admin-modal-backdrop" onClick={() => setShowAddModal(false)}>
-          <div className="admin-modal" onClick={e => e.stopPropagation()}>
-            <form onSubmit={handleAddSubmit}>
-              <div className="admin-modal-header">
-                <h3>Ajouter un nouvel utilisateur</h3>
-                <button className="admin-close-btn" type="button" onClick={() => setShowAddModal(false)}><X size={18} /></button>
-              </div>
-              <div className="admin-modal-body">
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Nom complet</label>
-                  <input type="text" value={uName} onChange={e => setUName(e.target.value)} className="admin-form-input" required />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Email</label>
-                    <input type="email" value={uEmail} onChange={e => setUEmail(e.target.value)} className="admin-form-input" required />
-                  </div>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Téléphone</label>
-                    <input type="text" value={uPhone} onChange={e => setUPhone(e.target.value)} className="admin-form-input" required />
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Raison sociale / Entreprise</label>
-                    <input type="text" value={uCompany} onChange={e => setUCompany(e.target.value)} className="admin-form-input" />
-                  </div>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Secteur d'activité</label>
-                    <input type="text" value={uSector} onChange={e => setUSector(e.target.value)} className="admin-form-input" />
-                  </div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Département (Bénin)</label>
-                    <input type="text" value={uDept} onChange={e => setUDept(e.target.value)} className="admin-form-input" placeholder="Ex: Littoral" />
-                  </div>
-                  <div className="admin-form-group">
-                    <label className="admin-form-label">Commune</label>
-                    <input type="text" value={uCommune} onChange={e => setUCommune(e.target.value)} className="admin-form-input" placeholder="Ex: Cotonou" />
-                  </div>
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Profil d'entrée</label>
-                  <select value={uProfile} onChange={e => setUProfile(e.target.value)} className="admin-form-select">
-                    <option value="active">Actif / En cours</option>
-                    <option value="project">Porteur de projet</option>
-                    <option value="diffic">En difficulté</option>
-                    <option value="pme">Entreprise établie (PME)</option>
-                  </select>
-                </div>
-              </div>
-              <div className="admin-modal-footer">
-                <button className="btn btn-ghost" type="button" onClick={() => setShowAddModal(false)}>Annuler</button>
-                <button className="btn btn-primary" type="submit">Créer</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {/* Add User Modal */}
+    {showAddModal && (
+      <div className="admin-modal-backdrop" onClick={() => setShowAddModal(false)}>
+        <div className="admin-modal" onClick={e => e.stopPropagation()}>
+          <form onSubmit={handleAddSubmit}>
+            <div className="admin-modal-header">
+              <h3>Ajouter un nouvel utilisateur</h3>
+              <button className="admin-close-btn" type="button" onClick={() => setShowAddModal(false)}><X size={18} /></button>
+            </div>
+            <div className="admin-modal-body">
+              <div className="admin-form-group">
+                <label className="admin-form-label">Nom complet</label>
+                <input type="text" value={uName} onChange={e => setUName(e.target.value)} className="admin-form-input" required />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Email</label>
+                  <input type="email" value={uEmail} onChange={e => setUEmail(e.target.value)} className="admin-form-input" required />
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Téléphone</label>
+                  <input type="text" value={uPhone} onChange={e => setUPhone(e.target.value)} className="admin-form-input" required />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Raison sociale / Entreprise</label>
+                  <input type="text" value={uCompany} onChange={e => setUCompany(e.target.value)} className="admin-form-input" />
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Secteur d'activité</label>
+                  <input type="text" value={uSector} onChange={e => setUSector(e.target.value)} className="admin-form-input" />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Département (Bénin)</label>
+                  <input type="text" value={uDept} onChange={e => setUDept(e.target.value)} className="admin-form-input" placeholder="Ex: Littoral" />
+                </div>
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Commune</label>
+                  <input type="text" value={uCommune} onChange={e => setUCommune(e.target.value)} className="admin-form-input" placeholder="Ex: Cotonou" />
+                </div>
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Profil d'entrée</label>
+                <select value={uProfile} onChange={e => setUProfile(e.target.value)} className="admin-form-select">
+                  <option value="active">Actif / En cours</option>
+                  <option value="project">Porteur de projet</option>
+                  <option value="diffic">En difficulté</option>
+                  <option value="pme">Entreprise établie (PME)</option>
+                </select>
+              </div>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="btn btn-ghost" type="button" onClick={() => setShowAddModal(false)}>Annuler</button>
+              <button className="btn btn-primary" type="submit">Créer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </>
+);
 };

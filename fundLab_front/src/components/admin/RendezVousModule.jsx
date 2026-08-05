@@ -86,15 +86,31 @@ export const RendezVousModule = ({ users }) => {
 
     setIsSubmittingAction(true);
     setActionErrorMsg('');
-    const dateUtc = new Date(confirmedDate).toISOString();
 
     try {
+      if (!confirmedDate) {
+        throw new Error('Veuillez sélectionner une date et une heure valides.');
+      }
+      const parsedDate = new Date(confirmedDate);
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('La date sélectionnée est invalide.');
+      }
+      const dateUtc = parsedDate.toISOString();
+
       await AdministrationService.appointments.confirmAppointment(selectedAppt.id, dateUtc, meetingLink, meetingLocation);
       setShowConfirmModal(false);
       setSelectedAppt(null);
       loadAppointments();
     } catch (err) {
-      console.error('[RendezVousModule] confirmAppointment error:', err);
+      const isAlreadyProcessed = err?.message?.includes('déjà traité');
+      if (isAlreadyProcessed) {
+        console.warn('[RendezVousModule] Appointment already processed:', err.message);
+        setShowConfirmModal(false);
+        setSelectedAppt(null);
+        loadAppointments();
+      } else {
+        console.error('[RendezVousModule] confirmAppointment error:', err);
+      }
       setActionErrorMsg(err?.message ?? '[confirm_appointment_error] Échec de la confirmation du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
@@ -109,7 +125,13 @@ export const RendezVousModule = ({ users }) => {
       await AdministrationService.appointments.cancelAppointment(id);
       loadAppointments();
     } catch (err) {
-      console.error('[RendezVousModule] cancelAppointment error:', err);
+      const isAlreadyProcessed = err?.message?.includes('déjà traité');
+      if (isAlreadyProcessed) {
+        console.warn('[RendezVousModule] Appointment already processed:', err.message);
+        loadAppointments();
+      } else {
+        console.error('[RendezVousModule] cancelAppointment error:', err);
+      }
       setActionErrorMsg(err?.message ?? '[cancel_appointment_error] Échec de l\'annulation du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
@@ -123,7 +145,13 @@ export const RendezVousModule = ({ users }) => {
       await AdministrationService.appointments.completeAppointment(id);
       loadAppointments();
     } catch (err) {
-      console.error('[RendezVousModule] completeAppointment error:', err);
+      const isAlreadyProcessed = err?.message?.includes('déjà traité');
+      if (isAlreadyProcessed) {
+        console.warn('[RendezVousModule] Appointment already processed:', err.message);
+        loadAppointments();
+      } else {
+        console.error('[RendezVousModule] completeAppointment error:', err);
+      }
       setActionErrorMsg(err?.message ?? '[complete_appointment_error] Échec de la clôture du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
@@ -138,7 +166,7 @@ export const RendezVousModule = ({ users }) => {
     if (apiUser) {
       const profileLabel = USER_PROFILE_LABELS[apiUser.user_profile_type] ?? apiUser.user_profile_type ?? null;
       return {
-        name: apiUser.full_name ?? apiUser.name ?? 'Entrepreneur',
+        name: apiUser.full_name ?? apiUser.name ?? '[full_name non disponible]',
         email: apiUser.email ?? null,
         phone: apiUser.phone_number ?? apiUser.phone ?? null,
         whatsapp: apiUser.whatsapp_number ?? null,
@@ -155,7 +183,7 @@ export const RendezVousModule = ({ users }) => {
     const u = users?.find(user => user.id === userId || user.user_id === userId);
     if (u) {
       return {
-        name: u.name ?? u.full_name ?? 'Entrepreneur',
+        name: u.name ?? u.full_name ?? '[name non disponible]',
         email: u.email ?? null,
         phone: u.phone ?? u.phone_number ?? null,
         whatsapp: u.whatsapp_number ?? null,
@@ -168,7 +196,7 @@ export const RendezVousModule = ({ users }) => {
       };
     }
 
-    return { name: 'Entrepreneur (Non renseigné)', email: null, phone: null, whatsapp: null, companyName: null, profileType: null, channel: null, role: null, gender: null, ageRange: null };
+    return { name: '[user non disponible]', email: null, phone: null, whatsapp: null, companyName: null, profileType: null, channel: null, role: null, gender: null, ageRange: null };
   };
 
   const getRdvTypeLabel = (rdvType) =>
@@ -218,7 +246,8 @@ export const RendezVousModule = ({ users }) => {
   };
 
   return (
-    <div className="admin-page animate-fade-up">
+    <>
+      <div className="admin-page animate-fade-up">
       <div className="admin-page-header">
         <div>
           <h1 className="admin-page-title">Rendez-vous</h1>
@@ -412,67 +441,68 @@ export const RendezVousModule = ({ users }) => {
           </div>
         )}
       </div>
-
-      {/* Modal de confirmation — Rule 4: Feedback contextuel localisé */}
-      {showConfirmModal && selectedAppt && (
-        <div className="admin-modal-backdrop" onClick={() => setShowConfirmModal(false)}>
-          <div className="admin-modal" onClick={e => e.stopPropagation()}>
-            <form onSubmit={handleConfirmSubmit}>
-              <div className="admin-modal-header">
-                <h3>Confirmer la planification du RDV</h3>
-                <button className="admin-close-btn" type="button" onClick={() => setShowConfirmModal(false)}><XCircle size={18} /></button>
-              </div>
-              <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {actionErrorMsg && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <AlertCircle size={15} />
-                    <span>{actionErrorMsg}</span>
-                  </div>
-                )}
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Date &amp; Heure de réunion finale</label>
-                  <input
-                    type="datetime-local"
-                    value={confirmedDate}
-                    onChange={e => setConfirmedDate(e.target.value)}
-                    className="admin-form-input"
-                    required
-                    disabled={isSubmittingAction}
-                  />
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Lien de réunion (facultatif — ex: Zoom, Meet...)</label>
-                  <input
-                    type="url"
-                    placeholder="https://meet.google.com/..."
-                    value={meetingLink}
-                    onChange={e => setMeetingLink(e.target.value)}
-                    className="admin-form-input"
-                    disabled={isSubmittingAction}
-                  />
-                </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Lieu physique (facultatif — ex: Bureau CCI...)</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Bureau de la CCI, Cotonou"
-                    value={meetingLocation}
-                    onChange={e => setMeetingLocation(e.target.value)}
-                    className="admin-form-input"
-                    disabled={isSubmittingAction}
-                  />
-                </div>
-              </div>
-              <div className="admin-modal-footer">
-                <button className="btn btn-ghost" type="button" onClick={() => setShowConfirmModal(false)} disabled={isSubmittingAction}>Annuler</button>
-                <button className="btn btn-teal" type="submit" disabled={isSubmittingAction}>
-                  {isSubmittingAction ? 'Confirmation...' : 'Valider et Confirmer'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {/* Modal de confirmation — Rule 4: Feedback contextuel localisé */}
+    {showConfirmModal && selectedAppt && (
+      <div className="admin-modal-backdrop" onClick={() => setShowConfirmModal(false)}>
+        <div className="admin-modal" onClick={e => e.stopPropagation()}>
+          <form onSubmit={handleConfirmSubmit}>
+            <div className="admin-modal-header">
+              <h3>Confirmer la planification du RDV</h3>
+              <button className="admin-close-btn" type="button" onClick={() => setShowConfirmModal(false)}><XCircle size={18} /></button>
+            </div>
+            <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {actionErrorMsg && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <AlertCircle size={15} />
+                  <span>{actionErrorMsg}</span>
+                </div>
+              )}
+              <div className="admin-form-group">
+                <label className="admin-form-label">Date &amp; Heure de réunion finale</label>
+                <input
+                  type="datetime-local"
+                  value={confirmedDate}
+                  onChange={e => setConfirmedDate(e.target.value)}
+                  className="admin-form-input"
+                  required
+                  disabled={isSubmittingAction}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Lien de réunion (facultatif — ex: Zoom, Meet...)</label>
+                <input
+                  type="url"
+                  placeholder="https://meet.google.com/..."
+                  value={meetingLink}
+                  onChange={e => setMeetingLink(e.target.value)}
+                  className="admin-form-input"
+                  disabled={isSubmittingAction}
+                />
+              </div>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Lieu physique (facultatif — ex: Bureau CCI...)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Bureau de la CCI, Cotonou"
+                  value={meetingLocation}
+                  onChange={e => setMeetingLocation(e.target.value)}
+                  className="admin-form-input"
+                  disabled={isSubmittingAction}
+                />
+              </div>
+            </div>
+            <div className="admin-modal-footer">
+              <button className="btn btn-ghost" type="button" onClick={() => setShowConfirmModal(false)} disabled={isSubmittingAction}>Annuler</button>
+              <button className="btn btn-teal" type="submit" disabled={isSubmittingAction}>
+                {isSubmittingAction ? 'Confirmation...' : 'Valider et Confirmer'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+  </>
+);
 };

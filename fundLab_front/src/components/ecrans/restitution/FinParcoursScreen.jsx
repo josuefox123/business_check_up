@@ -189,19 +189,23 @@ export const FinParcoursScreen = ({ onRestart }) => {
 
     const runId = localStorage.getItem('last_run_id');
 
-    // Construction du datetime ISO 8601 : date sélectionnée + heure choisie
-    const [hours, minutes] = selectedTime.split(':').map(Number);
-    const rdvDate = new Date(selectedDate);
-    rdvDate.setHours(hours, minutes, 0, 0);
-    const requested_starts_at = rdvDate.toISOString();
-
-    if (!runId) {
-      console.warn('[last_run_id non disponible] Simulation de la réservation en mode démo / test.');
-      setTimeout(() => { setIsSubmitting(false); setBooked(true); setShowModal(false); }, 800);
-      return;
-    }
-
     try {
+      // Construction du datetime ISO 8601 : date sélectionnée + heure choisie
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const rdvDate = new Date(selectedDate);
+      rdvDate.setHours(hours, minutes, 0, 0);
+
+      if (isNaN(rdvDate.getTime())) {
+        throw new Error('La date ou l\'heure sélectionnée est invalide.');
+      }
+      const requested_starts_at = rdvDate.toISOString();
+
+      if (!runId) {
+        console.warn('[last_run_id non disponible] Simulation de la réservation en mode démo / test.');
+        setTimeout(() => { setIsSubmitting(false); setBooked(true); setShowModal(false); }, 800);
+        return;
+      }
+
       // Direct canonical API fetch via apiFetch wrapper
       await apiFetch(`/diagnostics/${runId}/appointment`, {
         method: 'POST',

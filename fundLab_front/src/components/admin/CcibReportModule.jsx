@@ -13,6 +13,7 @@ import {
 import { statistiquesApi } from '../../api/statistiquesApi.js';
 import { pmeApi } from '../../api/pmeApi.js';
 import { apiFetch } from '../../api/config.js';
+import { rendezVousApi } from '../../api/rendezVousApi.js';
 import { CcibReportPreview } from './CcibReportPreview.jsx';
 import './ccibReport.css';
 
@@ -21,36 +22,38 @@ export const CcibReportModule = () => {
 
   // ── Date & Period State ──
   const [selectedPeriod, setSelectedPeriod] = useState('all'); // 'jul_2026' | 'current_month' | 'last_quarter' | 'year_2026' | 'all' | 'custom'
-  const [periodLabel, setPeriodLabel]       = useState('Tout l\'historique');
-  const [startDate, setStartDate]           = useState('');
-  const [endDate, setEndDate]               = useState('');
+  const [periodLabel, setPeriodLabel] = useState('Tout l\'historique');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Data Loading State
-  const [isLoading, setIsLoading]           = useState(true);
-  const [overviewStats, setOverviewStats]   = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [overviewStats, setOverviewStats] = useState(null);
   const [moduleStatsList, setModuleStatsList] = useState([]);
   const [topSectorsList, setTopSectorsList] = useState([]);
-  const [pmesList, setPmesList]             = useState([]);
+  const [pmesList, setPmesList] = useState([]);
   const [diagnosticsList, setDiagnosticsList] = useState([]);
+  const [appointmentsList, setAppointmentsList] = useState([]);
 
   // Modal Email State
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailTarget, setEmailTarget]       = useState('contact@ccib.bj');
-  const [emailSubject, setEmailSubject]     = useState('Rapport de Pilotage Business Check-up — CCIB');
-  const [emailMessage, setEmailMessage]     = useState('Veuillez trouver ci-joint le rapport de pilotage opérationnel d\'activité Business Check-up pour la période sélectionnée.');
-  const [emailSending, setEmailSending]     = useState(false);
-  const [emailToast, setEmailToast]         = useState(null);
+  const [emailTarget, setEmailTarget] = useState('contact@ccib.bj');
+  const [emailSubject, setEmailSubject] = useState('Rapport de Pilotage Business Check-up — CCIB');
+  const [emailMessage, setEmailMessage] = useState('Veuillez trouver ci-joint le rapport de pilotage opérationnel d\'activité Business Check-up pour la période sélectionnée.');
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailToast, setEmailToast] = useState(null);
 
   // ── Load All API Data Dynamically ──
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [overview, modules, sectors, pmes, diagsRes] = await Promise.all([
+      const [overview, modules, sectors, pmes, diagsRes, appts] = await Promise.all([
         statistiquesApi.getOverview().catch(() => null),
         statistiquesApi.getModuleStats().catch(() => []),
         statistiquesApi.getTopSectors().catch(() => []),
         pmeApi.getAll().catch(() => []),
-        apiFetch('/admin/dashboard/diagnostics?per_page=100').catch(() => null)
+        apiFetch('/admin/dashboard/diagnostics?per_page=100').catch(() => null),
+        rendezVousApi.getAll().catch(() => [])
       ]);
 
       setOverviewStats(overview);
@@ -58,6 +61,7 @@ export const CcibReportModule = () => {
       setTopSectorsList(Array.isArray(sectors) ? sectors : []);
       setPmesList(Array.isArray(pmes) ? pmes : []);
       setDiagnosticsList(Array.isArray(diagsRes?.data) ? diagsRes.data : []);
+      setAppointmentsList(Array.isArray(appts) ? appts : []);
     } catch (err) {
       console.error('[CcibReportModule] error loading data:', err);
     } finally {
@@ -108,8 +112,40 @@ export const CcibReportModule = () => {
   });
 
   const completedDiags = filteredDiags.filter(d => d?.completion_status === 'completed');
-  const rdvCount = overviewStats?.follow_ups?.total_requests ?? Math.round(pmesList.length * 0.15);
-  const rdvPct   = pmesList.length > 0 ? Math.round((rdvCount / pmesList.length) * 100) : 0;
+
+  // Filter appointments list according to selected period
+  const filteredApptsList = appointmentsList.filter(item => {
+    const dateStr = item?.created_at || item?.requested_starts_at || item?.date;
+    if (!dateStr) return true;
+    const itemDate = new Date(dateStr);
+    if (isNaN(itemDate.getTime())) return true;
+
+    if (selectedPeriod === 'jul_2026') {
+      return itemDate.getFullYear() === 2026 && itemDate.getMonth() === 6;
+    }
+    if (selectedPeriod === 'current_month') {
+      const now = new Date();
+      return itemDate.getFullYear() === now.getFullYear() && itemDate.getMonth() === now.getMonth();
+    }
+    if (selectedPeriod === 'last_quarter') {
+      const now = new Date();
+      const currentQuarter = Math.floor(now.getMonth() / 3);
+      const itemQuarter = Math.floor(itemDate.getMonth() / 3);
+      return itemDate.getFullYear() === now.getFullYear() && itemQuarter === currentQuarter;
+    }
+    if (selectedPeriod === 'year_2026') {
+      return itemDate.getFullYear() === 2026;
+    }
+    if (selectedPeriod === 'custom') {
+      if (startDate && itemDate < new Date(startDate)) return false;
+      if (endDate && itemDate > new Date(endDate + 'T23:59:59')) return false;
+      return true;
+    }
+    return true;
+  });
+
+  const rdvCount = appointmentsList.length > 0 ? filteredApptsList.length : (overviewStats?.follow_ups?.total_requests ?? 0);
+  const rdvPct = pmesList.length > 0 ? Math.round((rdvCount / pmesList.length) * 100) : 0;
   const avgScore = 58;
 
   // Filter PMEs list according to selected period
@@ -191,10 +227,13 @@ export const CcibReportModule = () => {
   }));
 
   // Maturity distribution calculation
+  const scoreBand = overviewStats?.score_band || {};
   const maturityData = {
-    risque: totalPme > 0 ? 22 : 0,
-    moyen:  totalPme > 0 ? 45 : 0,
-    stable: totalPme > 0 ? 33 : 0,
+    risque: typeof scoreBand.critical?.percentage === 'number' ? scoreBand.critical.percentage : (totalPme > 0 ? 22 : 0),
+    moyen: typeof scoreBand.fragile?.percentage === 'number' ? scoreBand.fragile.percentage : (totalPme > 0 ? 45 : 0),
+    stable: typeof scoreBand.stable?.percentage === 'number' ? scoreBand.stable.percentage : (totalPme > 0 ? 33 : 0),
+    solide: typeof scoreBand.solid?.percentage === 'number' ? scoreBand.solid.percentage : 0,
+    avance: typeof scoreBand.advanced?.percentage === 'number' ? scoreBand.advanced.percentage : 0,
   };
 
   // ── Dynamic Geographical Breakdown (Matching Dashboard topSectors / regionData) ──
@@ -254,13 +293,13 @@ export const CcibReportModule = () => {
 
   const enterpriseRows = distinctPmeList.map((item, idx) => {
     const business = item?.business ?? null;
-    const user     = item?.user ?? null;
+    const user = item?.user ?? null;
     return {
-      name:    item?.business_name ?? business?.business_name ?? item?.company_name ?? `Entreprise PME #${idx + 1}`,
-      sector:  item?.sector ?? business?.sector ?? 'Secteur d\'activité',
-      zone:    [item?.commune, item?.region || item?.city || business?.city, item?.country].filter(Boolean).join(', ') || 'Cotonou (Littoral)',
+      name: item?.business_name ?? business?.business_name ?? item?.company_name ?? `Entreprise PME #${idx + 1}`,
+      sector: item?.sector ?? business?.sector ?? 'Secteur d\'activité',
+      zone: [item?.commune, item?.region || item?.city || business?.city, item?.country].filter(Boolean).join(', ') || 'Cotonou (Littoral)',
       contact: user?.full_name ?? item?.contact_name ?? item?.user_name ?? 'Dirigeant PME',
-      email:   user?.email ?? item?.email ?? 'contact@pme.bj',
+      email: user?.email ?? item?.email ?? 'contact@pme.bj',
     };
   });
 
@@ -317,8 +356,22 @@ export const CcibReportModule = () => {
         pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
       }
 
-      const cleanPeriod = periodLabel ? periodLabel.replace(/[^a-zA-Z0-9]/g, '_') : 'period';
-      const fileName = `Rapport_Pilotage_CCIB_${cleanPeriod}.pdf`;
+      let suffix = '';
+      if (selectedPeriod === 'all') {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        suffix = `${day}_${month}_${year}`;
+      } else {
+        suffix = periodLabel
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, '');
+      }
+
+      const fileName = `Rapport_Pilotage_CCIB_${suffix}.pdf`;
       pdf.save(fileName);
     } catch (err) {
       console.error('[handleDownloadPdf] Error generating PDF, fallback to print:', err);
@@ -401,9 +454,9 @@ export const CcibReportModule = () => {
           >
             <Download size={17} /> {downloadingPdf ? 'Génération du PDF...' : 'Télécharger en PDF'}
           </button>
-          <button className="btn-ccib-primary" onClick={() => setShowEmailModal(true)}>
+          {/* <button className="btn-ccib-primary" onClick={() => setShowEmailModal(true)}>
             <Mail size={17} /> Envoyer par mail
-          </button>
+          </button> */}
         </div>
       </div>
 

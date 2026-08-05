@@ -27,9 +27,9 @@ import { statistiquesApi } from '../../../api/statistiquesApi.js';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const MODULE_FAMILY_LABELS = {
-  situational:  'Situationnel',
-  transversal:  'Transversal',
-  functional:   'Fonctionnel',
+  situational: 'Situationnel',
+  transversal: 'Transversal',
+  functional: 'Fonctionnel',
 };
 
 const formatDate = (iso) => {
@@ -49,15 +49,47 @@ export const DiagnosticHistoryScreen = () => {
   const navigate = useNavigate();
 
   // ── State ──
-  const [currentPage, setCurrentPage]   = useState(1);
-  const [historyData, setHistoryData]   = useState(null);
-  const [globalStats, setGlobalStats]   = useState(null);
-  const [isLoading, setIsLoading]       = useState(true);
-  const [isError, setIsError]           = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [historyData, setHistoryData] = useState(null);
+  const [globalStats, setGlobalStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [searchTerm, setSearchTerm]     = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
-  const [statusTab, setStatusTab]       = useState('completed'); // 'completed' | 'all' | 'started'
+  const [statusTab, setStatusTab] = useState('completed'); // 'completed' | 'all' | 'started'
+  const [downloadingRunId, setDownloadingRunId] = useState(null);
+
+  const handleDownloadPDF = async (item) => {
+    if (downloadingRunId) return;
+    setDownloadingRunId(item.diagnosticRunId);
+    try {
+      const res = await apiFetch(`/admin/dashboard/${item.userId}/historical`);
+      const list = Array.isArray(res) ? res : (res?.data ?? []);
+      const matched = list.find(r => r?.diagnostic_run_id === item.diagnosticRunId) ?? list[0] ?? null;
+      
+      if (!matched) {
+        throw new Error('Impossible de trouver les détails de ce diagnostic.');
+      }
+      
+      const { generateQAOnlyPDF } = await import('../../../utils/generateQAOnlyPDF.js');
+      generateQAOnlyPDF({
+        businessName: item.businessName,
+        userName: item.userName,
+        userEmail: item.userEmail,
+        userPhone: item.userPhone,
+        moduleCode: item.moduleCode,
+        startedAt: item.startedAt,
+        completedAt: item.completedAt,
+        questionResponses: matched.question_responses || [],
+      });
+    } catch (err) {
+      console.error('[DiagnosticHistoryScreen] PDF generation failed:', err);
+      alert(err?.message ?? 'Échec du téléchargement du PDF. Veuillez ré-essayer.');
+    } finally {
+      setDownloadingRunId(null);
+    }
+  };
 
   // ── Fetch global overview stats (matching Dashboard) ──
   const fetchGlobalStats = async () => {
@@ -99,62 +131,63 @@ export const DiagnosticHistoryScreen = () => {
   const rawItems = historyData?.data ?? [];
 
   const normalizedItems = rawItems.map((item, idx) => {
-    const rawStatus  = item?.completion_status ?? '[completion_status non disponible]';
-    const isCompleted = rawStatus === 'completed';
+    // Extraction utilisateur
+    const user = item?.user ?? null;
+    const userName = user?.full_name ?? null;
+    const userEmail = user?.email ?? null;
+    const userPhone = user?.phone_number ?? null;
+
+    const rawStatus = item?.completion_status ?? '[completion_status non disponible]';
+    // Rule: if the name of the person who filled out does not exist, it is considered in progress (en cours)
+    const isCompleted = rawStatus === 'completed' && Boolean(userName);
 
     // Extraction entreprise
-    const business     = item?.business ?? null;
+    const business = item?.business ?? null;
     const businessName = business?.business_name ?? null;
-    const sector       = business?.sector ?? null;
-    const subSector    = business?.sub_sector ?? null;
-
-    // Extraction utilisateur
-    const user        = item?.user ?? null;
-    const userName    = user?.full_name ?? null;
-    const userEmail   = user?.email ?? null;
-    const userPhone   = user?.phone_number ?? null;
+    const sector = business?.sector ?? null;
+    const subSector = business?.sub_sector ?? null;
 
     return {
-      diagnosticRunId:        item?.diagnostic_run_id        ?? `RUN-${idx}`,
-      userId:                 item?.user_id                   ?? null,
-      businessId:             item?.business_id               ?? null,
+      diagnosticRunId: item?.diagnostic_run_id ?? `RUN-${idx}`,
+      userId: item?.user_id ?? null,
+      businessId: item?.business_id ?? null,
       businessName,
       sector,
       subSector,
       userName,
       userEmail,
       userPhone,
-      moduleCode:             item?.module_code               ?? '[module_code non disponible]',
-      moduleFamily:           item?.module_family             ?? '[module_family non disponible]',
-      moduleFamilyLabel:      MODULE_FAMILY_LABELS[item?.module_family] ?? item?.module_family ?? '—',
-      completionStatus:       rawStatus,
-      statusLabel:            isCompleted ? 'Terminé' : 'En cours',
+      moduleCode: item?.module_code ?? '[module_code non disponible]',
+      moduleFamily: item?.module_family ?? '[module_family non disponible]',
+      moduleFamilyLabel: MODULE_FAMILY_LABELS[item?.module_family] ?? item?.module_family ?? '—',
+      completionStatus: rawStatus,
+      statusLabel: isCompleted ? 'Terminé' : 'En cours',
       isCompleted,
-      startedAt:              formatDate(item?.started_at),
-      completedAt:            item?.completed_at ? formatDate(item.completed_at) : null,
-      questionCountExpected:  item?.question_count_expected   ?? 0,
-      questionCountAnswered:  item?.question_count_answered   ?? 0,
-      isRecommended:          Boolean(item?.is_recommended_module),
-      isOverride:             Boolean(item?.is_user_override),
-      originalItem:           item,
+      startedAt: formatDate(item?.started_at),
+      completedAt: item?.completed_at ? formatDate(item.completed_at) : null,
+      questionCountExpected: item?.question_count_expected ?? 0,
+      questionCountAnswered: item?.question_count_answered ?? 0,
+      isRecommended: Boolean(item?.is_recommended_module),
+      isOverride: Boolean(item?.is_user_override),
+      originalItem: item,
     };
   });
 
   // ── Stats sur la page courante (pour les onglets de filtres de la liste) ──
-  const totalOnPage     = normalizedItems.length;
+  const totalOnPage = normalizedItems.length;
   const completedOnPage = normalizedItems.filter(i => i.isCompleted).length;
-  const startedOnPage   = totalOnPage - completedOnPage;
+  const startedOnPage = totalOnPage - completedOnPage;
 
   // ── Stats globales de l'application (repli sur calcul de la page si non disponible) ──
-  const globalDiags        = globalStats?.diagnostics;
-  const hasGlobalDiags     = Boolean(globalDiags && typeof globalDiags.started === 'number');
+  const globalDiags = globalStats?.diagnostics;
+  const hasGlobalDiags = Boolean(globalDiags && typeof globalDiags.started === 'number');
 
-  const totalDiagsCount    = hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length);
-  const completedCount     = hasGlobalDiags ? globalDiags.completed : completedOnPage;
-  const startedCount       = hasGlobalDiags
+  const totalDiagsCount = hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length);
+  const completedCount = hasGlobalDiags ? globalDiags.completed : completedOnPage;
+  const startedCount = hasGlobalDiags
     ? (globalDiags.abandoned ?? Math.max(0, totalDiagsCount - completedCount))
     : startedOnPage;
-  const completionRate     = hasGlobalDiags
+  const completionRate = hasGlobalDiags
     ? (globalDiags.completion_rate ?? (totalDiagsCount > 0 ? Math.round((completedCount / totalDiagsCount) * 100) : 0))
     : (totalOnPage > 0 ? Math.round((completedOnPage / totalOnPage) * 100) : 0);
 
@@ -164,28 +197,28 @@ export const DiagnosticHistoryScreen = () => {
     const matchSearch = !term || (
       item.moduleCode.toLowerCase().includes(term) ||
       (item.businessName && item.businessName.toLowerCase().includes(term)) ||
-      (item.userName     && item.userName.toLowerCase().includes(term)) ||
-      (item.userEmail    && item.userEmail.toLowerCase().includes(term)) ||
-      (item.userPhone    && item.userPhone.toLowerCase().includes(term)) ||
-      (item.businessId   && item.businessId.toLowerCase().includes(term)) ||
-      (item.userId       && item.userId.toLowerCase().includes(term))
+      (item.userName && item.userName.toLowerCase().includes(term)) ||
+      (item.userEmail && item.userEmail.toLowerCase().includes(term)) ||
+      (item.userPhone && item.userPhone.toLowerCase().includes(term)) ||
+      (item.businessId && item.businessId.toLowerCase().includes(term)) ||
+      (item.userId && item.userId.toLowerCase().includes(term))
     );
     const matchModule = !moduleFilter || item.moduleCode === moduleFilter;
-    
+
     let matchTab = true;
     if (statusTab === 'completed') matchTab = item.isCompleted;
-    if (statusTab === 'started')   matchTab = !item.isCompleted;
+    if (statusTab === 'started') matchTab = !item.isCompleted;
 
     return matchSearch && matchModule && matchTab;
   });
 
   const paginationInfo = {
     currentPage: historyData?.current_page ?? 1,
-    lastPage:    historyData?.last_page    ?? 1,
-    total:       historyData?.total        ?? 0,
+    lastPage: historyData?.last_page ?? 1,
+    total: historyData?.total ?? 0,
   };
 
-  const hasItems  = !isLoading && !isError && normalizedItems.length > 0;
+  const hasItems = !isLoading && !isError && normalizedItems.length > 0;
   const showEmpty = !isLoading && !isError && normalizedItems.length === 0;
 
   const uniqueModules = [...new Set(rawItems.map(i => i?.module_code).filter(Boolean))].sort();
@@ -194,11 +227,11 @@ export const DiagnosticHistoryScreen = () => {
   const handleRowClick = (item) => {
     navigate(`/admin/diagnostics/${item.diagnosticRunId}`, {
       state: {
-        run:          item.originalItem,
-        userId:       item.userId,
+        run: item.originalItem,
+        userId: item.userId,
         businessName: item.businessName,
-        userName:     item.userName,
-        userEmail:    item.userEmail,
+        userName: item.userName,
+        userEmail: item.userEmail,
       },
     });
   };
@@ -389,8 +422,7 @@ export const DiagnosticHistoryScreen = () => {
                   <th><Mail size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Email / Téléphone</th>
                   <th><Calendar size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Date</th>
                   <th><ClipboardList size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Module</th>
-                  <th>Statut</th>
-                  <th style={{ textAlign: 'right' }}>Détail</th>
+                  <th style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -475,30 +507,39 @@ export const DiagnosticHistoryScreen = () => {
                       </div>
                     </td>
 
-                    {/* Statut */}
-                    <td>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '4px',
-                        fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px',
-                        borderRadius: '20px', textTransform: 'uppercase',
-                        background: item.isCompleted ? '#DCFCE7' : '#FEF3C7',
-                        color: item.isCompleted ? '#166534' : '#92400E',
-                      }}>
-                        {item.isCompleted ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                        {item.statusLabel}
-                      </span>
-                    </td>
-
                     {/* Action */}
                     <td style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleRowClick(item)}
-                        className="btn btn-ghost btn-sm"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--brand-blue, #1A9DB8)' }}
-                        title="Voir les réponses"
-                      >
-                        <ExternalLink size={14} /> Voir
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => handleRowClick(item)}
+                          className="btn btn-ghost btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--brand-blue, #1A9DB8)' }}
+                          title="Voir les réponses"
+                        >
+                          <ExternalLink size={14} /> Voir
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/diagnostics/${item.diagnosticRunId}/report`, {
+                              state: {
+                                run: item.originalItem || item,
+                                userId: item.userId,
+                                userName: item.userName,
+                                userEmail: item.userEmail,
+                                businessName: item.businessName,
+                              }
+                            });
+                          }}
+                          className="btn btn-ghost btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#10B981' }}
+                          title="Voir le rapport et télécharger en PDF"
+                        >
+                          <FileText size={14} />
+                          PDF
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

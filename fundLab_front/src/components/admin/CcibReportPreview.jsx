@@ -14,6 +14,13 @@ import logoCcib from '../../assets/logo_ccib.png';
 import logoFundlab from '../../assets/logo_fundlab.png';
 
 export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
+  const formatPct = (val) => {
+    if (val === null || val === undefined) return '0';
+    const num = Number(val);
+    if (isNaN(num)) return '0';
+    return num % 1 === 0 ? num.toString() : num.toFixed(1);
+  };
+
   // ── Normalization of API Data (Rule 9) ──
   const kpiPmeCount = reportData?.totalPme ?? 0;
   const kpiRdvCount = reportData?.rdvCount ?? 0;
@@ -98,9 +105,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
             </div>
             <div className="ccib-kpi-card">
               <div className="ccib-kpi-icon-wrap"><Users size={20} /></div>
-              <div className="ccib-kpi-value">
-                {kpiRdvCount} <span className="ccib-kpi-sub">({kpiRdvPct}%)</span>
-              </div>
+              <div className="ccib-kpi-value">{kpiRdvCount}</div>
               <div className="ccib-kpi-label">ENTREPRISES AVEC RDV EXPERT</div>
             </div>
             <div className="ccib-kpi-card">
@@ -161,24 +166,37 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                 {/* SVG Donut Chart */}
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '8px 0' }}>
                   <svg viewBox="0 0 100 100" width="110" height="110">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#DC2626" strokeWidth="18" strokeDasharray={`${maturityData.risque * 2.38} 238`} transform="rotate(-90 50 50)" />
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#F59E0B" strokeWidth="18" strokeDasharray={`${maturityData.moyen * 2.38} 238`} strokeDashoffset={`-${maturityData.risque * 2.38}`} transform="rotate(-90 50 50)" />
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#007A3D" strokeWidth="18" strokeDasharray={`${maturityData.stable * 2.38} 238`} strokeDashoffset={`-${(maturityData.risque + maturityData.moyen) * 2.38}`} transform="rotate(-90 50 50)" />
+                    {/* Critique / Risque (Red) */}
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#DC2626" strokeWidth="18" strokeDasharray={`${(maturityData.risque ?? 0) * 2.38} 238`} transform="rotate(-90 50 50)" />
+                    
+                    {/* Fragile / Moyen (Yellow/Orange) */}
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#F59E0B" strokeWidth="18" strokeDasharray={`${(maturityData.moyen ?? 0) * 2.38} 238`} strokeDashoffset={`-${(maturityData.risque ?? 0) * 2.38}`} transform="rotate(-90 50 50)" />
+                    
+                    {/* Stable (Light Green) */}
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#10B981" strokeWidth="18" strokeDasharray={`${(maturityData.stable ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
+                    
+                    {/* Solide (Dark Green) */}
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#059669" strokeWidth="18" strokeDasharray={`${(maturityData.solide ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0) + (maturityData.stable ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
+                    
+                    {/* Avancé (Blue) */}
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#3B82F6" strokeWidth="18" strokeDasharray={`${(maturityData.avance ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0) + (maturityData.stable ?? 0) + (maturityData.solide ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
                   </svg>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', fontSize: '0.68rem', fontWeight: 700 }}>
-                  <span style={{ color: '#DC2626', display: 'flex', alignItems: 'center', gap: '4px' }}>■ Risque ({maturityData.risque}%)</span>
-                  <span style={{ color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '4px' }}>■ Moyen ({maturityData.moyen}%)</span>
-                  <span style={{ color: '#007A3D', display: 'flex', alignItems: 'center', gap: '4px' }}>■ Stable ({maturityData.stable}%)</span>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', fontSize: '0.66rem', fontWeight: 700 }}>
+                  <span style={{ color: '#DC2626', display: 'flex', alignItems: 'center', gap: '3px' }}>■ Critique ({formatPct(maturityData.risque)}%)</span>
+                  <span style={{ color: '#F59E0B', display: 'flex', alignItems: 'center', gap: '3px' }}>■ Fragile ({formatPct(maturityData.moyen)}%)</span>
+                  <span style={{ color: '#10B981', display: 'flex', alignItems: 'center', gap: '3px' }}>■ Stable ({formatPct(maturityData.stable)}%)</span>
+                  <span style={{ color: '#059669', display: 'flex', alignItems: 'center', gap: '3px' }}>■ Solide ({formatPct(maturityData.solide)}%)</span>
+                  <span style={{ color: '#3B82F6', display: 'flex', alignItems: 'center', gap: '3px' }}>■ Avancé ({formatPct(maturityData.avance)}%)</span>
                 </div>
               </div>
               <div className="ccib-commentary-box">
-                {maturityData.risque}% des entreprises présentent des vulnérabilités critiques nécessitant un accompagnement immédiat.
+                <strong>{formatPct(maturityData.risque)}%</strong> des entreprises présentent des vulnérabilités critiques nécessitant un accompagnement immédiat.
               </div>
             </div>
 
             {/* Section 3: Répartition Géographique */}
-            <div className="ccib-section-box">
+            <div className="ccib-section-box" style={{ gridColumn: 'span 2' }}>
               <div>
                 <div className="ccib-section-header">
                   <MapPin size={16} color="#007A3D" />
@@ -210,7 +228,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
             </div>
 
             {/* Section 4: Besoins par Type de Service */}
-            <div className="ccib-section-box">
+            {/* <div className="ccib-section-box">
               <div>
                 <div className="ccib-section-header">
                   <Target size={16} color="#007A3D" />
@@ -227,7 +245,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
               <div className="ccib-commentary-box">
                 Le besoin <strong>{topNeed.name}</strong> s'impose comme le levier de soutien n°1 ({topNeed.value}% de sollicitation).
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Section 5: Top 5 des Services Sollicités (Visualisation d'Impact) */}

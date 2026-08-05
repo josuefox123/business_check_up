@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Flag,
   Calendar,
+  Download,
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
 
@@ -40,6 +41,27 @@ const DIMENSION_COLORS = {
 const dimensionStyle = (dim) =>
   DIMENSION_COLORS[dim] ?? { bg: '#F8FAFC', text: '#64748B' };
 
+const normalizeToArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+
+  if (typeof value === 'string') {
+    if (value.startsWith('[') && value.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(Boolean);
+        }
+      } catch (e) { }
+    }
+    return value
+      .split(/[\n;|]+/)
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const DiagnosticRunDetailScreen = () => {
@@ -58,6 +80,8 @@ export const DiagnosticRunDetailScreen = () => {
 
   // detailData: richer data from /historical if available, falls back to passedRun
   const [enrichError, setEnrichError] = useState(false);
+
+  // Modal states for diagnostic results removed in favor of report route preview
 
   // Attempt silent enrichment from /historical — non-blocking, errors are silent
   const tryEnrichDetail = async () => {
@@ -143,25 +167,40 @@ export const DiagnosticRunDetailScreen = () => {
     <div className="admin-page animate-fade-up">
 
       {/* ── Back button + title ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={() => navigate('/admin/diagnostics')}
+            className="btn btn-ghost btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <ArrowLeft size={16} /> Retour
+          </button>
+          <div>
+            <h1 className="admin-page-title" style={{ margin: 0 }}>
+              Détail du diagnostic — {moduleCode}
+            </h1>
+          </div>
+        </div>
+
+        {/* Bouton Voir le résultat */}
         <button
-          onClick={() => navigate('/admin/diagnostics')}
-          className="btn btn-ghost btn-sm"
+          className="btn btn-teal btn-sm"
+          onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
+            state: {
+              run: run,
+              userId: passedUserId,
+              userName: userName,
+              userEmail: userEmail,
+              businessName: businessName,
+            }
+          })}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
         >
-          <ArrowLeft size={16} /> Retour
+          Voir le résultat
         </button>
-        <div>
-          <h1 className="admin-page-title" style={{ margin: 0 }}>
-            Détail du diagnostic — {moduleCode}
-          </h1>
-          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--slate-400)', fontFamily: 'monospace' }}>
-            ID : {runId_display}
-          </p>
-        </div>
       </div>
 
-      {/* ── Summary cards ── */}
       {/* ── Summary cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
 
@@ -372,6 +411,8 @@ export const DiagnosticRunDetailScreen = () => {
           </div>
         )}
       </div>
+
+      {/* Result modal removed */}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

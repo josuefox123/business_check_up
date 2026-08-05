@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
+import {
   LayoutDashboard, ClipboardList, Settings, Users, User,
   FileText, ChevronRight, Bell, Search, Menu, X, Layers, Calendar, Building2, FileCheck
 } from 'lucide-react';
@@ -40,9 +40,9 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
         <nav className="admin-nav">
           <span className="admin-nav-label">Navigation</span>
           {MENU.map((item) => (
-            <Link 
-              key={item.path} 
-              to={item.path} 
+            <Link
+              key={item.path}
+              to={item.path}
               className={`admin-nav-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={() => setSidebarOpen(false)}
             >
@@ -60,8 +60,8 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
 
         {/* Sidebar user profile footer */}
         <div className="admin-sidebar-bottom">
-          <button 
-            onClick={onLogout} 
+          <button
+            onClick={onLogout}
             className="admin-nav-item"
             style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(252,165,165,0.9)', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left' }}
           >
@@ -79,10 +79,10 @@ export const AdminLayout = ({ children, notifications, onMarkRead, onLogout }) =
             <button className="admin-mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
               <Menu size={22} />
             </button>
-            <div className="admin-search">
+            {/* <div className="admin-search">
               <Search size={16} color="var(--adm-muted)" />
               <input type="text" placeholder="Recherche globale..." disabled />
-            </div>
+            </div> */}
           </div>
           <div className="admin-topbar-right" style={{ position: 'relative' }}>
             <div className="admin-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#64748b' }}>
