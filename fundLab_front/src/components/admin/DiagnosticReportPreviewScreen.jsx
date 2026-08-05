@@ -86,14 +86,19 @@ export const DiagnosticReportPreviewScreen = () => {
       // Helper function to merge user and business details non-destructively
       const mergeDetails = (existing, incoming, rootUser = null) => {
         if (!incoming) return existing;
-        const merged = { ...(existing || incoming) };
+        if (!existing) return incoming;
+        const merged = { ...incoming, ...existing };
         const userObj = incoming.user || rootUser || existing?.user || null;
         if (userObj) {
-          merged.user = { ...(existing?.user || {}), ...userObj };
+          merged.user = { ...(incoming?.user || {}), ...(existing?.user || {}), ...userObj };
         }
         const businessObj = incoming.business || existing?.business || null;
         if (businessObj) {
-          merged.business = { ...(existing?.business || {}), ...businessObj };
+          merged.business = { ...(incoming?.business || {}), ...(existing?.business || {}), ...businessObj };
+        }
+        const resp = existing?.question_responses || incoming?.question_responses || existing?.responses || incoming?.responses || null;
+        if (resp) {
+          merged.question_responses = resp;
         }
         return merged;
       };
@@ -279,11 +284,64 @@ export const DiagnosticReportPreviewScreen = () => {
     };
   });
 
-  // Chunk responses for Page 2+ (10 cards per page)
-  const QA_ITEMS_PER_PAGE = 16;
+  // Helper to calculate card visual height in pixels
+  const getCardHeight = (resp) => {
+    const qLen = resp.questionText?.length || 0;
+    const aLen = resp.displayAnswer?.length || 0;
+    
+    // Estimate lines (average line lengths: question ~ 38 chars, answer ~ 34 chars in container width)
+    const qLines = Math.max(1, Math.ceil(qLen / 38));
+    const aLines = Math.max(1, Math.ceil(aLen / 34));
+    
+    // Base card height is 90px (which covers padding and 1-line question + 1-line answer)
+    let cardHeight = 90;
+    
+    if (qLines > 1) {
+      cardHeight += (qLines - 1) * 16;
+    }
+    if (aLines > 1) {
+      cardHeight += (aLines - 1) * 15;
+    }
+    
+    return cardHeight;
+  };
+
+  // Group cards into rows of 2 (since they render in a 2-column grid)
+  const qaRows = [];
+  for (let i = 0; i < normalizedResponses.length; i += 2) {
+    const card1 = normalizedResponses[i];
+    const card2 = normalizedResponses[i + 1] || null;
+    const h1 = getCardHeight(card1);
+    const h2 = card2 ? getCardHeight(card2) : 0;
+    const rowHeight = Math.max(h1, h2) + 12; // Height in pixels including grid gap (12px)
+    qaRows.push({
+      items: [card1, card2].filter(Boolean),
+      height: rowHeight
+    });
+  }
+
+  // Dynamic pagination based on row height in pixels
   const qaPages = [];
-  for (let i = 0; i < normalizedResponses.length; i += QA_ITEMS_PER_PAGE) {
-    qaPages.push(normalizedResponses.slice(i, i + QA_ITEMS_PER_PAGE));
+  let currentPageRows = [];
+  let currentPageHeight = 0;
+
+  qaRows.forEach((row) => {
+    // Page 2 has a smaller budget (810px) because of intro text. Page 3+ has 880px available.
+    const isFirstPage = qaPages.length === 0;
+    const maxPageHeight = isFirstPage ? 810 : 880;
+
+    if (currentPageHeight + row.height > maxPageHeight && currentPageRows.length > 0) {
+      qaPages.push(currentPageRows.flatMap(r => r.items));
+      currentPageRows = [row];
+      currentPageHeight = row.height;
+    } else {
+      currentPageRows.push(row);
+      currentPageHeight += row.height;
+    }
+  });
+
+  if (currentPageRows.length > 0) {
+    qaPages.push(currentPageRows.flatMap(r => r.items));
   }
   if (qaPages.length === 0) {
     qaPages.push([]);

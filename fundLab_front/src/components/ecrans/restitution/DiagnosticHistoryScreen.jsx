@@ -63,6 +63,9 @@ export const DiagnosticHistoryScreen = () => {
   const [moduleFilter, setModuleFilter] = useState('');
   const [statusTab, setStatusTab] = useState('completed'); // 'completed' | 'all' | 'started'
   const [downloadingRunId, setDownloadingRunId] = useState(null);
+  const [trueCompletedCount, setTrueCompletedCount] = useState(null);
+  const [trueStartedCount, setTrueStartedCount] = useState(null);
+  const [trueTotalCount, setTrueTotalCount] = useState(null);
 
   const handleDownloadPDF = async (item) => {
     if (downloadingRunId) return;
@@ -105,6 +108,54 @@ export const DiagnosticHistoryScreen = () => {
     }
   };
 
+  const fetchTrueGlobalStats = async () => {
+    try {
+      let allItems = [];
+      let page = 1;
+      let lastPage = 1;
+
+      const res = await apiFetch(`/admin/dashboard/diagnostics?page=1&per_page=100`).catch(() => null);
+      if (res) {
+        const list = res.data || [];
+        allItems = [...list];
+        lastPage = res.last_page ?? 1;
+
+        while (page < lastPage && page < 10) {
+          page++;
+          const nextRes = await apiFetch(`/admin/dashboard/diagnostics?page=${page}&per_page=100`).catch(() => null);
+          if (nextRes && Array.isArray(nextRes.data)) {
+            allItems = [...allItems, ...nextRes.data];
+          } else {
+            break;
+          }
+        }
+      }
+
+      if (allItems.length > 0) {
+        let completed = 0;
+        let started = 0;
+
+        allItems.forEach((item) => {
+          const userName = item?.user?.full_name ?? null;
+          const rawStatus = item?.completion_status ?? '';
+          const isCompleted = rawStatus === 'completed' && Boolean(userName);
+
+          if (isCompleted) {
+            completed++;
+          } else {
+            started++;
+          }
+        });
+
+        setTrueCompletedCount(completed);
+        setTrueStartedCount(started);
+        setTrueTotalCount(allItems.length);
+      }
+    } catch (err) {
+      console.error('[DiagnosticHistoryScreen] fetch true global stats error:', err);
+    }
+  };
+
   // ── Fetch paginated list ──
   const fetchDiagnostics = async (page = 1) => {
     setIsLoading(true);
@@ -129,6 +180,7 @@ export const DiagnosticHistoryScreen = () => {
 
   useEffect(() => {
     fetchGlobalStats();
+    fetchTrueGlobalStats();
   }, []);
 
   // ─── Normalization (Rule 9) ────────────────────────────────────────────────
@@ -186,14 +238,12 @@ export const DiagnosticHistoryScreen = () => {
   const globalDiags = globalStats?.diagnostics;
   const hasGlobalDiags = Boolean(globalDiags && typeof globalDiags.started === 'number');
 
-  const totalDiagsCount = hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length);
-  const completedCount = hasGlobalDiags ? globalDiags.completed : completedOnPage;
-  const startedCount = hasGlobalDiags
+  const totalDiagsCount = trueTotalCount !== null ? trueTotalCount : (hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length));
+  const completedCount = trueCompletedCount !== null ? trueCompletedCount : (hasGlobalDiags ? globalDiags.completed : completedOnPage);
+  const startedCount = trueStartedCount !== null ? trueStartedCount : (hasGlobalDiags
     ? (globalDiags.abandoned ?? Math.max(0, totalDiagsCount - completedCount))
-    : startedOnPage;
-  const completionRate = hasGlobalDiags
-    ? (globalDiags.completion_rate ?? (totalDiagsCount > 0 ? Math.round((completedCount / totalDiagsCount) * 100) : 0))
-    : (totalOnPage > 0 ? Math.round((completedOnPage / totalOnPage) * 100) : 0);
+    : startedOnPage);
+  const completionRate = totalDiagsCount > 0 ? Math.round((completedCount / totalDiagsCount) * 100) : 0;
 
   // ── Client-side filters ──
   const filteredItems = normalizedItems.filter(item => {

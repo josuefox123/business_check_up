@@ -91,14 +91,19 @@ export const DiagnosticRunDetailScreen = () => {
       // Helper function to merge user and business details non-destructively
       const mergeDetails = (existing, incoming, rootUser = null) => {
         if (!incoming) return existing;
-        const merged = { ...(existing || incoming) };
+        if (!existing) return incoming;
+        const merged = { ...incoming, ...existing };
         const userObj = incoming.user || rootUser || existing?.user || null;
         if (userObj) {
-          merged.user = { ...(existing?.user || {}), ...userObj };
+          merged.user = { ...(incoming?.user || {}), ...(existing?.user || {}), ...userObj };
         }
         const businessObj = incoming.business || existing?.business || null;
         if (businessObj) {
-          merged.business = { ...(existing?.business || {}), ...businessObj };
+          merged.business = { ...(incoming?.business || {}), ...(existing?.business || {}), ...businessObj };
+        }
+        const resp = existing?.question_responses || incoming?.question_responses || existing?.responses || incoming?.responses || null;
+        if (resp) {
+          merged.question_responses = resp;
         }
         return merged;
       };
