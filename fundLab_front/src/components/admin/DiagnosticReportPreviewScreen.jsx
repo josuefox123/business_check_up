@@ -83,30 +83,78 @@ export const DiagnosticReportPreviewScreen = () => {
 
       let fetchedDetail = resDetail?.data || resDetail || null;
 
+      // Helper function to merge user and business details non-destructively
+      const mergeDetails = (existing, incoming, rootUser = null) => {
+        if (!incoming) return existing;
+        const merged = { ...(existing || incoming) };
+        const userObj = incoming.user || rootUser || existing?.user || null;
+        if (userObj) {
+          merged.user = { ...(existing?.user || {}), ...userObj };
+        }
+        const businessObj = incoming.business || existing?.business || null;
+        if (businessObj) {
+          merged.business = { ...(existing?.business || {}), ...businessObj };
+        }
+        return merged;
+      };
+
       // Method A: Eager loading from historical list if we have a userId
-      const targetUserId = passedUserId || resResult?.user_id || resResult?.data?.user_id;
-      if (!fetchedDetail?.business && targetUserId) {
+      const queryParams = new URLSearchParams(window.location.search);
+      const queryUserId = queryParams.get('userId');
+      const targetUserId = passedUserId || queryUserId || resResult?.user_id || resResult?.data?.user_id;
+
+      if ((!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) && targetUserId) {
         const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
         const list = Array.isArray(resHist) ? resHist : (resHist?.data ?? []);
-        const matched = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
+        let matched = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
+
+        // Fallback A.1: Try diagnostics list filtered by user_id
+        if (!matched || !matched.user || !matched.user.full_name) {
+          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?user_id=${targetUserId}`).catch(() => null);
+          const listDiag = resDiagUser?.data || [];
+          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
+          if (matchedDiag) {
+            matched = mergeDetails(matched, matchedDiag);
+          }
+        }
+
+        // Fallback A.2: Try diagnostics list filtered by userId
+        if (!matched || !matched.user || !matched.user.full_name) {
+          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?userId=${targetUserId}`).catch(() => null);
+          const listDiag = resDiagUser?.data || [];
+          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
+          if (matchedDiag) {
+            matched = mergeDetails(matched, matchedDiag);
+          }
+        }
+
         if (matched) {
-          fetchedDetail = matched;
+          fetchedDetail = mergeDetails(fetchedDetail, matched, resHist?.user || resHist?.data?.user);
+        }
+      }
+
+      // Method C: Direct single admin diagnostic detail fetch
+      if (!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) {
+        const resAdminDetail = await apiFetch(`/admin/dashboard/diagnostics/${runId}`).catch(() => null);
+        const adminData = resAdminDetail?.data || resAdminDetail;
+        if (adminData) {
+          fetchedDetail = mergeDetails(fetchedDetail, adminData);
         }
       }
 
       // Method B: Search fallback in global diagnostics list (useful on refresh or direct URL access)
-      if (!fetchedDetail?.business) {
+      if (!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) {
         const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
         const list = resDiag?.data || [];
         const matched = list.find(r => r?.diagnostic_run_id === runId);
         if (matched) {
-          fetchedDetail = matched;
+          fetchedDetail = mergeDetails(fetchedDetail, matched, resDiag?.user);
           if (matched.user_id) {
             const resHist = await apiFetch(`/admin/dashboard/${matched.user_id}/historical`).catch(() => null);
             const histList = Array.isArray(resHist) ? resHist : (resHist?.data ?? []);
             const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
             if (histMatched) {
-              fetchedDetail = histMatched;
+              fetchedDetail = mergeDetails(fetchedDetail, histMatched, resHist?.user || resHist?.data?.user);
             }
           }
         }
@@ -147,9 +195,9 @@ export const DiagnosticReportPreviewScreen = () => {
     : '[credibilized_score_0_100 non disponible]';
 
   // Lists (Rule 7 explicit fallbacks)
-  const pointsAppui = normalizeToArray(restData?.typical_strengths || restData?.strengths || scoring?.dominant_strength);
-  const fragilitesList = normalizeToArray(restData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
-  const prioritiesList = normalizeToArray(restData?.priorities || scoring?.priorities);
+  const pointsAppui = normalizeToArray(restData?.typical_strengths || resultData?.typical_strengths || restData?.strengths || scoring?.dominant_strength);
+  const fragilitesList = normalizeToArray(restData?.typical_fragilities || resultData?.typical_fragilities || restData?.weaknesses || scoring?.dominant_weakness);
+  const prioritiesList = normalizeToArray(restData?.priorities || resultData?.priorities || scoring?.priorities);
 
   // Detail variables
   const run = detailData || {};
@@ -160,12 +208,25 @@ export const DiagnosticReportPreviewScreen = () => {
   const sector = business?.sector ?? '[sector non disponible]';
   const employeeCountLabel = business?.employee_count_range ?? run?.employee_count_range ?? '[employee_count_range non disponible]';
   const diagnosticDate = formatDate(run?.completed_at || run?.started_at);
+  const creationYear = business?.year_created ?? business?.creation_year ?? '[year_created non disponible]';
 
-  const moduleCode = run?.module_code ?? '[module_code non disponible]';
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const rawUserName = user?.full_name || passedState.userName || '';
+  const rawUserEmail = user?.email || passedState.userEmail || '';
+  const rawUserPhone = user?.phone_number || run?.user?.phone_number || run?.user?.phone || passedState.userPhone || '';
+
+  const userName = rawUserName || '[Non disponible]';
+  const userEmail = rawUserEmail || '[Non disponible]';
+  const userPhone = rawUserPhone || '[Non disponible]';
+  const hasContactInfo = true;
+
+  const moduleCode = run?.module_code ?? resultData?.module_code ?? '[module_code non disponible]';
+  const moduleName = resultData?.module_name ?? run?.module_name ?? '[module_name non disponible]';
 
   // Level & Status text (Rule 7 explicit fallbacks)
   const levelLabel = scoring?.band_label ?? (score < 40 ? 'Point de vigilance prioritaire' : (score >= 75 ? 'Solide' : 'Performance Moyenne'));
-  const statusText = restData?.interpretation ?? (score < 40 ? 'Votre projet est à un stade initial nécessitant une restructuration majeure. Les fondamentaux actuels ne permettent pas de garantir la viabilité ou d’attirer des partenaires avec confiance.' : 'Votre structure dispose de bases saines mais nécessite des ajustements pour consolider ses acquis.');
+  const statusText = restData?.summary ?? restData?.interpretation_text ?? restData?.interpretation ?? (score < 40 ? 'Interprètation non disponible' : 'Interprètation non disponible.');
   const isDanger = score < 40 || scoring?.band_code === 'critical' || scoring?.band_code === 'vigilance';
 
   // Priorities mapping (Rule 8: no rotating icons, only single semantic ClipboardList icon)
@@ -352,7 +413,7 @@ export const DiagnosticReportPreviewScreen = () => {
             <h1 className="report-page-title-main" style={{ textAlign: 'center' }}>Rapport de Diagnostic Stratégique</h1>
 
             {/* Profile table box */}
-            <div className="report-profile-box">
+            <div className="report-profile-box" style={hasContactInfo ? { gridTemplateRows: 'auto auto', rowGap: '12px' } : {}}>
               <div className="report-profile-col">
                 <span className="report-profile-label">ENTREPRISE</span>
                 <span className="report-profile-value" title={businessName}>{businessName}</span>
@@ -362,13 +423,31 @@ export const DiagnosticReportPreviewScreen = () => {
                 <span className="report-profile-value" title={sector}>{sector}</span>
               </div>
               <div className="report-profile-col">
-                <span className="report-profile-label">ÉVALUATION</span>
+                <span className="report-profile-label">EQUIPE</span>
                 <span className="report-profile-value">{employeeCountLabel}</span>
               </div>
               <div className="report-profile-col">
-                <span className="report-profile-label">DATE</span>
-                <span className="report-profile-value">{diagnosticDate}</span>
+                <span className="report-profile-label">ANNÉE DE CRÉATION</span>
+                <span className="report-profile-value">{creationYear}</span>
               </div>
+
+              {/* Row 2: Declarant, email and phone */}
+              {hasContactInfo && (
+                <>
+                  <div className="report-profile-col" style={{ gridColumn: 'span 2', borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                    <span className="report-profile-label">DÉCLARANT / CONTACT</span>
+                    <span className="report-profile-value" title={userName}>{userName}</span>
+                  </div>
+                  <div className="report-profile-col" style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                    <span className="report-profile-label">E-MAIL</span>
+                    <span className="report-profile-value" title={userEmail}>{userEmail}</span>
+                  </div>
+                  <div className="report-profile-col" style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                    <span className="report-profile-label">TÉLÉPHONE</span>
+                    <span className="report-profile-value" title={userPhone}>{userPhone}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Performance and description row */}
@@ -398,9 +477,9 @@ export const DiagnosticReportPreviewScreen = () => {
               {/* Right col: Description */}
               <div className="report-right-col">
                 <span className="report-right-title">Résumé Diagnostic</span>
-                <div className={`report-alert-box ${isDanger ? 'danger' : ''}`}>
+                {/* <div className={`report-alert-box ${isDanger ? 'danger' : ''}`}>
                   <span>Niveau obtenu : {levelLabel}</span>
-                </div>
+                </div> */}
                 <p className="report-description-text">{statusText}</p>
               </div>
             </div>

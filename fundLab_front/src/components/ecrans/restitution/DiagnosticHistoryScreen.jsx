@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ClipboardList,
   Search,
@@ -48,6 +48,10 @@ const formatDate = (iso) => {
 export const DiagnosticHistoryScreen = () => {
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const passedState = location.state || {};
+  const initialSearch = passedState.searchTerm || '';
+
   // ── State ──
   const [currentPage, setCurrentPage] = useState(1);
   const [historyData, setHistoryData] = useState(null);
@@ -55,7 +59,7 @@ export const DiagnosticHistoryScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [moduleFilter, setModuleFilter] = useState('');
   const [statusTab, setStatusTab] = useState('completed'); // 'completed' | 'all' | 'started'
   const [downloadingRunId, setDownloadingRunId] = useState(null);
@@ -149,8 +153,8 @@ export const DiagnosticHistoryScreen = () => {
 
     return {
       diagnosticRunId: item?.diagnostic_run_id ?? `RUN-${idx}`,
-      userId: item?.user_id ?? null,
-      businessId: item?.business_id ?? null,
+      userId: item?.user_id ?? item?.user?.id ?? item?.user?.user_id ?? null,
+      businessId: item?.business_id ?? item?.business?.id ?? item?.business?.business_id ?? null,
       businessName,
       sector,
       subSector,
@@ -510,35 +514,27 @@ export const DiagnosticHistoryScreen = () => {
                     {/* Action */}
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => handleRowClick(item)}
+                        <a
+                          href={`/admin/diagnostics/${item.diagnosticRunId}?userId=${item.userId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-ghost btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--brand-blue, #1A9DB8)' }}
-                          title="Voir les réponses"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--brand-blue, #1A9DB8)', textDecoration: 'none' }}
+                          title="Voir les réponses (nouvel onglet)"
                         >
                           <ExternalLink size={14} /> Voir
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/admin/diagnostics/${item.diagnosticRunId}/report`, {
-                              state: {
-                                run: item.originalItem || item,
-                                userId: item.userId,
-                                userName: item.userName,
-                                userEmail: item.userEmail,
-                                businessName: item.businessName,
-                              }
-                            });
-                          }}
+                        </a>
+                        <a
+                          href={`/admin/diagnostics/${item.diagnosticRunId}/report?userId=${item.userId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-ghost btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#10B981' }}
-                          title="Voir le rapport et télécharger en PDF"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#10B981', textDecoration: 'none' }}
+                          title="Voir le rapport et télécharger en PDF (nouvel onglet)"
                         >
                           <FileText size={14} />
                           PDF
-                        </button>
+                        </a>
                       </div>
                     </td>
                   </tr>

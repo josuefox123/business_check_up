@@ -69,14 +69,19 @@
 }
 
 .report-confidential-badge {
-  border: 1px solid #be123c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #be123c;
   color: #be123c;
   font-size: 0.65rem;
   font-weight: 800;
-  padding: 2px 8px;
+  padding: 3px 10px;
+  line-height: 1;
   border-radius: 4px;
   letter-spacing: 0.5px;
   background: transparent;
+  white-space: nowrap;
 }
 
 .report-page-title-main {
@@ -391,13 +396,18 @@
 }
 
 .report-qa-pill {
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-word;
+  white-space: normal;
   border: 1px solid #1d4ed8;
   color: #1d4ed8;
   font-size: 0.68rem;
   font-weight: 750;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
   background: transparent;
+  box-sizing: border-box;
 }
 
 /* Printing styles */

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Building2, Search, Info, X, MapPin, Phone, Mail, User, CheckCircle2, XCircle, RotateCcw, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, Search, Info, X, MapPin, Phone, Mail, User, CheckCircle2, XCircle, RotateCcw, Download, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
 import { EntrepriseService } from '../../services/EntrepriseService.js';
 import { exportToExcel } from '../../utils/exportToExcel.js';
 
@@ -118,6 +119,7 @@ const InfoPopover = ({ pme, onClose }) => {
 };
 
 export const PmeModule = () => {
+  const navigate = useNavigate();
   const [pmes, setPmes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
@@ -381,6 +383,22 @@ export const PmeModule = () => {
                           )}
                         </td>
                         <td style={{ textAlign: 'right', position: 'relative' }}>
+                          <button
+                            onClick={() => navigate('/admin/diagnostics', { state: { searchTerm: name } })}
+                            style={{
+                              background: 'transparent',
+                              border: '1px solid var(--adm-border, #E2E8F0)',
+                              color: '#10B981',
+                              borderRadius: '8px', padding: '5px 8px',
+                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                              fontSize: '0.75rem', fontWeight: 600,
+                              marginRight: '6px',
+                              transition: 'all 0.15s ease',
+                            }}
+                            title="Voir les diagnostics de cette PME"
+                          >
+                            <ClipboardList size={14} /> Diagnostics
+                          </button>
                           <button
                             onClick={() => setOpenPopoverId(isOpen ? null : pmeId)}
                             style={{

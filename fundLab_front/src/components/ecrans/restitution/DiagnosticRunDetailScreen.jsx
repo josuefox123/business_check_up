@@ -76,7 +76,9 @@ export const DiagnosticRunDetailScreen = () => {
   const [detailData, setDetailData] = useState(passedState.detail || null);
   // Data passed via navigation state — always available from the list
   const passedRun = passedState.run ?? null;
-  const passedUserId = passedState.userId ?? passedRun?.user_id ?? null;
+  const queryParams = new URLSearchParams(window.location.search);
+  const queryUserId = queryParams.get('userId');
+  const passedUserId = passedState.userId ?? queryUserId ?? passedRun?.user_id ?? null;
 
   // detailData: richer data from /historical if available, falls back to passedRun
   const [enrichError, setEnrichError] = useState(false);
@@ -85,12 +87,86 @@ export const DiagnosticRunDetailScreen = () => {
 
   // Attempt silent enrichment from /historical — non-blocking, errors are silent
   const tryEnrichDetail = async () => {
-    if (!passedUserId) return;
     try {
-      const res = await apiFetch(`/admin/dashboard/${passedUserId}/historical`);
-      const list = Array.isArray(res) ? res : (res?.data ?? []);
-      const matched = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
-      if (matched) setDetailData(matched);
+      // Helper function to merge user and business details non-destructively
+      const mergeDetails = (existing, incoming, rootUser = null) => {
+        if (!incoming) return existing;
+        const merged = { ...(existing || incoming) };
+        const userObj = incoming.user || rootUser || existing?.user || null;
+        if (userObj) {
+          merged.user = { ...(existing?.user || {}), ...userObj };
+        }
+        const businessObj = incoming.business || existing?.business || null;
+        if (businessObj) {
+          merged.business = { ...(existing?.business || {}), ...businessObj };
+        }
+        return merged;
+      };
+
+      let matched = detailData || null;
+
+      if (passedUserId) {
+        const res = await apiFetch(`/admin/dashboard/${passedUserId}/historical`).catch(() => null);
+        const list = Array.isArray(res) ? res : (res?.data ?? []);
+        let matchedHist = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
+
+        // Fallback A.1: Try diagnostics list filtered by user_id
+        if (!matchedHist || !matchedHist.user || !matchedHist.user.full_name) {
+          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?user_id=${passedUserId}`).catch(() => null);
+          const listDiag = resDiagUser?.data || [];
+          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
+          if (matchedDiag) {
+            matchedHist = mergeDetails(matchedHist, matchedDiag);
+          }
+        }
+
+        // Fallback A.2: Try diagnostics list filtered by userId
+        if (!matchedHist || !matchedHist.user || !matchedHist.user.full_name) {
+          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?userId=${passedUserId}`).catch(() => null);
+          const listDiag = resDiagUser?.data || [];
+          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
+          if (matchedDiag) {
+            matchedHist = mergeDetails(matchedHist, matchedDiag);
+          }
+        }
+
+        if (matchedHist) {
+          matched = mergeDetails(matched, matchedHist, res?.user || res?.data?.user);
+        }
+      }
+
+      // Method C: Direct single admin diagnostic detail fetch
+      if (!matched || !matched.user || !matched.user.full_name) {
+        const resAdminDetail = await apiFetch(`/admin/dashboard/diagnostics/${runId}`).catch(() => null);
+        const adminData = resAdminDetail?.data || resAdminDetail;
+        if (adminData) {
+          matched = mergeDetails(matched, adminData);
+        }
+      }
+
+      // Method B fallback if not matched or missing user information
+      if (!matched || !matched.user || !matched.user.full_name) {
+        const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
+        const list = resDiag?.data || [];
+        const found = list.find(r => r?.diagnostic_run_id === runId);
+        if (found) {
+          matched = mergeDetails(matched, found, resDiag?.user);
+          
+          const targetUserId = found.user_id || passedUserId;
+          if (targetUserId) {
+            const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
+            const histList = Array.isArray(resHist) ? resHist : (resHist?.data ?? []);
+            const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
+            if (histMatched) {
+              matched = mergeDetails(matched, histMatched, resHist?.user || resHist?.data?.user);
+            }
+          }
+        }
+      }
+
+      if (matched) {
+        setDetailData(matched);
+      }
     } catch {
       // Silent failure — detail page still renders from passedRun data
       setEnrichError(true);
@@ -121,8 +197,9 @@ export const DiagnosticRunDetailScreen = () => {
   const businessRegion = business?.region ?? null;
   const businessCountry = business?.country ?? null;
 
-  const userName = passedState.userName ?? null;
-  const userEmail = passedState.userEmail ?? null;
+  const userName = run?.user?.full_name ?? passedState.userName ?? '[user.full_name non disponible]';
+  const userEmail = run?.user?.email ?? passedState.userEmail ?? '[user.email non disponible]';
+  const userPhone = run?.user?.phone_number ?? run?.user?.phone ?? passedState.userPhone ?? '[Non disponible]';
 
   // Question responses normalization
   const rawResponses = detailData?.question_responses || [];
@@ -192,6 +269,7 @@ export const DiagnosticRunDetailScreen = () => {
               userId: passedUserId,
               userName: userName,
               userEmail: userEmail,
+              userPhone: run?.user?.phone_number || run?.user?.phone || null,
               businessName: businessName,
             }
           })}
