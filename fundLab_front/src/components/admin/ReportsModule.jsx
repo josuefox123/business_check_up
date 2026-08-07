@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FileText,
   Search,
@@ -7,16 +7,19 @@ import {
   ChevronLeft,
   ChevronRight,
   Send,
-  EyeOff,
   CheckCircle2,
   Building2,
   User,
   Mail,
-  Calendar,
   ClipboardList,
   RefreshCw,
   Check,
-  AlertCircle
+  AlertCircle,
+  SlidersHorizontal,
+  ArrowUpAZ,
+  ArrowDownAZ,
+  MailCheck,
+  Clock,
 } from 'lucide-react';
 import { apiFetch } from '../../api/config.js';
 
@@ -37,6 +40,48 @@ const formatDate = (iso) => {
   });
 };
 
+// Modes de tri disponibles
+const SORT_MODES = [
+  { key: 'contacts_first', label: 'Contacts en premier', icon: MailCheck },
+  { key: 'name_asc', label: 'Nom A → Z', icon: ArrowUpAZ },
+  { key: 'name_desc', label: 'Nom Z → A', icon: ArrowDownAZ },
+  { key: 'sent_first', label: 'Envoyés en premier', icon: CheckCircle2 },
+  { key: 'pending_first', label: 'En attente en premier', icon: Clock },
+];
+
+const sortItems = (items, mode) => {
+  const arr = [...items];
+  switch (mode) {
+    case 'name_asc':
+      return arr.sort((a, b) =>
+        (a.businessName ?? '').localeCompare(b.businessName ?? '', 'fr', { sensitivity: 'base' })
+      );
+    case 'name_desc':
+      return arr.sort((a, b) =>
+        (b.businessName ?? '').localeCompare(a.businessName ?? '', 'fr', { sensitivity: 'base' })
+      );
+    case 'sent_first':
+      return arr.sort((a, b) => {
+        const aSent = a.reportStatus === 'sent' ? 0 : 1;
+        const bSent = b.reportStatus === 'sent' ? 0 : 1;
+        return aSent - bSent;
+      });
+    case 'pending_first':
+      return arr.sort((a, b) => {
+        const aSent = a.reportStatus === 'sent' ? 1 : 0;
+        const bSent = b.reportStatus === 'sent' ? 1 : 0;
+        return aSent - bSent;
+      });
+    case 'contacts_first':
+    default:
+      return arr.sort((a, b) => {
+        const aHas = Boolean(a.userEmail || a.userPhone) ? 0 : 1;
+        const bHas = Boolean(b.userEmail || b.userPhone) ? 0 : 1;
+        return aHas - bHas;
+      });
+  }
+};
+
 export const ReportsModule = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [reportsData, setReportsData] = useState(null);
@@ -45,8 +90,24 @@ export const ReportsModule = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Sort / filter state — tri par défaut : contacts en premier
+  const [sortMode, setSortMode] = useState('contacts_first');
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const filterPanelRef = useRef(null);
+
   // Toast / notification state per action: { [diagnosticRunId]: { status: 'sending' | 'success' | 'error', message: string } }
   const [actionState, setActionState] = useState({});
+
+  // Fermer le panneau si clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target)) {
+        setShowFilterPanel(false);
+      }
+    };
+    if (showFilterPanel) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFilterPanel]);
 
   const fetchCompletedDiagnostics = async (page = 1) => {
     setIsLoading(true);
@@ -108,12 +169,14 @@ export const ReportsModule = () => {
         moduleFamily: item?.module_family ?? '[module_family non disponible]',
         moduleFamilyLabel: MODULE_FAMILY_LABELS[item?.module_family] ?? item?.module_family ?? '—',
         completedAt: formatDate(item?.completed_at || item?.updated_at || item?.started_at),
+        reportStatus: item?.report_status ?? '[report_status non disponible]',
+        reportSentAt: item?.report_sent_at ?? null,
         originalItem: item,
       };
     });
 
   // Client-side search filtering
-  const filteredItems = completedItems.filter(item => {
+  const searchFiltered = completedItems.filter(item => {
     const term = searchTerm.toLowerCase();
     if (!term) return true;
     return (
@@ -126,11 +189,16 @@ export const ReportsModule = () => {
     );
   });
 
+  // Apply sort
+  const filteredItems = sortItems(searchFiltered, sortMode);
+
   const paginationInfo = {
     currentPage: reportsData?.current_page ?? 1,
     lastPage: reportsData?.last_page ?? 1,
     total: reportsData?.total ?? 0,
   };
+
+  const activeSortLabel = SORT_MODES.find(m => m.key === sortMode)?.label ?? '—';
 
   // ─── Relancer l'envoi du rapport ──────────────────────────────────────────
   const handleResendReport = async (item) => {
@@ -144,7 +212,7 @@ export const ReportsModule = () => {
       // Endpoint dynamique : GET /diagnostics/{diagnosticRunId}/details
       const res = await apiFetch(`/diagnostics/${runId}/details`);
       console.log('[ReportsModule] Resend response:', res);
-      
+
       setActionState(prev => ({
         ...prev,
         [runId]: { status: 'success', message: 'Rapport réexpédié avec succès !' }
@@ -178,16 +246,17 @@ export const ReportsModule = () => {
             Gestion et relance de l'envoi dynamique des rapports pour les diagnostics complétés et identifiés.
           </p>
         </div>
-        {!isLoading && (
+        {/* {!isLoading && (
           <span style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--brand-blue, #1A9DB8)', background: 'rgba(26,157,184,0.08)', padding: '6px 14px', borderRadius: '8px' }}>
             {filteredItems.length} rapport{filteredItems.length > 1 ? 's' : ''} PME identifiée{filteredItems.length > 1 ? 's' : ''}
           </span>
-        )}
+        )} */}
       </div>
 
-      {/* Bar de recherche */}
+      {/* Barre de recherche + bouton filtre */}
       {!isError && (
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px' }}>
+          {/* Recherche */}
           <div style={{ position: 'relative', flex: '1', maxWidth: '380px' }}>
             <Search size={15} color="var(--slate-400)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
@@ -198,6 +267,104 @@ export const ReportsModule = () => {
               style={{ width: '100%', paddingLeft: '34px', height: '38px', borderRadius: '10px', border: '1px solid var(--adm-border)', outline: 'none', fontSize: '0.85rem', background: 'var(--adm-bg)', color: 'var(--adm-text)', boxSizing: 'border-box' }}
             />
           </div>
+
+          {/* Bouton filtre entonnoir */}
+          <div style={{ position: 'relative' }} ref={filterPanelRef}>
+            <button
+              id="reports-filter-btn"
+              onClick={() => setShowFilterPanel(v => !v)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: '38px',
+                padding: '0 14px',
+                borderRadius: '10px',
+                border: `1.5px solid ${showFilterPanel ? '#1A9DB8' : 'var(--adm-border)'}`,
+                background: showFilterPanel ? 'rgba(26,157,184,0.07)' : 'var(--adm-bg)',
+                color: showFilterPanel ? '#1A9DB8' : 'var(--adm-text)',
+                cursor: 'pointer',
+                fontSize: '0.84rem',
+                fontWeight: 600,
+                transition: 'all 0.15s ease',
+              }}
+              title={`Tri actif : ${activeSortLabel}`}
+            >
+              <SlidersHorizontal size={15} />
+              Filtrer
+              {sortMode !== 'contacts_first' && (
+                <span style={{ background: '#1A9DB8', color: '#FFF', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.65rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  1
+                </span>
+              )}
+            </button>
+
+            {/* Panneau déroulant */}
+            {showFilterPanel && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  background: 'var(--adm-card, #FFF)',
+                  border: '1.5px solid var(--adm-border)',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                  padding: '10px',
+                  minWidth: '220px',
+                  zIndex: 100,
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 8px 8px' }}>
+                  Trier par
+                </div>
+                {SORT_MODES.map(mode => {
+                  const Icon = mode.icon;
+                  const isActive = sortMode === mode.key;
+                  return (
+                    <button
+                      key={mode.key}
+                      onClick={() => { setSortMode(mode.key); setShowFilterPanel(false); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '9px',
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: isActive ? 'rgba(26,157,184,0.10)' : 'transparent',
+                        color: isActive ? '#1A9DB8' : 'var(--adm-text)',
+                        fontSize: '0.84rem',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'background 0.12s',
+                      }}
+                    >
+                      <Icon size={14} />
+                      {mode.label}
+                      {isActive && <Check size={13} style={{ marginLeft: 'auto' }} />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Badge du tri actif (si différent du défaut) */}
+          {sortMode !== 'contacts_first' && (
+            <span style={{ fontSize: '0.78rem', color: '#1A9DB8', background: 'rgba(26,157,184,0.08)', padding: '4px 10px', borderRadius: '20px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              Tri : {activeSortLabel}
+              <button
+                onClick={() => setSortMode('contacts_first')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', lineHeight: 1, color: '#1A9DB8', fontWeight: 800, fontSize: '1rem' }}
+                title="Réinitialiser le tri"
+              >
+                ×
+              </button>
+            </span>
+          )}
         </div>
       )}
 
@@ -238,9 +405,7 @@ export const ReportsModule = () => {
                   <th><Building2 size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Entreprise (PME)</th>
                   <th><User size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Dirigeant</th>
                   <th><Mail size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Contact</th>
-                  <th><Calendar size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Date de Fin</th>
                   <th><ClipboardList size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Module</th>
-                  <th style={{ textAlign: 'center' }}>Statut Envoi</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -250,6 +415,9 @@ export const ReportsModule = () => {
                   const isSending = state?.status === 'sending';
                   const isSuccess = state?.status === 'success';
                   const isErr = state?.status === 'error';
+
+                  // Statut report_status provenant directement de l'API backend
+                  const isAlreadySent = item.reportStatus === 'sent';
 
                   return (
                     <tr key={item.diagnosticRunId}>
@@ -294,11 +462,6 @@ export const ReportsModule = () => {
                         </div>
                       </td>
 
-                      {/* Date de fin */}
-                      <td style={{ fontSize: '0.82rem', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>
-                        {item.completedAt}
-                      </td>
-
                       {/* Module */}
                       <td>
                         <div>
@@ -309,62 +472,56 @@ export const ReportsModule = () => {
                         </div>
                       </td>
 
-                      {/* Statut d'envoi dynamique */}
-                      <td style={{ textAlign: 'center' }}>
-                        {isSending ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 700, color: '#2563EB', background: '#EFF6FF', padding: '3px 10px', borderRadius: '20px' }}>
-                            <RefreshCw size={12} className="spin-icon" /> Envoi...
-                          </span>
-                        ) : isSuccess ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 700, color: '#166534', background: '#DCFCE7', padding: '3px 10px', borderRadius: '20px' }}>
-                            <Check size={12} /> Envoyé avec succès
-                          </span>
-                        ) : isErr ? (
-                          <span title={state.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '3px 10px', borderRadius: '20px', cursor: 'help' }}>
-                            <AlertCircle size={12} /> Échec d'envoi
-                          </span>
-                        ) : (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem', fontWeight: 600, color: '#475569', background: '#F1F5F9', padding: '3px 10px', borderRadius: '20px' }}>
-                            <CheckCircle2 size={12} color="#10B981" /> Prêt
-                          </span>
-                        )}
-                      </td>
-
                       {/* Actions */}
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-                          {/* Bouton Voir Rapport désactivé */}
-                          <button
-                            disabled
-                            className="btn btn-ghost btn-sm"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              color: 'var(--slate-400, #94A3B8)',
-                              cursor: 'not-allowed',
-                              opacity: 0.7
-                            }}
-                            title="Visualisation du rapport PDF en cours de finalisation par l'équipe backend"
-                          >
-                            <EyeOff size={14} /> Voir Rapport
-                          </button>
+                          {/* État : sending */}
+                          {isSending && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700, color: '#2563EB', background: '#EFF6FF', padding: '6px 12px', borderRadius: '8px' }}>
+                              <RefreshCw size={13} className="spin-icon" /> Envoi...
+                            </span>
+                          )}
 
-                          {/* Bouton Relancer Envoi */}
-                          <button
-                            onClick={() => handleResendReport(item)}
-                            disabled={isSending}
-                            className="btn btn-primary btn-sm"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: isSending ? 'not-allowed' : 'pointer' }}
-                            title="Relancer l'envoi dynamique du rapport"
-                          >
-                            {isSending ? (
-                              <RefreshCw size={13} className="spin-icon" />
-                            ) : (
+                          {/* État : sent (déjà envoyé à l'origine ou après succès d'envoi récent) */}
+                          {(isAlreadySent || isSuccess) && !isSending && (
+                            <span
+                              title={item.reportSentAt ? `Envoyé le ${formatDate(item.reportSentAt)}` : 'Rapport envoyé'}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700, color: '#166534', background: '#DCFCE7', padding: '6px 12px', borderRadius: '8px', cursor: 'help' }}
+                            >
+                              <CheckCircle2 size={13} /> Envoyé
+                            </span>
+                          )}
+
+                          {/* État : failed */}
+                          {isErr && !isSending && (
+                            <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                              <span title={state?.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '4px 8px', borderRadius: '20px', cursor: 'help' }}>
+                                <AlertCircle size={11} /> Échec
+                              </span>
+                              <button
+                                onClick={() => handleResendReport(item)}
+                                className="btn btn-primary btn-sm"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
+                                title="Relancer l'envoi du rapport"
+                              >
+                                <Send size={13} />
+                                Relancer
+                              </button>
+                            </div>
+                          )}
+
+                          {/* État : pending (par défaut, pas encore envoyé et aucune action en cours/erreur) */}
+                          {!isAlreadySent && !isSuccess && !isSending && !isErr && (
+                            <button
+                              onClick={() => handleResendReport(item)}
+                              className="btn btn-primary btn-sm"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
+                              title="Relancer l'envoi du rapport"
+                            >
                               <Send size={13} />
-                            )}
-                            Relancer
-                          </button>
+                              Relancer
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
