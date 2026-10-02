@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar } from '../../ui/index.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
 
 export const TriageScreen = ({ step, question, hint, choices = [], multi = false, onContinue, onBack, progress, initialAnswer }) => {
   const isQuestionObject = question && typeof question === 'object';
@@ -44,7 +43,6 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
       <div key={step || titleText} className="question-wrap animate-fade-up">
         {progress && (
           <div style={{ marginBottom: 'var(--space-6)' }}>
@@ -78,9 +76,11 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
 
       </div>
 
-      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
+      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
       <div className="screen-nav">
-        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
+        {onBack ? (
+          <Button variant="outline" onClick={onBack}>Retour</Button>
+        ) : <div />}
         <Button variant="primary" disabled={!canContinue} onClick={handleContinueSubmit}>
           Continuer
         </Button>

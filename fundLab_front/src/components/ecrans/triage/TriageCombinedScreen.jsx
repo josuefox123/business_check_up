@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { Button, ChoiceCard, ProgressBar } from '../../ui/index.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
 
 export const TriageCombinedScreen = ({
   question1,
@@ -43,7 +42,6 @@ export const TriageCombinedScreen = ({
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
       <div className="question-wrap animate-fade-up" style={{ maxWidth: '640px', margin: '0 auto' }}>
         {progress && (
           <div style={{ marginBottom: 'var(--space-6, 24px)' }}>

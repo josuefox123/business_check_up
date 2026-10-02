@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, MessageSquare, Mail, Phone, AlertCircle } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea, CurrencyInput } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
 
 export const QuitConfirmModal = ({ onConfirm, onCancel }) => (
@@ -160,9 +159,35 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     setAnswer(val);
   };
 
+  // Rule 9: Normalisation des variables d'action pour le bouton principal (Solution 1 : Bouton dynamique)
+  const isOptional = Boolean(questionData?.isOptional || onSkip);
+  let actionBtnText = 'Continuer';
+  let actionBtnVariant = 'primary';
+  let actionBtnDisabled = false;
+  let actionBtnHandler = handleContinue;
+
+  if (isSubmitting) {
+    actionBtnText = 'Enregistrement...';
+    actionBtnDisabled = true;
+  } else if (canContinue) {
+    actionBtnText = 'Continuer';
+    actionBtnVariant = 'primary';
+    actionBtnDisabled = false;
+    actionBtnHandler = handleContinue;
+  } else if (isOptional) {
+    actionBtnText = 'Ignorer';
+    actionBtnVariant = 'outline';
+    actionBtnDisabled = false;
+    actionBtnHandler = () => (onSkip ? onSkip() : onContinue(null, null, null, null, null));
+  } else {
+    actionBtnText = 'Continuer';
+    actionBtnVariant = 'primary';
+    actionBtnDisabled = true;
+    actionBtnHandler = handleContinue;
+  }
+
   return (
     <ScreenWrapper className={themeClass}>
-      {onBack && <TopBackLink onClick={onBack} />}
       {showQuitModal && (
         <QuitConfirmModal
           onConfirm={() => { setShowQuitModal(false); onQuit(); }}
@@ -332,28 +357,19 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
         </div>
       </div>
 
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {onBack && (
-            <Button variant="outline" onClick={onBack}>
-              Retour
-            </Button>
-          )}
-        </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          {(questionData?.isOptional || onSkip) && (
-            <Button
-              variant="ghost"
-              onClick={() => onSkip ? onSkip() : onContinue(null, null, null, null, null)}
-              style={{ color: '#64748B', fontWeight: 600 }}
-            >
-              Passer cette question
-            </Button>
-          )}
-          <Button variant="primary" disabled={!canContinue && !(questionData?.isOptional || onSkip) || isSubmitting} onClick={handleContinue}>
-            {isSubmitting ? 'Enregistrement...' : 'Continuer'}
+      <div className="screen-nav">
+        {onBack ? (
+          <Button variant="outline" onClick={onBack}>
+            Retour
           </Button>
-        </div>
+        ) : <div />}
+        <Button
+          variant={actionBtnVariant}
+          disabled={actionBtnDisabled}
+          onClick={actionBtnHandler}
+        >
+          {actionBtnText}
+        </Button>
       </div>
     </ScreenWrapper>
   );

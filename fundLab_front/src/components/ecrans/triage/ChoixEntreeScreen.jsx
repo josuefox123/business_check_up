@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ChoiceCard, Button } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer }) => {
@@ -19,7 +18,6 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
   if (!question) {
     return (
       <ScreenWrapper>
-        {onBack && <TopBackLink onClick={onBack} />}
         <div className="question-wrap animate-fade-up" style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8', fontStyle: 'italic' }}>
           [question non disponible] Aucune question sélectionnée.
         </div>
@@ -29,7 +27,6 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
       <div className="question-wrap animate-fade-up">
         <h1 className="screen-title">{questionTitle}</h1>
         {questionHint && (
@@ -52,7 +49,7 @@ export const ChoixEntreeScreen = ({ question, onSelect, onBack, initialAnswer })
         </div>
       </div>
 
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
+      <div className="screen-nav">
         {onBack ? (
           <Button variant="outline" onClick={onBack} style={{ gap: '8px' }}>
             <ArrowLeft size={16} />
