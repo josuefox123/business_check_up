@@ -12,7 +12,17 @@ import {
   MessageSquare,
   Flag,
   Calendar,
-  Download,
+  ExternalLink,
+  FileText,
+  Mail,
+  Phone,
+  ShieldAlert,
+  Sparkles,
+  Info,
+  Check,
+  ChevronRight,
+  Filter,
+  CheckCircle,
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
 
@@ -29,36 +39,27 @@ const formatDate = (iso) => {
   });
 };
 
-const DIMENSION_COLORS = {
-  finance: { bg: '#EFF6FF', text: '#2563EB' },
-  commercial: { bg: '#FDF4FF', text: '#9333EA' },
-  operations: { bg: '#FFF7ED', text: '#D97706' },
-  gouvernance: { bg: '#F0FDF4', text: '#16A34A' },
-  produit: { bg: '#FEF2F2', text: '#DC2626' },
-  meta: { bg: '#F8FAFC', text: '#475569' },
+const DIMENSION_STYLES = {
+  finance: { bg: '#EFF6FF', text: '#1D4ED8', label: 'Finance' },
+  commercial: { bg: '#F5F3FF', text: '#6D28D9', label: 'Commercial' },
+  operations: { bg: '#FFFBEB', text: '#B45309', label: 'Opérations' },
+  gouvernance: { bg: '#F0FDF4', text: '#15803D', label: 'Gouvernance' },
+  produit: { bg: '#FEF2F2', text: '#B91C1C', label: 'Produit / Offre' },
+  rh: { bg: '#FDF2F8', text: '#BE185D', label: 'Ressources Humaines' },
+  meta: { bg: '#F8FAFC', text: '#475569', label: 'Général' },
 };
 
-const dimensionStyle = (dim) =>
-  DIMENSION_COLORS[dim] ?? { bg: '#F8FAFC', text: '#64748B' };
+const getDimensionStyle = (dim) => {
+  const key = (dim || 'meta').toLowerCase();
+  return DIMENSION_STYLES[key] ?? { bg: '#F8FAFC', text: '#475569', label: dim || 'Général' };
+};
 
-const normalizeToArray = (value) => {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.filter(Boolean);
-
-  if (typeof value === 'string') {
-    if (value.startsWith('[') && value.endsWith(']')) {
-      try {
-        const parsed = JSON.parse(value);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(Boolean);
-        }
-      } catch (e) { }
-    }
-    return value
-      .split(/[\n;|]+/)
-      .map(item => item.trim())
-      .filter(Boolean);
-  }
+const extractDiagnosticsList = (res) => {
+  if (!res) return [];
+  if (Array.isArray(res)) return res;
+  if (Array.isArray(res?.data?.diagnostics)) return res.data.diagnostics;
+  if (Array.isArray(res?.data)) return res.data;
+  if (Array.isArray(res?.diagnostics)) return res.diagnostics;
   return [];
 };
 
@@ -69,112 +70,144 @@ export const DiagnosticRunDetailScreen = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Data passed from list via navigation state (used as fast initial render)
+  // Data passed from list via navigation state (fast initial render)
   const passedState = location.state || {};
-
-  // ── Fetch state ──
-  const [detailData, setDetailData] = useState(passedState.detail || null);
-  // Data passed via navigation state — always available from the list
   const passedRun = passedState.run ?? null;
-  const queryParams = new URLSearchParams(window.location.search);
-  const queryUserId = queryParams.get('userId');
-  const passedUserId = passedState.userId ?? queryUserId ?? passedRun?.user_id ?? null;
 
-  // detailData: richer data from /historical if available, falls back to passedRun
+  // Search parameters from URL query string
+  const queryParams = new URLSearchParams(location.search);
+  const rawQueryUserId = queryParams.get('userId');
+  const cleanQueryUserId = (rawQueryUserId && rawQueryUserId !== 'null' && rawQueryUserId !== 'undefined') ? rawQueryUserId : null;
+  const queryBusinessName = queryParams.get('businessName') ? decodeURIComponent(queryParams.get('businessName')) : null;
+  const queryUserName = queryParams.get('userName') ? decodeURIComponent(queryParams.get('userName')) : null;
+  const queryUserEmail = queryParams.get('userEmail') ? decodeURIComponent(queryParams.get('userEmail')) : null;
+  const queryUserPhone = queryParams.get('userPhone') ? decodeURIComponent(queryParams.get('userPhone')) : null;
+  const querySector = queryParams.get('sector') ? decodeURIComponent(queryParams.get('sector')) : null;
+  const queryModuleCode = queryParams.get('moduleCode') ? decodeURIComponent(queryParams.get('moduleCode')) : null;
+
+  const passedUserId = passedState.userId ?? cleanQueryUserId ?? passedRun?.user_id ?? null;
+
+  // ── State ──
+  const [detailData, setDetailData] = useState(passedState.detail || passedRun || null);
+  const [isEnriching, setIsEnriching] = useState(false);
   const [enrichError, setEnrichError] = useState(false);
+  const [selectedDimension, setSelectedDimension] = useState('all');
 
-  // Modal states for diagnostic results removed in favor of report route preview
+  // Helper function to merge user, business and question responses non-destructively
+  const mergeDetails = (existing, incoming, rootUser = null) => {
+    if (!incoming) return existing;
+    if (!existing) return incoming;
 
-  // Attempt silent enrichment from /historical — non-blocking, errors are silent
+    const userA = existing?.user ?? null;
+    const userB = incoming?.user ?? rootUser ?? null;
+    const businessA = existing?.business ?? null;
+    const businessB = incoming?.business ?? null;
+
+    const mergedUser = (userA || userB) ? {
+      ...(userB || {}),
+      ...(userA || {}),
+    } : null;
+
+    if (mergedUser) {
+      if (!mergedUser.full_name && userB?.full_name) mergedUser.full_name = userB.full_name;
+      if (!mergedUser.email && userB?.email) mergedUser.email = userB.email;
+      if (!mergedUser.phone_number && (userB?.phone_number || userB?.phone)) {
+        mergedUser.phone_number = userB?.phone_number || userB?.phone;
+      }
+    }
+
+    const mergedBusiness = (businessA || businessB) ? {
+      ...(businessB || {}),
+      ...(businessA || {}),
+    } : null;
+
+    if (mergedBusiness) {
+      if (!mergedBusiness.business_name && businessB?.business_name) mergedBusiness.business_name = businessB.business_name;
+      if (!mergedBusiness.sector && businessB?.sector) mergedBusiness.sector = businessB.sector;
+    }
+
+    const rawExistingResp = existing?.question_responses || existing?.responses || [];
+    const rawIncomingResp = incoming?.question_responses || incoming?.responses || [];
+
+    const resp = (Array.isArray(rawExistingResp) && rawExistingResp.length > 0)
+      ? rawExistingResp
+      : (Array.isArray(rawIncomingResp) && rawIncomingResp.length > 0)
+        ? rawIncomingResp
+        : [];
+
+    return {
+      ...incoming,
+      ...existing,
+      user: mergedUser,
+      business: mergedBusiness,
+      question_responses: resp,
+    };
+  };
+
+  // Eager enrichment from admin diagnostics list and historical records
   const tryEnrichDetail = async () => {
+    setIsEnriching(true);
+    setEnrichError(false);
     try {
-      // Helper function to merge user and business details non-destructively
-      const mergeDetails = (existing, incoming, rootUser = null) => {
-        if (!incoming) return existing;
-        if (!existing) return incoming;
-        const merged = { ...incoming, ...existing };
-        const userObj = incoming.user || rootUser || existing?.user || null;
-        if (userObj) {
-          merged.user = { ...(incoming?.user || {}), ...(existing?.user || {}), ...userObj };
-        }
-        const businessObj = incoming.business || existing?.business || null;
-        if (businessObj) {
-          merged.business = { ...(incoming?.business || {}), ...(existing?.business || {}), ...businessObj };
-        }
-        const resp = existing?.question_responses || incoming?.question_responses || existing?.responses || incoming?.responses || null;
-        if (resp) {
-          merged.question_responses = resp;
-        }
-        return merged;
-      };
+      let matched = detailData ? { ...detailData } : null;
 
-      let matched = detailData || null;
+      // 1. Chercher dans la liste paginée des diagnostics admin (avec relations user, business)
+      const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
+      const list = extractDiagnosticsList(resDiag);
+      let found = list.find(r => r?.diagnostic_run_id === runId);
 
-      if (passedUserId) {
-        const res = await apiFetch(`/admin/dashboard/${passedUserId}/historical`).catch(() => null);
-        const list = Array.isArray(res) ? res : (res?.data ?? []);
-        let matchedHist = list.find(r => r?.diagnostic_run_id === runId) ?? list[0] ?? null;
+      // Si non trouvé sur la page 1 et que d'autres pages existent
+      if (!found && resDiag?.data?.pagination?.total_pages > 1) {
+        const resDiagP2 = await apiFetch(`/admin/dashboard/diagnostics?page=2&per_page=100`).catch(() => null);
+        const listP2 = extractDiagnosticsList(resDiagP2);
+        found = listP2.find(r => r?.diagnostic_run_id === runId);
+      }
 
-        // Fallback A.1: Try diagnostics list filtered by user_id
-        if (!matchedHist || !matchedHist.user || !matchedHist.user.full_name) {
-          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?user_id=${passedUserId}`).catch(() => null);
-          const listDiag = resDiagUser?.data || [];
-          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
-          if (matchedDiag) {
-            matchedHist = mergeDetails(matchedHist, matchedDiag);
-          }
-        }
+      if (found) {
+        matched = mergeDetails(matched, found);
+      }
 
-        // Fallback A.2: Try diagnostics list filtered by userId
-        if (!matchedHist || !matchedHist.user || !matchedHist.user.full_name) {
-          const resDiagUser = await apiFetch(`/admin/dashboard/diagnostics?userId=${passedUserId}`).catch(() => null);
-          const listDiag = resDiagUser?.data || [];
-          const matchedDiag = listDiag.find(r => r?.diagnostic_run_id === runId);
-          if (matchedDiag) {
-            matchedHist = mergeDetails(matchedHist, matchedDiag);
-          }
+      // 2. Déterminer l'ID utilisateur cible pour récupérer l'historique complet des réponses
+      const targetUserId =
+        found?.user_id
+        ?? found?.user?.user_id
+        ?? found?.user?.id
+        ?? found?.business?.user_id
+        ?? passedUserId
+        ?? null;
+
+      if (targetUserId) {
+        const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
+        let histList = [];
+        if (Array.isArray(resHist)) {
+          histList = resHist;
+        } else if (Array.isArray(resHist?.data)) {
+          histList = resHist.data;
         }
 
-        if (matchedHist) {
-          matched = mergeDetails(matched, matchedHist, res?.user || res?.data?.user);
+        const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
+        if (histMatched) {
+          matched = mergeDetails(matched, histMatched, found?.user || null);
         }
       }
 
-      // Method C: Direct single admin diagnostic detail fetch
-      if (!matched || !matched.user || !matched.user.full_name) {
-        const resAdminDetail = await apiFetch(`/admin/dashboard/diagnostics/${runId}`).catch(() => null);
-        const adminData = resAdminDetail?.data || resAdminDetail;
-        if (adminData) {
-          matched = mergeDetails(matched, adminData);
-        }
-      }
-
-      // Method B fallback if not matched or missing user information
-      if (!matched || !matched.user || !matched.user.full_name) {
-        const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
-        const list = resDiag?.data || [];
-        const found = list.find(r => r?.diagnostic_run_id === runId);
-        if (found) {
-          matched = mergeDetails(matched, found, resDiag?.user);
-
-          const targetUserId = found.user_id || passedUserId;
-          if (targetUserId) {
-            const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
-            const histList = Array.isArray(resHist) ? resHist : (resHist?.data ?? []);
-            const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
-            if (histMatched) {
-              matched = mergeDetails(matched, histMatched, resHist?.user || resHist?.data?.user);
-            }
-          }
+      // 3. Fallback direct si réponses toujours absentes
+      if (!matched || !matched.question_responses || matched.question_responses.length === 0) {
+        const resDirect = await apiFetch(`/diagnostics/${runId}/details`).catch(() => null);
+        const directData = resDirect?.data || resDirect;
+        if (directData && typeof directData === 'object' && !directData.message) {
+          matched = mergeDetails(matched, directData);
         }
       }
 
       if (matched) {
         setDetailData(matched);
       }
-    } catch {
-      // Silent failure — detail page still renders from passedRun data
+    } catch (err) {
+      console.warn('[DiagnosticRunDetailScreen] Enrichment error:', err);
       setEnrichError(true);
+    } finally {
+      setIsEnriching(false);
     }
   };
 
@@ -182,37 +215,47 @@ export const DiagnosticRunDetailScreen = () => {
     tryEnrichDetail();
   }, [runId]);
 
-  // ─── Normalization (Rule 9) ───────────────────────────────────────────────
+  // ─── Normalization (Rule 9) ─────────────────────────────────────────────────
 
-  const run = detailData ?? passedState.run ?? {};
-  const business = detailData?.business ?? null;
+  const run = detailData ?? passedRun ?? {};
+  const business = detailData?.business ?? run?.business ?? null;
 
-  const runId_display = run?.diagnostic_run_id ?? runId ?? '[diagnostic_run_id non disponible]';
-  const moduleCode = run?.module_code ?? '[module_code non disponible]';
-  const moduleFamily = run?.module_family ?? '[module_family non disponible]';
-  const completionStatus = run?.completion_status ?? '[completion_status non disponible]';
+  const runIdDisplay = run?.diagnostic_run_id ?? runId ?? 'Non identifié';
+  const moduleCode = run?.module_code ?? passedState.moduleCode ?? queryModuleCode ?? 'Module stratégique';
+  const moduleFamily = run?.module_family ?? passedState.moduleFamily ?? 'Diagnostic';
+  const completionStatus = run?.completion_status ?? (run?.completed_at ? 'completed' : 'in_progress');
   const isCompleted = completionStatus === 'completed';
   const startedAt = formatDate(run?.started_at);
   const completedAt = run?.completed_at ? formatDate(run.completed_at) : null;
   const questionCountExpected = run?.question_count_expected ?? 0;
   const questionCountAnswered = run?.question_count_answered ?? 0;
 
-  const businessName = business?.business_name ?? passedState.businessName ?? '[business_name non disponible]';
-  const businessSector = business?.sector ?? null;
+  // Entreprise
+  const rawBusinessName = business?.business_name ?? passedState.businessName ?? queryBusinessName ?? null;
+  const businessName = (rawBusinessName && !rawBusinessName.includes('[')) ? rawBusinessName : null;
+  const businessSector = business?.sector ?? passedState.sector ?? querySector ?? null;
   const businessRegion = business?.region ?? null;
   const businessCountry = business?.country ?? null;
 
-  const userName = run?.user?.full_name ?? passedState.userName ?? '[user.full_name non disponible]';
-  const userEmail = run?.user?.email ?? passedState.userEmail ?? '[user.email non disponible]';
-  const userPhone = run?.user?.phone_number ?? run?.user?.phone ?? passedState.userPhone ?? '[Non disponible]';
+  // Déclarant / Contact (avec repli poli et sans crochets bruts)
+  const userObj = run?.user ?? business?.user ?? run?.business?.user ?? detailData?.user ?? null;
 
-  // Question responses normalization
-  const rawResponses = detailData?.question_responses || [];
+  const rawUserName = userObj?.full_name ?? passedState.userName ?? queryUserName ?? null;
+  const userName = (rawUserName && !rawUserName.includes('[') && rawUserName.trim() !== '') ? rawUserName : null;
+
+  const rawUserEmail = userObj?.email ?? passedState.userEmail ?? queryUserEmail ?? null;
+  const userEmail = (rawUserEmail && !rawUserEmail.includes('[') && rawUserEmail.trim() !== '') ? rawUserEmail : null;
+
+  const rawUserPhone = userObj?.phone_number ?? userObj?.phone ?? passedState.userPhone ?? queryUserPhone ?? null;
+  const userPhone = (rawUserPhone && !rawUserPhone.includes('[') && rawUserPhone.trim() !== '') ? rawUserPhone : null;
+
+  // Questions & Réponses Normalization
+  const rawResponses = detailData?.question_responses || detailData?.responses || [];
 
   const normalizedResponses = rawResponses.map((resp, idx) => {
     const questionText = resp?.question?.text
-      ?? resp?.question_id
-      ?? `[question_id ${resp?.question_id ?? idx} non disponible]`;
+      ?? resp?.question_text
+      ?? (resp?.question_id ? `Question réf. ${resp.question_id}` : `Question #${idx + 1}`);
 
     const answerLabel = resp?.answer_label ?? null;
     const answerText = resp?.answer_text ?? null;
@@ -224,266 +267,738 @@ export const DiagnosticRunDetailScreen = () => {
         ? answerValue.replace(/^"|"$/g, '')
         : JSON.stringify(answerValue);
     }
-    if (!displayAnswer) displayAnswer = '[Aucune réponse fournie]';
+    if (!displayAnswer) displayAnswer = 'Non renseigné';
+
+    const dim = (resp?.question_dimension || resp?.dimension || 'meta').toLowerCase();
 
     return {
       id: resp?.response_id ?? `RESP-${idx}`,
-      questionId: resp?.question_id ?? '[question_id non disponible]',
+      questionId: resp?.question_id ?? `Q-${idx + 1}`,
       questionText,
       displayAnswer,
-      dimension: resp?.question_dimension ?? 'meta',
-      answerType: resp?.answer_type ?? 'single_choice',
+      dimension: dim,
       isCritical: Boolean(resp?.is_critical_question),
       redFlagTriggered: Boolean(resp?.red_flag_triggered),
       redFlagCode: resp?.red_flag_code ?? null,
       score15: resp?.score_1_5 ?? null,
       answeredAt: resp?.answered_at ? formatDate(resp.answered_at) : null,
-      weight: resp?.weight ?? null,
     };
   });
 
+  const hasResponses = normalizedResponses.length > 0;
   const redFlagCount = normalizedResponses.filter(r => r.redFlagTriggered).length;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-  return (
-    <div className="admin-page animate-fade-up">
+  // Filtrage par dimension
+  const availableDimensions = ['all', ...new Set(normalizedResponses.map(r => r.dimension))];
+  const filteredResponses = selectedDimension === 'all'
+    ? normalizedResponses
+    : normalizedResponses.filter(r => r.dimension === selectedDimension);
 
-      {/* ── Back button + title ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+  // ─── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div className="admin-page animate-fade-up" style={{ fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+
+      {/* ── Top Header Bar ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        marginBottom: '24px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #E2E8F0',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <button
             onClick={() => navigate('/admin/diagnostics')}
             className="btn btn-ghost btn-sm"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#17212D',
+              fontWeight: 700,
+              padding: '8px 14px',
+            }}
           >
-            <ArrowLeft size={16} /> Retour
+            <ArrowLeft size={16} /> Retour aux diagnostics
           </button>
+
           <div>
-            <h1 className="admin-page-title" style={{ margin: 0 }}>
-              Détail du diagnostic — {moduleCode}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h1 style={{
+                margin: 0,
+                fontSize: '1.45rem',
+                fontWeight: 900,
+                color: '#17212D',
+                letterSpacing: '-0.02em',
+              }}>
+                Détail du diagnostic
+              </h1>
+              <span style={{
+                background: '#17212D',
+                color: '#FFFFFF',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                padding: '3px 9px',
+                borderRadius: '6px',
+                letterSpacing: '0.04em',
+              }}>
+                {moduleCode}
+              </span>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '3px' }}>
+              Réf. technique : <span style={{ fontFamily: 'monospace', color: '#17212D' }}>{runIdDisplay}</span>
+            </div>
           </div>
         </div>
 
-        {/* Bouton Voir le résultat */}
-        <button
-          className="btn btn-teal btn-sm"
-          onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
-            state: {
-              run: run,
-              userId: passedUserId,
-              userName: userName,
-              userEmail: userEmail,
-              userPhone: run?.user?.phone_number || run?.user?.phone || null,
-              businessName: businessName,
-            }
-          })}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-        >
-          Voir le résultat
-        </button>
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={tryEnrichDetail}
+            disabled={isEnriching}
+            className="btn btn-ghost btn-sm"
+            title="Rafraîchir les données"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#475569',
+              fontWeight: 600,
+              padding: '8px 14px',
+            }}
+          >
+            <RotateCcw size={15} style={{ animation: isEnriching ? 'spin 1s linear infinite' : 'none' }} />
+            {isEnriching ? 'Actualisation...' : 'Actualiser'}
+          </button>
+
+          <button
+            onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
+              state: {
+                run,
+                userId: passedUserId,
+                userName: userName || 'Déclarant non renseigné',
+                userEmail: userEmail || '',
+                userPhone: userPhone || '',
+                businessName: businessName || 'PME',
+                sector: businessSector,
+              }
+            })}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderRadius: '6px',
+              background: '#17212D',
+              border: '1px solid #17212D',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              padding: '8px 18px',
+              cursor: 'pointer',
+              transition: 'background 0.2s ease, border-color 0.2s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#34BED5';
+              e.currentTarget.style.borderColor = '#34BED5';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#17212D';
+              e.currentTarget.style.borderColor = '#17212D';
+            }}
+          >
+            <FileText size={16} />
+            Consulter le rapport stratégique
+          </button>
+        </div>
       </div>
 
-      {/* ── Summary cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-
-        {/* Entreprise */}
-        <div className="admin-card" style={{ padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Building2 size={16} color="#2563EB" />
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Entreprise</span>
+      {/* ── Notification Banner if sync warning ── */}
+      {enrichError && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          borderLeft: '4px solid #D97706',
+          borderRadius: '6px',
+          padding: '12px 16px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          color: '#92400E',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} color="#D97706" />
+            <span>
+              Certaines métadonnées n'ont pas pu être synchronisées automatiquement depuis le serveur. Les données locales disponibles sont affichées.
+            </span>
           </div>
-          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--adm-text)' }}>{businessName}</div>
-          {businessSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>{businessSector}</div>}
+          <button
+            onClick={tryEnrichDetail}
+            style={{
+              background: 'transparent',
+              border: '1px solid #D97706',
+              borderRadius: '4px',
+              color: '#92400E',
+              fontWeight: 700,
+              fontSize: '0.78rem',
+              padding: '4px 10px',
+              cursor: 'pointer',
+            }}
+          >
+            Réessayer
+          </button>
+        </div>
+      )}
+
+      {/* ── Summary Cards Grid (True North Style: 6px radii, #34BED5 left border) ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+        gap: '16px',
+        marginBottom: '28px',
+      }}>
+
+        {/* Carte 1 : Entreprise */}
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderLeft: '3px solid #34BED5',
+          borderRadius: '6px',
+          padding: '18px 20px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Building2 size={16} color="#34BED5" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>
+              Entreprise
+            </span>
+          </div>
+          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#17212D', lineHeight: 1.3 }}>
+            {businessName || 'PME en qualification'}
+          </div>
+          {businessSector ? (
+            <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: '4px', fontWeight: 500 }}>
+              {businessSector}
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '4px', fontStyle: 'italic' }}>
+              Secteur non spécifié
+            </div>
+          )}
           {(businessRegion || businessCountry) && (
-            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>
+            <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '2px' }}>
               {[businessRegion, businessCountry].filter(Boolean).join(' · ')}
             </div>
           )}
         </div>
 
-        {/* Contact */}
-        <div className="admin-card" style={{ padding: '16px 20px' }}>
+        {/* Carte 2 : Renseigné par / Contact */}
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderLeft: '3px solid #17212D',
+          borderRadius: '6px',
+          padding: '18px 20px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <User size={16} color="#9333EA" />
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Renseigné par</span>
+            <User size={16} color="#17212D" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>
+              Renseigné par
+            </span>
           </div>
-          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--adm-text)' }}>{userName || '—'}</div>
-          {userEmail && (
-            <a href={`mailto:${userEmail}`} style={{ fontSize: '0.78rem', color: '#1A9DB8', textDecoration: 'none' }}>{userEmail}</a>
+
+          {userName ? (
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '0.98rem', color: '#17212D' }}>
+                {userName}
+              </div>
+              {userEmail && (
+                <div style={{ marginTop: '4px' }}>
+                  <a
+                    href={`mailto:${userEmail}`}
+                    style={{
+                      fontSize: '0.78rem',
+                      color: '#0284C7',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Mail size={12} /> {userEmail}
+                  </a>
+                </div>
+              )}
+              {userPhone && (
+                <div style={{ marginTop: '2px' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <Phone size={12} /> {userPhone}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: '#F1F5F9',
+                color: '#475569',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+                padding: '3px 8px',
+                borderRadius: '4px',
+              }}>
+                Session libre (Anonyme)
+              </div>
+              <div style={{ fontSize: '0.73rem', color: '#64748B', marginTop: '4px' }}>
+                Diagnostic réalisé sans création préalable de compte utilisateur
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Module */}
-        <div className="admin-card" style={{ padding: '16px 20px' }}>
+        {/* Carte 3 : Module d'audit */}
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderLeft: '3px solid #34BED5',
+          borderRadius: '6px',
+          padding: '18px 20px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <ClipboardList size={16} color="#1A9DB8" />
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Module</span>
+            <ClipboardList size={16} color="#34BED5" />
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>
+              Module d'audit
+            </span>
           </div>
-          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1A9DB8' }}>{moduleCode}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px', textTransform: 'capitalize' }}>{moduleFamily}</div>
+          <div style={{ fontWeight: 900, fontSize: '1.25rem', color: '#17212D' }}>
+            {moduleCode}
+          </div>
+          <div style={{ fontSize: '0.76rem', color: '#64748B', marginTop: '2px', textTransform: 'capitalize' }}>
+            {moduleFamily}
+          </div>
         </div>
 
-        {/* Date */}
-        <div className="admin-card" style={{ padding: '16px 20px' }}>
+        {/* Carte 4 : Statut & Horodatage */}
+        <div style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderLeft: `3px solid ${isCompleted ? '#10B981' : '#D97706'}`,
+          borderRadius: '6px',
+          padding: '18px 20px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Calendar size={16} color="#D97706" />
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Date</span>
+            <Calendar size={16} color={isCompleted ? '#10B981' : '#D97706'} />
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>
+              Statut du parcours
+            </span>
           </div>
-          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--adm-text)' }}>{startedAt}</div>
-          {completedAt && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: '2px' }}>Terminé : {completedAt}</div>}
-        </div>
-
-        {/* Statut */}
-        <div className="admin-card" style={{ padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            {isCompleted ? <CheckCircle2 size={16} color="#10B981" /> : <Clock size={16} color="#F59E0B" />}
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Statut</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              color: isCompleted ? '#065F46' : '#92400E',
+              background: isCompleted ? '#ECFDF5' : '#FEF3C7',
+              padding: '3px 8px',
+              borderRadius: '4px',
+            }}>
+              {isCompleted ? <CheckCircle2 size={13} /> : <Clock size={13} />}
+              {isCompleted ? 'Finalisé' : 'En cours'}
+            </span>
           </div>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '5px',
-            fontWeight: 800, fontSize: '0.88rem',
-            color: isCompleted ? '#166534' : '#92400E',
-          }}>
-            {isCompleted ? <CheckCircle2 size={14} /> : <Clock size={14} />}
-            {isCompleted ? 'Terminé' : 'En cours'}
-          </span>
-        </div>
-
-        {/* Red flags */}
-        {redFlagCount > 0 && (
-          <div className="admin-card" style={{ padding: '16px 20px', borderLeft: '3px solid #EF4444' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <Flag size={16} color="#EF4444" />
-              <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--slate-400)' }}>Signaux d'alerte</span>
+          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+            Débuté : {startedAt}
+          </div>
+          {completedAt && (
+            <div style={{ fontSize: '0.73rem', color: '#065F46', marginTop: '2px', fontWeight: 600 }}>
+              Terminé : {completedAt}
             </div>
-            <div style={{ fontWeight: 900, fontSize: '1.4rem', color: '#EF4444' }}>{redFlagCount}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>red flag{redFlagCount > 1 ? 's' : ''} déclenchés</div>
+          )}
+        </div>
+
+        {/* Carte 5 (Conditionnelle) : Red flags */}
+        {redFlagCount > 0 && (
+          <div style={{
+            background: '#FEF2F2',
+            border: '1px solid #FECACA',
+            borderLeft: '4px solid #EF4444',
+            borderRadius: '6px',
+            padding: '18px 20px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <Flag size={16} color="#DC2626" />
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#B91C1C' }}>
+                Signaux d'alerte
+              </span>
+            </div>
+            <div style={{ fontWeight: 900, fontSize: '1.45rem', color: '#DC2626', lineHeight: 1 }}>
+              {redFlagCount}
+            </div>
+            <div style={{ fontSize: '0.74rem', color: '#B91C1C', marginTop: '4px', fontWeight: 600 }}>
+              point{redFlagCount > 1 ? 's' : ''} d'attention critique{redFlagCount > 1 ? 's' : ''} détecté{redFlagCount > 1 ? 's' : ''}
+            </div>
           </div>
         )}
       </div>
 
-      {/* ── Q&A Table ── */}
-      <div className="admin-card">
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--adm-border)' }}>
-          <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--adm-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MessageSquare size={18} color="#1A9DB8" />
-            Questions &amp; Réponses
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--slate-400)' }}>({normalizedResponses.length})</span>
-          </h2>
+      {/* ── Questionnaire & Réponses Section ── */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '6px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+        overflow: 'hidden',
+      }}>
+
+        {/* Section Header */}
+        <div style={{
+          padding: '16px 22px',
+          borderBottom: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+          background: '#F8FAFC',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <MessageSquare size={18} color="#17212D" />
+            <h2 style={{
+              margin: 0,
+              fontSize: '1rem',
+              fontWeight: 800,
+              color: '#17212D',
+              letterSpacing: '-0.01em',
+            }}>
+              Questionnaire &amp; Réponses du diagnostic
+            </h2>
+            <span style={{
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              color: '#64748B',
+              background: '#E2E8F0',
+              padding: '2px 8px',
+              borderRadius: '4px',
+            }}>
+              {hasResponses ? `${normalizedResponses.length} question(s)` : 'Synthèse globale'}
+            </span>
+          </div>
+
+          {/* Dimension Filter Tabs (when responses exist) */}
+          {hasResponses && availableDimensions.length > 2 && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              {availableDimensions.map(dim => {
+                const isSelected = selectedDimension === dim;
+                const label = dim === 'all' ? 'Toutes' : (getDimensionStyle(dim).label);
+                const count = dim === 'all' ? normalizedResponses.length : normalizedResponses.filter(r => r.dimension === dim).length;
+                return (
+                  <button
+                    key={dim}
+                    onClick={() => setSelectedDimension(dim)}
+                    style={{
+                      background: isSelected ? '#17212D' : '#FFFFFF',
+                      color: isSelected ? '#FFFFFF' : '#475569',
+                      border: `1px solid ${isSelected ? '#17212D' : '#CBD5E1'}`,
+                      borderRadius: '4px',
+                      padding: '4px 10px',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {normalizedResponses.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '36px', color: 'var(--slate-400)' }}>
-            <MessageSquare size={32} style={{ marginBottom: '8px', opacity: 0.35 }} />
-            <p style={{ fontWeight: 600, margin: 0 }}>Aucune réponse enregistrée pour ce diagnostic.</p>
+        {/* ── Conditional Body ── */}
+        {!hasResponses ? (
+          /* CASE: No detailed raw responses recorded -> Institutional Executive True North Card */
+          <div style={{ padding: '36px 28px' }}>
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderLeft: '4px solid #34BED5',
+              borderRadius: '6px',
+              padding: '28px 24px',
+              maxWidth: '850px',
+              margin: '0 auto',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '6px',
+                  background: '#EFF6FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Sparkles size={22} color="#34BED5" />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    margin: '0 0 6px 0',
+                    fontSize: '1.08rem',
+                    fontWeight: 800,
+                    color: '#17212D',
+                  }}>
+                    Synthèse stratégique &amp; Évaluation consolidée
+                  </h3>
+
+                  <p style={{
+                    margin: '0 0 16px 0',
+                    fontSize: '0.85rem',
+                    color: '#475569',
+                    lineHeight: 1.5,
+                  }}>
+                    {isCompleted
+                      ? "Ce diagnostic a été mené à son terme. Les réponses saisies ont été directement compilées et pondérées par le moteur algorithmique pour générer la notation par axe, les constats clés et la feuille de route d'accompagnement."
+                      : "Ce diagnostic est actuellement en cours de renseignement. L'historique pas-à-pas des réponses détaillées sera consolidé dès la clôture définitive du parcours."
+                    }
+                  </p>
+
+                  {/* Operational metrics */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: '12px',
+                    padding: '14px',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '6px',
+                    marginBottom: '20px',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Progression enregistrée
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#17212D', marginTop: '2px' }}>
+                        {questionCountAnswered > 0
+                          ? `${questionCountAnswered} question(s) validée(s)`
+                          : (isCompleted ? 'Parcours intégral validé' : 'En phase d\'amorce')
+                        }
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Volume attendu
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#17212D', marginTop: '2px' }}>
+                        {questionCountExpected > 0 ? `${questionCountExpected} questions prévues` : 'Module standard'}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Livrable disponible
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669', marginTop: '2px' }}>
+                        Rapport stratégique &amp; PDF
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
+                        state: {
+                          run,
+                          userId: passedUserId,
+                          userName: userName || 'Déclarant non renseigné',
+                          userEmail: userEmail || '',
+                          userPhone: userPhone || '',
+                          businessName: businessName || 'PME',
+                          sector: businessSector,
+                        }
+                      })}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: '#17212D',
+                        border: '1px solid #17212D',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: '0.84rem',
+                        padding: '9px 18px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#34BED5'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#17212D'}
+                    >
+                      <FileText size={15} />
+                      Accéder au rapport complet &amp; scores
+                    </button>
+
+                    <button
+                      onClick={tryEnrichDetail}
+                      disabled={isEnriching}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        color: '#475569',
+                        fontWeight: 600,
+                        fontSize: '0.82rem',
+                        padding: '9px 14px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <RotateCcw size={14} style={{ animation: isEnriching ? 'spin 1s linear infinite' : 'none' }} />
+                      Vérifier la synchronisation des réponses
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
+          /* CASE: Detailed raw responses recorded -> High-density executive table */
           <div className="admin-table-wrap">
-            <table className="admin-table">
+            <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th style={{ width: '40px' }}>#</th>
-                  <th style={{ width: '110px' }}>ID Question</th>
-                  <th>Question</th>
-                  <th>Réponse</th>
-                  <th style={{ width: '100px' }}>Dimension</th>
-                  <th style={{ width: '70px', textAlign: 'center' }}>Score</th>
-                  <th style={{ width: '80px', textAlign: 'center' }}>Alerte</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ width: '40px', padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>#</th>
+                  <th style={{ width: '110px', padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Réf.</th>
+                  <th style={{ padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Question posée</th>
+                  <th style={{ padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Réponse formulée</th>
+                  <th style={{ width: '120px', padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Dimension</th>
+                  <th style={{ width: '70px', padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', textAlign: 'center' }}>Score</th>
+                  <th style={{ width: '85px', padding: '12px 14px', fontSize: '0.75rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', textAlign: 'center' }}>Signal</th>
                 </tr>
               </thead>
               <tbody>
-                {normalizedResponses.map((resp, i) => {
-                  const dimStyle = dimensionStyle(resp.dimension);
+                {filteredResponses.map((resp, i) => {
+                  const dimStyle = getDimensionStyle(resp.dimension);
                   return (
                     <tr
                       key={resp.id}
                       style={{
-                        background: resp.redFlagTriggered ? 'rgba(239,68,68,0.03)' : '',
-                        borderLeft: resp.redFlagTriggered ? '3px solid #FCA5A5' : '3px solid transparent',
+                        borderBottom: '1px solid #F1F5F9',
+                        background: resp.redFlagTriggered ? 'rgba(239, 68, 68, 0.03)' : '#FFFFFF',
+                        borderLeft: resp.redFlagTriggered ? '3px solid #EF4444' : '3px solid transparent',
                       }}
                     >
                       {/* # */}
-                      <td style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontWeight: 700 }}>
+                      <td style={{ padding: '12px 14px', fontSize: '0.76rem', color: '#94A3B8', fontWeight: 700 }}>
                         {i + 1}
                       </td>
 
-                      {/* ID */}
-                      <td>
-                        <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#1A9DB8', fontWeight: 700 }}>
+                      {/* Réf ID */}
+                      <td style={{ padding: '12px 14px' }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#17212D', fontWeight: 700 }}>
                           {resp.questionId}
                         </span>
-                        {resp.isCritical && (
-                          <div style={{ fontSize: '0.66rem', color: '#D97706', fontWeight: 700, marginTop: '1px' }}>
-                          </div>
-                        )}
                       </td>
 
                       {/* Question */}
-                      <td style={{ maxWidth: '280px' }}>
-                        <span style={{ fontSize: '0.87rem', color: 'var(--adm-text)', fontWeight: 600, lineHeight: 1.4 }}>
+                      <td style={{ padding: '12px 14px', maxWidth: '320px' }}>
+                        <span style={{ fontSize: '0.86rem', color: '#17212D', fontWeight: 600, lineHeight: 1.45 }}>
                           {resp.questionText}
                         </span>
                       </td>
 
                       {/* Réponse */}
-                      <td style={{ maxWidth: '220px' }}>
+                      <td style={{ padding: '12px 14px', maxWidth: '260px' }}>
                         <span style={{
                           display: 'inline-block',
-                          fontSize: '0.85rem',
+                          fontSize: '0.84rem',
                           fontWeight: 700,
                           color: '#0F172A',
                           background: '#F1F5F9',
                           padding: '4px 10px',
-                          borderRadius: '8px',
-                          lineHeight: 1.45,
+                          borderRadius: '6px',
+                          lineHeight: 1.4,
                         }}>
                           {resp.displayAnswer}
                         </span>
                       </td>
 
                       {/* Dimension */}
-                      <td>
+                      <td style={{ padding: '12px 14px' }}>
                         <span style={{
                           display: 'inline-block',
                           fontSize: '0.72rem',
                           fontWeight: 700,
-                          textTransform: 'capitalize',
                           background: dimStyle.bg,
                           color: dimStyle.text,
-                          padding: '2px 7px',
-                          borderRadius: '5px',
+                          padding: '3px 8px',
+                          borderRadius: '4px',
                         }}>
-                          {resp.dimension}
+                          {dimStyle.label}
                         </span>
                       </td>
 
                       {/* Score */}
-                      <td style={{ textAlign: 'center' }}>
+                      <td style={{ padding: '12px 14px', textAlign: 'center' }}>
                         {resp.score15 !== null ? (
                           <span style={{
                             fontWeight: 800,
-                            fontSize: '0.9rem',
-                            color: resp.score15 >= 4 ? '#10B981' : resp.score15 >= 2 ? '#F59E0B' : '#EF4444',
+                            fontSize: '0.88rem',
+                            color: resp.score15 >= 4 ? '#059669' : resp.score15 >= 2.5 ? '#D97706' : '#DC2626',
                           }}>
                             {resp.score15}/5
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
+                          <span style={{ color: '#CBD5E1', fontSize: '0.8rem' }}>—</span>
                         )}
                       </td>
 
-                      {/* Alerte */}
-                      <td style={{ textAlign: 'center' }}>
+                      {/* Red flag signal */}
+                      <td style={{ padding: '12px 14px', textAlign: 'center' }}>
                         {resp.redFlagTriggered ? (
                           <span
-                            title={resp.redFlagCode ?? 'Red flag'}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '2px 7px', borderRadius: '5px' }}
+                            title={resp.redFlagCode ?? 'Signal critique déclenché'}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: 800,
+                              color: '#DC2626',
+                              background: '#FEE2E2',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                            }}
                           >
-                            <Flag size={11} /> {resp.redFlagCode ? resp.redFlagCode.split('_').slice(-1)[0] : 'Flag'}
+                            <Flag size={11} /> Alerte
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--slate-300)', fontSize: '0.8rem' }}>—</span>
+                          <span style={{ color: '#CBD5E1', fontSize: '0.8rem' }}>—</span>
                         )}
                       </td>
                     </tr>
@@ -495,11 +1010,11 @@ export const DiagnosticRunDetailScreen = () => {
         )}
       </div>
 
-      {/* Result modal removed */}
-
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
 };
+
+export default DiagnosticRunDetailScreen;

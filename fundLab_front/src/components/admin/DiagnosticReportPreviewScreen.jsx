@@ -150,12 +150,21 @@ export const DiagnosticReportPreviewScreen = () => {
       // Method B: Search fallback in global diagnostics list (useful on refresh or direct URL access)
       if (!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) {
         const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
-        const list = resDiag?.data || [];
+        const list = Array.isArray(resDiag)
+          ? resDiag
+          : (Array.isArray(resDiag?.data?.diagnostics)
+            ? resDiag.data.diagnostics
+            : (Array.isArray(resDiag?.data)
+              ? resDiag.data
+              : (Array.isArray(resDiag?.diagnostics)
+                ? resDiag.diagnostics
+                : [])));
         const matched = list.find(r => r?.diagnostic_run_id === runId);
         if (matched) {
           fetchedDetail = mergeDetails(fetchedDetail, matched, resDiag?.user);
-          if (matched.user_id) {
-            const resHist = await apiFetch(`/admin/dashboard/${matched.user_id}/historical`).catch(() => null);
+          const targetUserId = matched.user_id || matched.user?.id || matched.user?.user_id;
+          if (targetUserId) {
+            const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
             const histList = Array.isArray(resHist) ? resHist : (resHist?.data ?? []);
             const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
             if (histMatched) {

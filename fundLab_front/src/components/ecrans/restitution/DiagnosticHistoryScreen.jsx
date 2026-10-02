@@ -565,7 +565,7 @@ export const DiagnosticHistoryScreen = () => {
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
                         <a
-                          href={`/admin/diagnostics/${item.diagnosticRunId}?userId=${item.userId}`}
+                          href={`/admin/diagnostics/${item.diagnosticRunId}?userId=${item.userId || ''}&businessName=${encodeURIComponent(item.businessName || '')}&userName=${encodeURIComponent(item.userName || '')}&userEmail=${encodeURIComponent(item.userEmail || '')}&userPhone=${encodeURIComponent(item.userPhone || '')}&sector=${encodeURIComponent(item.sector || '')}&moduleCode=${encodeURIComponent(item.moduleCode || '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-ghost btn-sm"
@@ -575,7 +575,7 @@ export const DiagnosticHistoryScreen = () => {
                           <ExternalLink size={14} /> Voir
                         </a>
                         <a
-                          href={`/admin/diagnostics/${item.diagnosticRunId}/report?userId=${item.userId}`}
+                          href={`/admin/diagnostics/${item.diagnosticRunId}/report?userId=${item.userId || ''}&businessName=${encodeURIComponent(item.businessName || '')}&userName=${encodeURIComponent(item.userName || '')}&userEmail=${encodeURIComponent(item.userEmail || '')}&userPhone=${encodeURIComponent(item.userPhone || '')}&sector=${encodeURIComponent(item.sector || '')}&moduleCode=${encodeURIComponent(item.moduleCode || '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-ghost btn-sm"
