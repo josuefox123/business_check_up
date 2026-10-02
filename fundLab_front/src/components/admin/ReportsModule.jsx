@@ -42,7 +42,7 @@ const formatDate = (iso) => {
 
 // Modes de tri disponibles
 const SORT_MODES = [
-  { key: 'contacts_first', label: 'Contacts en premier', icon: MailCheck },
+  // { key: 'contacts_first', label: 'Contacts en premier', icon: MailCheck },
   { key: 'name_asc', label: 'Nom A → Z', icon: ArrowUpAZ },
   { key: 'name_desc', label: 'Nom Z → A', icon: ArrowDownAZ },
   { key: 'sent_first', label: 'Envoyés en premier', icon: CheckCircle2 },
@@ -75,9 +75,11 @@ const sortItems = (items, mode) => {
     case 'contacts_first':
     default:
       return arr.sort((a, b) => {
-        const aHas = Boolean(a.userEmail || a.userPhone) ? 0 : 1;
-        const bHas = Boolean(b.userEmail || b.userPhone) ? 0 : 1;
-        return aHas - bHas;
+        const aHas = Boolean(a.userEmail || a.userPhone);
+        const bHas = Boolean(b.userEmail || b.userPhone);
+        if (aHas && !bHas) return -1; // a a un contact, b n'en a pas -> a en premier
+        if (!aHas && bHas) return 1;  // b a un contact, a n'en a pas -> b en premier
+        return 0;                     // les deux ont ou n'ont pas de contact -> pas de changement
       });
   }
 };
@@ -483,32 +485,32 @@ export const ReportsModule = () => {
                           )}
 
                           {/* État : sent (déjà envoyé à l'origine ou après succès d'envoi récent) */}
-                          {(isAlreadySent || isSuccess) && !isSending && (
+                          {/* {(isAlreadySent || isSuccess) && !isSending && (
                             <span
                               title={item.reportSentAt ? `Envoyé le ${formatDate(item.reportSentAt)}` : 'Rapport envoyé'}
                               style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 700, color: '#166534', background: '#DCFCE7', padding: '6px 12px', borderRadius: '8px', cursor: 'help' }}
                             >
                               <CheckCircle2 size={13} /> Envoyé
                             </span>
-                          )}
+                          )} */}
 
                           {/* État : failed */}
-                          {isErr && !isSending && (
-                            <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-                              <span title={state?.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '4px 8px', borderRadius: '20px', cursor: 'help' }}>
-                                <AlertCircle size={11} /> Échec
-                              </span>
-                              <button
-                                onClick={() => handleResendReport(item)}
-                                className="btn btn-primary btn-sm"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
-                                title="Relancer l'envoi du rapport"
-                              >
-                                <Send size={13} />
-                                Relancer
-                              </button>
-                            </div>
-                          )}
+                          {/* {isErr && !isSending && ( */}
+                          <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                            <span title={state?.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '4px 8px', borderRadius: '20px', cursor: 'help' }}>
+                              <AlertCircle size={11} /> Échec
+                            </span>
+                            <button
+                              onClick={() => handleResendReport(item)}
+                              className="btn btn-primary btn-sm"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
+                              title="Relancer l'envoi du rapport"
+                            >
+                              <Send size={13} />
+                              Relancer
+                            </button>
+                          </div>
+                          {/* )} */}
 
                           {/* État : pending (par défaut, pas encore envoyé et aucune action en cours/erreur) */}
                           {!isAlreadySent && !isSuccess && !isSending && !isErr && (

@@ -1,0 +1,217 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Enums\CompletionStatus;
+use App\Enums\SessionStatus;
+use App\Http\Controllers\Api\BaseController;
+use App\Models\BusinessProfile;
+use App\Models\DiagnosticRun;
+use App\Models\FollowUpLead;
+use App\Models\ScoringResult;
+use App\Models\UserProfile;
+use App\Models\UserSession;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Enums\ScoreBand;
+
+
+class DashboardController extends BaseController
+{
+    /**
+     * Vue d'ensemble du dashboard
+     * GET /api/bc/admin/dashboard
+     */
+    public function overview(Request $request): JsonResponse
+    {
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+
+        $sessions = UserSession::whereBetween('started_at', [$startDate, $endDate . ' 23:59:59']);
+        $diagnostics = DiagnosticRun::whereBetween('started_at', [$startDate, $endDate . ' 23:59:59']);
+        
+        $total = ScoringResult::count();
+
+        $stats = collect(ScoreBand::cases())->mapWithKeys(function ($band) use ($total) {
+            $count = ScoringResult::where('score_band', $band)->count();
+
+            return [
+                $band->value => [
+                    'count' => $count,
+                    'percentage' => $total > 0
+                        ? round(($count / $total) * 100, 2)
+                        : 0,
+                ],
+            ];
+        });
+
+        return $this->respondSuccess([
+            'period' => ['from' => $startDate, 'to' => $endDate],
+            'traffic' => [
+                'total_visitors' => $sessions->count(),
+                'new_sessions' => $sessions->where('session_status', SessionStatus::STARTED->value)->count(),
+                'completed_sessions' => $sessions->where('session_status', SessionStatus::COMPLETED->value)->count(),
+                'abandoned_sessions' => $sessions->where('session_status', SessionStatus::ABANDONED->value)->count(),
+            ],
+            'diagnostics' => [
+                'started' => $diagnostics->count(),
+                'completed' => $diagnostics->where('completion_status', CompletionStatus::COMPLETED)->count(),
+                'abandoned' => $diagnostics->where('completion_status', CompletionStatus::ABANDONED)->count(),
+                'completion_rate' => $this->calculateCompletionRate($diagnostics),
+            ],
+            'follow_ups' => [
+                'total_requests' => FollowUpLead::whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])->count(),
+                'urgent' => FollowUpLead::where('lead_priority', 'urgent')->count(),
+                'high' => FollowUpLead::where('lead_priority', 'high')->count(),
+                'new' => FollowUpLead::where('lead_status', 'new')->count(),
+            ],
+            'pme' => BusinessProfile::with('user')
+                ->get()
+                ->pluck('user.email')
+                ->filter()
+                ->unique()
+                ->count(),
+            'score_band' => $stats,
+        ]);
+    }
+
+    /**
+     * Répartition par module
+     * GET /api/bc/admin/dashboard/modules
+     */
+    public function modules(Request $request): JsonResponse
+    {
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+
+        $modules = DiagnosticRun::select('module_code')
+            ->selectRaw('COUNT(*) as count')
+            ->selectRaw('SUM(CASE WHEN completion_status = ? THEN 1 ELSE 0 END) as completed', [CompletionStatus::COMPLETED->value])
+            ->whereBetween('started_at', [$startDate, $endDate . ' 23:59:59'])
+            ->groupBy('module_code')
+            ->orderByDesc('count')
+            ->get();
+
+        return $this->respondSuccess([
+            'modules' => $modules,
+        ]);
+    }
+
+    /**
+     * Les diagnostics paginés par 30
+     */
+    public function diagnostics(Request $request): JsonResponse
+    {
+        $query = DiagnosticRun::query();
+
+        // Filtres optionnels
+        if ($request->filled('module_code')) {
+            $query->where('module_code', $request->input('module_code'));
+        }
+
+        if ($request->filled('completion_status')) {
+            $query->where('completion_status', $request->input('completion_status'));
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
+        // Tri par date de début décroissante par défaut
+        $query->orderBy('started_at', 'desc');
+
+        // Pagination : 30 par page
+        $query->with(['business:business_id,business_name,sector,sub_sector,description', 'user:user_id,full_name,phone_number,whatsapp_number,email'])->orderBy('started_at', 'desc');
+        
+        $diagnostics = $query->paginate(30);
+
+        return response()->json($diagnostics);
+    }
+
+
+
+    /**
+     * Scores moyens par module
+     *  GET /api/bc/admin/dashboard/scores
+     */
+    public function scores(Request $request): JsonResponse
+    {
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+
+        $scores = ScoringResult::select('module_code')
+            ->selectRaw('AVG(converted_score_0_100) as avg_score')
+            ->selectRaw('AVG(credibilized_score_0_100) as avg_credibilized_score')
+            ->selectRaw('COUNT(*) as total')
+            ->whereBetween('score_calculated_at', [$startDate, $endDate . ' 23:59:59'])
+            ->groupBy('module_code')
+            ->get();
+
+        return $this->respondSuccess([
+            'scores_by_module' => $scores,
+        ]);
+    }
+
+    /**
+     * Répartition territoriale
+     *  GET /api/bc/admin/dashboard/territory
+     */
+    public function territory(Request $request): JsonResponse
+    {
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+
+        $regions = DB::table('bc_business_profiles as bp')
+            ->join('bc_diagnostic_runs as dr', 'bp.business_id', '=', 'dr.business_id')
+            ->select('bp.region')
+            ->selectRaw('COUNT(*) as diagnostic_count')
+            ->whereBetween('dr.started_at', [$startDate, $endDate . ' 23:59:59'])
+            ->groupBy('bp.region')
+            ->orderByDesc('diagnostic_count')
+            ->get();
+
+        return $this->respondSuccess([
+            'regions' => $regions,
+        ]);
+    }
+
+    private function calculateCompletionRate($diagnostics): float
+    {
+        $total = $diagnostics->count();
+        if ($total === 0) return 0.0;
+
+        $completed = $diagnostics->clone()->where('completion_status', CompletionStatus::COMPLETED->value)->count();
+        return round(($completed / $total) * 100, 2);
+    }
+
+    /**
+     * Liste des PMES
+     */
+    public function pmes(): JsonResponse
+    {
+    $pmes = BusinessProfile::with(['diagnosticRuns', 'user'])
+        ->withCount('diagnosticRuns')
+        ->get()
+        ->filter(fn ($business) => filled($business->user?->email))
+        ->unique(fn ($business) => $business->user->email)
+        ->values();
+
+        return response()->json($pmes);
+    }
+
+    /**
+     * Historique d'une utilisateur
+     */
+    public function historical(UserProfile $userProfile): JsonResponse
+    {
+        $h = $userProfile->diagnosticRuns()
+            ->with([
+                'business',
+                'questionResponses.question:question_id,text'
+            ])
+            ->get();
+
+        return response()->json($h);
+    }
+}

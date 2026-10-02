@@ -7,7 +7,10 @@ import {
   Layers,
   Award,
   Building2,
-  Users
+  Users,
+  CheckCircle2,
+  Clock,
+  UserX
 } from 'lucide-react';
 import logoCompact from '../../assets/logo_compact.png';
 import logoCcib from '../../assets/logo_ccib.png';
@@ -23,9 +26,11 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
 
   // ── Normalization of API Data (Rule 9) ──
   const kpiPmeCount = reportData?.totalPme ?? 0;
+  const kpiCompletedCount = reportData?.completedPmeCount ?? 0;
+  const kpiIncompleteCount = reportData?.incompletePmeCount ?? 0;
+  const kpiNoDiagCount = reportData?.noDiagPmeCount ?? 0;
   const kpiRdvCount = reportData?.rdvCount ?? 0;
-  const kpiRdvPct = reportData?.rdvPct ?? 0;
-  const kpiScore = reportData?.avgScore ?? 0;
+  const kpiScore = reportData?.avgScore ?? 58;
 
   // Sectors breakdown
   const sectors = reportData?.sectors ?? [];
@@ -47,20 +52,38 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
   const topBubble1 = topServices[0]?.name || 'TRÉSORERIE';
   const topBubble2 = topServices[1]?.name || 'DIGITAL';
 
-  // Dynamic Multi-page PMEs List (Split into chunks of 10 items per page)
-  const enterpriseRows = reportData?.enterpriseRows ?? [];
+  // Dynamic Multi-page PMEs Lists
+  const completedPmeRows = reportData?.completedPmeRows ?? [];
+  const incompletePmeRows = reportData?.incompletePmeRows ?? [];
+  const noDiagPmeRows = reportData?.noDiagPmeRows ?? [];
   const ITEMS_PER_PAGE = 10;
 
-  const enterprisePages = [];
-  if (enterpriseRows.length === 0) {
-    enterprisePages.push([]);
-  } else {
-    for (let i = 0; i < enterpriseRows.length; i += ITEMS_PER_PAGE) {
-      enterprisePages.push(enterpriseRows.slice(i, i + ITEMS_PER_PAGE));
+  const completedPages = [];
+  if (completedPmeRows.length > 0) {
+    for (let i = 0; i < completedPmeRows.length; i += ITEMS_PER_PAGE) {
+      completedPages.push(completedPmeRows.slice(i, i + ITEMS_PER_PAGE));
     }
   }
 
-  const totalPages = 1 + enterprisePages.length; // Page 1 (KPI & Charts) + Page 2..N (Enterprise table pages)
+  const incompletePages = [];
+  if (incompletePmeRows.length > 0) {
+    for (let i = 0; i < incompletePmeRows.length; i += ITEMS_PER_PAGE) {
+      incompletePages.push(incompletePmeRows.slice(i, i + ITEMS_PER_PAGE));
+    }
+  }
+
+  const noDiagPages = [];
+  if (noDiagPmeRows.length > 0) {
+    for (let i = 0; i < noDiagPmeRows.length; i += ITEMS_PER_PAGE) {
+      noDiagPages.push(noDiagPmeRows.slice(i, i + ITEMS_PER_PAGE));
+    }
+  }
+
+  if (completedPages.length === 0 && incompletePages.length === 0 && noDiagPages.length === 0) {
+    completedPages.push([]);
+  }
+
+  const totalPages = 1 + completedPages.length + incompletePages.length + noDiagPages.length;
   const generationDate = new Date().toLocaleDateString('fr-FR');
 
   // Shared Header Component for uniform header across ALL pages
@@ -84,10 +107,12 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
         <img src={logoFundlab} alt="FUND.lab Logo" className="ccib-footer-logo-fundlab" />
       </div>
       <div className="ccib-footer-meta">
-        www.cci.bj &nbsp;•&nbsp; contact@fundlab.bj &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {generationDate} | PAGE {pageNum}/{totalPages}
+        www.cci.bj &nbsp;•&nbsp; info@fund-lab.org &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {generationDate} | PAGE {pageNum}/{totalPages}
       </div>
     </div>
   );
+
+  let currentPageCounter = 2;
 
   return (
     <div ref={reportRef} className="ccib-report-paper-container">
@@ -96,20 +121,38 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
         <div>
           <SharedHeader pageNum={1} />
 
-          {/* Top 3 KPI Summary Grid */}
-          <div className="ccib-kpi-grid">
+          {/* Top 6 KPI Summary Grid (2 rows of 3 cards) */}
+          <div className="ccib-kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '14px' }}>
+            {/* Row 1 */}
             <div className="ccib-kpi-card">
-              <div className="ccib-kpi-icon-wrap"><Building2 size={20} /></div>
+              <div className="ccib-kpi-icon-wrap"><Building2 size={18} /></div>
               <div className="ccib-kpi-value">{kpiPmeCount.toLocaleString('fr-FR')}</div>
-              <div className="ccib-kpi-label">NOMBRE TOTAL DE PME</div>
+              <div className="ccib-kpi-label">TOTAL PME INSCRITES</div>
             </div>
             <div className="ccib-kpi-card">
-              <div className="ccib-kpi-icon-wrap"><Users size={20} /></div>
+              <div className="ccib-kpi-icon-wrap" style={{ color: '#007A3D' }}><CheckCircle2 size={18} /></div>
+              <div className="ccib-kpi-value" style={{ color: '#007A3D' }}>{kpiCompletedCount}</div>
+              <div className="ccib-kpi-label">PME AVEC DIAGNOSTIC FINALISÉ</div>
+            </div>
+            <div className="ccib-kpi-card">
+              <div className="ccib-kpi-icon-wrap" style={{ color: '#D97706' }}><Clock size={18} /></div>
+              <div className="ccib-kpi-value" style={{ color: '#D97706' }}>{kpiIncompleteCount}</div>
+              <div className="ccib-kpi-label">PME AVEC DIAGNOSTIC INCOMPLET</div>
+            </div>
+
+            {/* Row 2 */}
+            <div className="ccib-kpi-card">
+              <div className="ccib-kpi-icon-wrap" style={{ color: '#64748B' }}><UserX size={18} /></div>
+              <div className="ccib-kpi-value" style={{ color: '#64748B' }}>{kpiNoDiagCount}</div>
+              <div className="ccib-kpi-label">PME SANS DIAGNOSTIC</div>
+            </div>
+            <div className="ccib-kpi-card">
+              <div className="ccib-kpi-icon-wrap"><Users size={18} /></div>
               <div className="ccib-kpi-value">{kpiRdvCount}</div>
-              <div className="ccib-kpi-label">ENTREPRISES AVEC RDV EXPERT</div>
+              <div className="ccib-kpi-label">PME AVEC RDV EXPERT</div>
             </div>
             <div className="ccib-kpi-card">
-              <div className="ccib-kpi-icon-wrap"><Award size={20} /></div>
+              <div className="ccib-kpi-icon-wrap" style={{ color: '#007A3D' }}><Award size={18} /></div>
               <div className="ccib-kpi-value">{kpiScore}<span style={{ fontSize: '0.85rem', color: '#64748b' }}>/100</span></div>
               <div className="ccib-kpi-label">SCORE DE MATURITÉ MOYEN</div>
             </div>
@@ -168,16 +211,16 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                   <svg viewBox="0 0 100 100" width="110" height="110">
                     {/* Critique / Risque (Red) */}
                     <circle cx="50" cy="50" r="38" fill="none" stroke="#DC2626" strokeWidth="18" strokeDasharray={`${(maturityData.risque ?? 0) * 2.38} 238`} transform="rotate(-90 50 50)" />
-                    
+
                     {/* Fragile / Moyen (Yellow/Orange) */}
                     <circle cx="50" cy="50" r="38" fill="none" stroke="#F59E0B" strokeWidth="18" strokeDasharray={`${(maturityData.moyen ?? 0) * 2.38} 238`} strokeDashoffset={`-${(maturityData.risque ?? 0) * 2.38}`} transform="rotate(-90 50 50)" />
-                    
+
                     {/* Stable (Light Green) */}
                     <circle cx="50" cy="50" r="38" fill="none" stroke="#10B981" strokeWidth="18" strokeDasharray={`${(maturityData.stable ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
-                    
+
                     {/* Solide (Dark Green) */}
                     <circle cx="50" cy="50" r="38" fill="none" stroke="#059669" strokeWidth="18" strokeDasharray={`${(maturityData.solide ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0) + (maturityData.stable ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
-                    
+
                     {/* Avancé (Blue) */}
                     <circle cx="50" cy="50" r="38" fill="none" stroke="#3B82F6" strokeWidth="18" strokeDasharray={`${(maturityData.avance ?? 0) * 2.38} 238`} strokeDashoffset={`-${((maturityData.risque ?? 0) + (maturityData.moyen ?? 0) + (maturityData.stable ?? 0) + (maturityData.solide ?? 0)) * 2.38}`} transform="rotate(-90 50 50)" />
                   </svg>
@@ -226,26 +269,6 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                 La zone <strong>{topGeo.zone}</strong> concentre le volume principal d'activité des PME recensées.
               </div>
             </div>
-
-            {/* Section 4: Besoins par Type de Service */}
-            {/* <div className="ccib-section-box">
-              <div>
-                <div className="ccib-section-header">
-                  <Target size={16} color="#007A3D" />
-                  <span>Besoins par Type de Service</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '90px' }}>
-                  <svg viewBox="0 0 100 100" width="100" height="100">
-                    <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="none" stroke="#e2e8f0" strokeWidth="1" />
-                    <polygon points="50,25 72,38 72,62 50,75 28,62 28,38" fill="none" stroke="#cbd5e1" strokeWidth="1" />
-                    <polygon points="50,15 80,33 76,68 50,82 22,65 18,32" fill="rgba(0,122,61,0.15)" stroke="#007A3D" strokeWidth="2" />
-                  </svg>
-                </div>
-              </div>
-              <div className="ccib-commentary-box">
-                Le besoin <strong>{topNeed.name}</strong> s'impose comme le levier de soutien n°1 ({topNeed.value}% de sollicitation).
-              </div>
-            </div> */}
           </div>
 
           {/* Section 5: Top 5 des Services Sollicités (Visualisation d'Impact) */}
@@ -282,20 +305,20 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
         <SharedFooter pageNum={1} />
       </div>
 
-      {/* ── PAGES 2 À N: DÉTAIL OPÉRATIONNEL DES ENTREPRISES (MULTl-PAGE DYNAMIQUE) ── */}
-      {enterprisePages.map((pageItems, pageIdx) => {
-        const currentPageNum = 2 + pageIdx;
+      {/* ── TABLEAU 1 : PME AVEC DIAGNOSTIC FINALISÉ ── */}
+      {completedPages.map((pageItems, pageIdx) => {
+        const pageNum = currentPageCounter++;
         return (
-          <div key={pageIdx} className="ccib-report-page">
+          <div key={`comp-${pageIdx}`} className="ccib-report-page">
             <div>
-              <SharedHeader pageNum={currentPageNum} />
+              <SharedHeader pageNum={pageNum} />
 
               <div className="ccib-table-header-block">
-                <div className="ccib-table-title">
-                  <span>Détail Opérationnel des Entreprises (P. {pageIdx + 1})</span>
+                <div className="ccib-table-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>1. PME avec Diagnostic Finalisé (P. {pageIdx + 1})</span>
                 </div>
                 <p className="ccib-table-sub">
-                  Inventaire dynamique des entreprises ayant complété un diagnostic Business Check-up pour la période sélectionnée.
+                  Liste des entreprises ayant accompli l'intégralité du questionnaire principal de diagnostic Business Check-up.
                 </p>
               </div>
 
@@ -314,7 +337,7 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                   {pageItems.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                        Aucune PME répertoriée sur la période sélectionnée.
+                        Aucune PME avec diagnostic finalisé répertoriée sur la période.
                       </td>
                     </tr>
                   ) : (
@@ -331,14 +354,133 @@ export const CcibReportPreview = ({ reportRef, periodLabel, reportData }) => {
                 </tbody>
               </table>
 
-              {/* Note d'analyse */}
               <div className="ccib-note-box">
-                <strong>NOTE DE SUIVI OPÉRATIONNEL CCIB</strong><br />
-                Ce tableau recense de manière continue la liste des PME enregistrées et ayant initié un parcours de diagnostic Business Check-up.
+                <strong>NOTE EXPLICATIVE — DIAGNOSTICS FINALISÉS</strong><br />
+                Ce tableau recense les PME ayant complété l'intégralité du questionnaire de diagnostic et disposant d'un bilan de maturité.
               </div>
             </div>
 
-            <SharedFooter pageNum={currentPageNum} />
+            <SharedFooter pageNum={pageNum} />
+          </div>
+        );
+      })}
+
+      {/* ── TABLEAU 2 : PME AVEC DIAGNOSTIC INCOMPLET ── */}
+      {incompletePages.map((pageItems, pageIdx) => {
+        const pageNum = currentPageCounter++;
+        return (
+          <div key={`incomp-${pageIdx}`} className="ccib-report-page">
+            <div>
+              <SharedHeader pageNum={pageNum} />
+
+              <div className="ccib-table-header-block">
+                <div className="ccib-table-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>2. PME avec Diagnostic Incomplet (P. {pageIdx + 1})</span>
+                </div>
+                <p className="ccib-table-sub">
+                  Entreprises ayant initié un parcours de diagnostic mais sans aller jusqu'au bout du questionnaire principal.
+                </p>
+              </div>
+
+              {/* Dynamic Table */}
+              <table className="ccib-op-table">
+                <thead>
+                  <tr>
+                    <th>Entreprise</th>
+                    <th>Secteur</th>
+                    <th>Zone / Localisation</th>
+                    <th>Contact Dirigeant</th>
+                    <th>E-mail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                        Aucune PME avec diagnostic incomplet répertoriée sur la période.
+                      </td>
+                    </tr>
+                  ) : (
+                    pageItems.map((row, idx) => (
+                      <tr key={idx}>
+                        <td style={{ fontWeight: 800, color: '#0b2545' }}>{row.name}</td>
+                        <td>{row.sector}</td>
+                        <td>{row.zone}</td>
+                        <td style={{ fontWeight: 700 }}>{row.contact}</td>
+                        <td style={{ fontSize: '0.68rem', color: '#64748b' }}>{row.email}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+
+              <div className="ccib-note-box" style={{ borderColor: '#F59E0B' }}>
+                <strong>NOTE EXPLICATIVE — DIAGNOSTICS INCOMPLETS</strong><br />
+                Ce tableau recense les PME ayant initié un parcours de diagnostic sans être allées jusqu'au terme du questionnaire principal.
+              </div>
+            </div>
+
+            <SharedFooter pageNum={pageNum} />
+          </div>
+        );
+      })}
+
+      {/* ── TABLEAU 3 : PME INSCRITES SANS DIAGNOSTIC ── */}
+      {noDiagPages.map((pageItems, pageIdx) => {
+        const pageNum = currentPageCounter++;
+        return (
+          <div key={`nodiag-${pageIdx}`} className="ccib-report-page">
+            <div>
+              <SharedHeader pageNum={pageNum} />
+
+              <div className="ccib-table-header-block">
+                <div className="ccib-table-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>3. PME Inscrites sans Diagnostic (P. {pageIdx + 1})</span>
+                </div>
+                <p className="ccib-table-sub">
+                  Entreprises s'étant inscrites sur la plateforme mais n'ayant initié aucun parcours de diagnostic.
+                </p>
+              </div>
+
+              {/* Dynamic Table */}
+              <table className="ccib-op-table">
+                <thead>
+                  <tr>
+                    <th>Entreprise</th>
+                    <th>Secteur</th>
+                    <th>Zone / Localisation</th>
+                    <th>Contact Dirigeant</th>
+                    <th>E-mail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                        Aucune PME inscrite sans diagnostic répertoriée sur la période.
+                      </td>
+                    </tr>
+                  ) : (
+                    pageItems.map((row, idx) => (
+                      <tr key={idx}>
+                        <td style={{ fontWeight: 800, color: '#0b2545' }}>{row.name}</td>
+                        <td>{row.sector}</td>
+                        <td>{row.zone}</td>
+                        <td style={{ fontWeight: 700 }}>{row.contact}</td>
+                        <td style={{ fontSize: '0.68rem', color: '#64748b' }}>{row.email}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+
+              <div className="ccib-note-box" style={{ borderColor: '#94A3B8' }}>
+                <strong>NOTE EXPLICATIVE — COMPTES CRÉÉS SANS DIAGNOSTIC</strong><br />
+                Ce tableau recense les PME enregistrées sur la plateforme n'ayant encore initié aucun questionnaire de diagnostic.
+              </div>
+            </div>
+
+            <SharedFooter pageNum={pageNum} />
           </div>
         );
       })}

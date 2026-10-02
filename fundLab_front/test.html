@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Business Check-up - Modèle rapport augmenté 3 pages - DIF-03</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Lato, Arial, sans-serif;
+            color: #17212D;
+            background: #edf1f4;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+        }
+
+        .header {
+            position: absolute;
+            left: 17mm;
+            right: 17mm;
+            top: 8mm;
+            height: 12mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: .35mm solid #D8E0E6;
+            padding-bottom: 3mm;
+        }
+
+        .header img {
+            height: 8.5mm;
+            width: auto;
+        }
+
+        .header .meta {
+            color: #65727E;
+            font-size: 7.2pt;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .footer {
+            position: absolute;
+            left: 17mm;
+            right: 17mm;
+            bottom: 7mm;
+            border-top: .3mm solid #D8E0E6;
+            padding-top: 2.4mm;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7pt;
+            color: #65727E;
+        }
+
+        .pad {
+            padding: 27mm 17mm 17mm;
+            height: 100%;
+        }
+
+        .kicker {
+            color: #34BED5;
+            font-weight: 900;
+            font-size: 8.6pt;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 31pt;
+            line-height: 1.03;
+            letter-spacing: -.03em;
+            margin: 3.5mm 0 5mm;
+            font-weight: 900;
+        }
+
+        h2 {
+            font-size: 18.5pt;
+            line-height: 1.12;
+            margin: 1mm 0 4mm;
+            font-weight: 900;
+        }
+
+        h3 {
+            font-size: 11.5pt;
+            line-height: 1.2;
+            margin: 0 0 2mm;
+            font-weight: 900;
+        }
+
+        p {
+            font-size: 9.3pt;
+            line-height: 1.45;
+            margin: 0 0 3mm;
+        }
+
+        .small {
+            font-size: 7.8pt;
+            line-height: 1.4;
+            color: #65727E;
+        }
+
+        .lead {
+            font-size: 12pt;
+            line-height: 1.45;
+            color: #485563;
+        }
+
+        .card {
+            border: .35mm solid #D8E0E6;
+            border-radius: 4mm;
+            padding: 4mm 4.5mm;
+            background: #fff;
+        }
+
+        .card.soft {
+            background: #F4F7F9;
+            border-color: #E1E7EB;
+        }
+
+        .card.navy {
+            background: #17212D;
+            border-color: #17212D;
+            color: #fff;
+        }
+
+        .card.cyan {
+            background: #EAF9FC;
+            border-color: #BDECF3;
+        }
+
+        .card.green {
+            background: #EEF8F4;
+            border-color: #CCE8DD;
+        }
+
+        .card.amber {
+            background: #FFF7E8;
+            border-color: #F1D9A5;
+        }
+
+        .grid2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4mm;
+        }
+
+        .grid3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3mm;
+        }
+
+        .grid6040 {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 5mm;
+        }
+
+        .grid7030 {
+            display: grid;
+            grid-template-columns: 7fr 3fr;
+            gap: 5mm;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: flex-start;
+            gap: 3mm;
+            margin-bottom: 5mm;
+        }
+
+        .section-no {
+            width: 11mm;
+            height: 11mm;
+            border-radius: 3mm;
+            background: #17212D;
+            color: #34BED5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12pt;
+            font-weight: 900;
+            flex: 0 0 auto;
+        }
+
+        .big-score {
+            font-size: 38pt;
+            line-height: 1;
+            font-weight: 900;
+            color: #34BED5;
+        }
+
+        .score-unit {
+            font-size: 14pt;
+            font-weight: 800;
+        }
+
+        .band {
+            font-size: 12pt;
+            font-weight: 900;
+            margin-top: 2mm;
+            line-height: 1.25;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 1.2mm 2.2mm;
+            border-radius: 10mm;
+            background: #F3F6F8;
+            color: #344252;
+            font-size: 7.4pt;
+            font-weight: 800;
+            margin: 0 1mm 1mm 0;
+        }
+
+        .tag.t {
+            background: #E6F8FB;
+            color: #0B8598;
+        }
+
+        .tag.a {
+            background: #FFF4DE;
+            color: #9A6815;
+        }
+
+        .tag.g {
+            background: #EAF6F1;
+            color: #2F7B65;
+        }
+
+        .bullet {
+            display: grid;
+            grid-template-columns: 4.5mm 1fr;
+            gap: 2mm;
+            margin: 2.2mm 0;
+            font-size: 8.8pt;
+            line-height: 1.38;
+        }
+
+        .dot {
+            width: 3mm;
+            height: 3mm;
+            border-radius: 50%;
+            background: #34BED5;
+            margin-top: 1.2mm;
+        }
+
+        .dot.green {
+            background: #2F7B65;
+        }
+
+        .dot.amber {
+            background: #D58A00;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 28mm 1fr 12mm;
+            align-items: center;
+            gap: 3mm;
+            margin: 2.5mm 0;
+            font-size: 8pt;
+        }
+
+        .bar-bg {
+            height: 3.5mm;
+            border-radius: 5mm;
+            background: #E7EDF1;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #34BED5;
+            border-radius: 5mm;
+        }
+
+        .bar-fill.n {
+            background: #17212D;
+        }
+
+        .bar-fill.a {
+            background: #D58A00;
+        }
+
+        .bar-fill.g {
+            background: #2F7B65;
+        }
+
+        .rule {
+            width: 16mm;
+            height: .8mm;
+            background: #34BED5;
+            margin: 3.5mm 0;
+        }
+
+        .action {
+            display: grid;
+            grid-template-columns: 8mm 1fr;
+            gap: 3mm;
+            margin: 3mm 0;
+        }
+
+        .action .n {
+            width: 7mm;
+            height: 7mm;
+            border-radius: 50%;
+            background: #34BED5;
+            color: #17212D;
+            font-size: 8pt;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action b {
+            font-size: 9pt;
+        }
+
+        .action span {
+            font-size: 8.2pt;
+            line-height: 1.35;
+            color: #53606D;
+        }
+
+        .data-item {
+            display: grid;
+            grid-template-columns: 4mm 1fr;
+            gap: 2mm;
+            margin: 2mm 0;
+            font-size: 8.3pt;
+            line-height: 1.3;
+        }
+
+        .sq {
+            width: 3.3mm;
+            height: 3.3mm;
+            border: .4mm solid #34BED5;
+            border-radius: .6mm;
+            margin-top: .8mm;
+        }
+
+        .callout {
+            background: #F5FBFC;
+            border-left: 1.2mm solid #34BED5;
+            padding: 3.5mm 4mm;
+            font-size: 8.7pt;
+            line-height: 1.42;
+        }
+
+        .disclaimer {
+            font-size: 6.8pt;
+            line-height: 1.35;
+            color: #65727E;
+        }
+
+        /* cover */
+        .cover .shape1 {
+            position: absolute;
+            width: 115mm;
+            height: 135mm;
+            border: 10mm solid rgba(52, 190, 213, .10);
+            transform: rotate(12deg);
+            top: -45mm;
+            right: -28mm;
+            border-radius: 22mm;
+        }
+
+        .cover .shape2 {
+            position: absolute;
+            width: 80mm;
+            height: 105mm;
+            border: 5mm solid rgba(23, 33, 45, .04);
+            transform: rotate(-9deg);
+            bottom: -45mm;
+            left: -20mm;
+            border-radius: 20mm;
+        }
+
+        .cover .top-logo {
+            position: absolute;
+            top: 18mm;
+            left: 17mm;
+            width: 71mm;
+            height: auto;
+        }
+
+        .cover .body {
+            position: absolute;
+            left: 17mm;
+            right: 17mm;
+            top: 65mm;
+        }
+
+        .cover .title {
+            font-size: 34pt;
+            line-height: 1;
+            font-weight: 900;
+            max-width: 145mm;
+            margin: 4mm 0 6mm;
+            letter-spacing: -.03em;
+        }
+
+        .cover .sub {
+            font-size: 13pt;
+            line-height: 1.43;
+            color: #4C5965;
+            max-width: 145mm;
+        }
+
+        .cover .cards {
+            position: absolute;
+            left: 17mm;
+            right: 17mm;
+            bottom: 38mm;
+            display: grid;
+            grid-template-columns: 1.6fr 1fr 1fr;
+            gap: 3mm;
+        }
+
+        .cover .cards .cell {
+            padding: 4mm 4.5mm;
+            border-top: 1mm solid #34BED5;
+            background: #F6F9FA;
+            min-height: 28mm;
+        }
+
+        .cover .label {
+            font-size: 7.3pt;
+            text-transform: uppercase;
+            color: #65727E;
+            letter-spacing: .08em;
+            font-weight: 800;
+        }
+
+        .cover .value {
+            font-size: 11pt;
+            line-height: 1.28;
+            font-weight: 900;
+            margin-top: 2mm;
+        }
+
+        .cover .foot {
+            position: absolute;
+            left: 17mm;
+            right: 17mm;
+            bottom: 14mm;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            font-size: 7.2pt;
+            color: #65727E;
+        }
+
+        .cover .foot img {
+            width: 34mm;
+            height: auto;
+        }
+
+        .watermark {
+            position: absolute;
+            right: -18mm;
+            bottom: 6mm;
+            width: 70mm;
+            height: 70mm;
+            border: 2mm solid rgba(52, 190, 213, .07);
+            transform: rotate(12deg);
+            border-radius: 10mm;
+        }
+
+        .placeholder {
+            color: #65727E;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PAGE 1 : COVER -->
+    <section class="page cover">
+        <div class="shape1"></div>
+        <div class="shape2"></div>
+        <div
+            style="position:absolute;top:6mm;right:17mm;font-size:7pt;background:#FFF4DE;color:#9A6815;padding:1.5mm 2.5mm;border-radius:10mm;font-weight:800">
+            EXEMPLE ILLUSTRATIF</div>
+        <img class="top-logo" src="business_checkup_logo_crop.png">
+
+        <div class="body">
+            <div class="kicker">Rapport augmenté</div>
+            <div class="title">Diagnostic Digitalisation & Numérique</div>
+            <div class="sub">Une lecture synthétique de votre maturité numérique, des priorités technologiques et des
+                conditions d'une digitalisation maîtrisée.</div>
+            <div class="rule"></div>
+            <p class="lead"><b>Entreprise :</b> ATELIER KORA SARL<br><b>Dirigeant :</b> A. HOUNKPÈ</p>
+        </div>
+
+        <div class="cards">
+            <div class="cell">
+                <div class="label">Lecture générale</div>
+                <div class="value">Socle existant, intégration à structurer</div>
+            </div>
+            <div class="cell">
+                <div class="label">Confiance</div>
+                <div class="value">Bonne</div>
+            </div>
+            <div class="cell">
+                <div class="label">Date</div>
+                <div class="value">12 août 2026</div>
+            </div>
+        </div>
+
+        <div class="foot">
+            <div>Document personnel - établi à partir des informations déclarées dans Business Check-up.</div>
+            <img src="fundlab_logo_on_white.png">
+        </div>
+    </section>
+
+    <!-- PAGE 2 : DIAGNOSTIC & SYNTHÈSE -->
+    <section class="page">
+        <div class="header">
+            <img src="business_checkup_logo_crop.png">
+            <div class="meta">Rapport augmenté · Diagnostic Digitalisation / Numérique</div>
+        </div>
+        <div class="footer">
+            <span>Business Check-up - Powered by FUND.lab</span>
+            <span>02</span>
+        </div>
+
+        <div class="pad">
+            <div class="section-title">
+                <div class="section-no">01</div>
+                <div>
+                    <div class="kicker">Votre lecture en 1 minute</div>
+                    <h2>Ce que le diagnostic fait ressortir</h2>
+                </div>
+            </div>
+
+            <div class="grid6040">
+                <div class="card navy">
+                    <div class="small" style="color:#BFD2DB">Votre score de maturité digitale</div>
+                    <div style="display:flex;align-items:flex-end;gap:2mm;margin-top:1.5mm">
+                        <div class="big-score">58</div>
+                        <div class="score-unit">/100</div>
+                    </div>
+                    <div class="band">Socle existant, intégration à structurer</div>
+                    <div style="margin-top:3mm">
+                        <span class="tag t">Confiance : Bonne</span>
+                        <span class="tag">DIF-03</span>
+                    </div>
+                </div>
+
+                <div class="card soft">
+                    <h3>Ce que cela signifie</h3>
+                    <p>L’entreprise utilise déjà des outils numériques au quotidien, mais la circulation des données
+                        reste cloisonnée et dépendante d'actions manuelles régulières.</p>
+                    <div class="callout">
+                        <b>Priorité de lecture :</b> consolider l'interconnexion des flux (vente, caisse, stock) avant
+                        de déployer de nouvelles solutions logicielles complexes.
+                    </div>
+                </div>
+            </div>
+
+            <div style="height:5mm"></div>
+
+            <div class="card cyan">
+                <h3>Notre lecture de votre situation</h3>
+                <p>Les éléments renseignés révèlent un usage effectif des canaux digitaux (Mobile Money, messagerie
+                    client, suivi partiel sous tableur). L'enjeu principal ne réside pas dans l'acculturation aux
+                    outils, mais dans la fiabilisation des flux de données entre le terrain et le pilotage central.
+                    Actuellement, l'absence de synchronisation automatique génère des ressaisies chronophages et un
+                    risque de perte d'information. La digitalisation doit désormais viser l'efficacité opérationnelle et
+                    la centralisation des données de gestion.</p>
+            </div>
+
+            <div style="height:5mm"></div>
+
+            <div class="grid2">
+                <div class="card green">
+                    <h3 style="color:#2F7B65">Points d’appui</h3>
+                    <div class="bullet">
+                        <span class="dot green"></span>
+                        <span>Adoption fonctionnelle d'outils mobiles et de solutions de paiement digitalisés.</span>
+                    </div>
+                    <div class="bullet">
+                        <span class="dot green"></span>
+                        <span>Appétence affirmée des équipes pour la simplification des tâches répétitives.</span>
+                    </div>
+                    <div class="bullet">
+                        <span class="dot green"></span>
+                        <span>Présence d'historiques exploitables pour entamer une centralisation des données.</span>
+                    </div>
+                </div>
+
+                <div class="card amber">
+                    <h3 style="color:#9A6815">Points de vigilance</h3>
+                    <div class="bullet">
+                        <span class="dot amber"></span>
+                        <span>Données éparpillées entre plusieurs applications non connectées entre elles.</span>
+                    </div>
+                    <div class="bullet">
+                        <span class="dot amber"></span>
+                        <span>Absence de politique formelle de sauvegarde régulière et de gestion des accès.</span>
+                    </div>
+                    <div class="bullet">
+                        <span class="dot amber"></span>
+                        <span>Dépendance continue à des traitements manuels pour établir le suivi des ventes.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="height:5mm"></div>
+
+            <div class="grid6040">
+                <div class="card soft">
+                    <h3>Niveau de confiance de cette lecture</h3>
+                    <p>Les réponses s'appuient sur un état des lieux clair des logiciels et usages actuels. La
+                        trajectoire proposée permet de moderniser l'organisation sans perturber le cycle d'exploitation
+                        courant.</p>
+                    <div style="margin-top:2.5mm">
+                        <span class="tag t">Élevée</span>
+                        <span class="tag">Analyse opérationnelle</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>3 repères de maturité</h3>
+                    <div class="bar-row">
+                        <span>Équipement</span>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="width:65%"></div>
+                        </div>
+                        <b>65</b>
+                    </div>
+                    <div class="bar-row">
+                        <span>Intégration</span>
+                        <div class="bar-bg">
+                            <div class="bar-fill a" style="width:48%"></div>
+                        </div>
+                        <b>48</b>
+                    </div>
+                    <div class="bar-row">
+                        <span>Sécurité / Data</span>
+                        <div class="bar-bg">
+                            <div class="bar-fill n" style="width:52%"></div>
+                        </div>
+                        <b>52</b>
+                    </div>
+                    <div class="small" style="margin-top:2mm">Indices internes du module DIF-03 ; ils mesurent le niveau
+                        de structuration numérique globale.</div>
+                </div>
+            </div>
+        </div>
+        <div class="watermark"></div>
+    </section>
+
+    <!-- PAGE 3 : PLAN D'ACTION & DÉCISION -->
+    <section class="page">
+        <div class="header">
+            <img src="business_checkup_logo_crop.png">
+            <div class="meta">Rapport augmenté · Diagnostic Digitalisation / Numérique</div>
+        </div>
+        <div class="footer">
+            <span>Business Check-up - Powered by FUND.lab</span>
+            <span>03</span>
+        </div>
+
+        <div class="pad">
+            <div class="section-title">
+                <div class="section-no">02</div>
+                <div>
+                    <div class="kicker">Décision & passage à l’action</div>
+                    <h2>Ce qui compte maintenant</h2>
+                </div>
+            </div>
+
+            <div class="card navy" style="padding:5mm">
+                <div class="kicker">Arbitrage central</div>
+                <h2 style="font-size:17pt;color:#fff;margin-top:2mm">Numériser l'expérience client ou automatiser les
+                    opérations internes ?</h2>
+                <p style="color:#D7E1E7">La recommandation est d'ancrer d'abord l'automatisation de l'arrière-guichet
+                    (gestion des stocks, centralisation des encaissements) avant d'engager un investissement lourd dans
+                    des plateformes client sur-mesure. Une base de données unifiée garantit la qualité du service avant
+                    tout passage à l'échelle.</p>
+                <div style="margin-top:2mm">
+                    <span class="tag t">Priorité interne</span>
+                    <span class="tag a">Gain de temps</span>
+                    <span class="tag">Horizon : 30-90 jours</span>
+                </div>
+            </div>
+
+            <div style="height:5mm"></div>
+
+            <div class="grid7030">
+                <div>
+                    <div class="kicker">Vos 3 priorités</div>
+                    <h3 style="margin-top:1mm">Plan d’action recommandé</h3>
+                    <div class="action">
+                        <div class="n">1</div>
+                        <div>
+                            <b>Centraliser la collecte et la tenue des ventes</b><br>
+                            <span>Standardiser un support unique de saisie (Web/PWA) connecté au suivi de caisse - 0 à
+                                15 jours.</span>
+                        </div>
+                    </div>
+                    <div class="action">
+                        <div class="n">2</div>
+                        <div>
+                            <b>Automatiser la consolidation des données clés</b><br>
+                            <span>Mettre en place des passerelles simples entre encaissements et suivi d'inventaire - 15
+                                à 30 jours.</span>
+                        </div>
+                    </div>
+                    <div class="action">
+                        <div class="n">3</div>
+                        <div>
+                            <b>Formaliser la sécurité et la politique de sauvegarde</b><br>
+                            <span>Configurer un système de sauvegarde automatique dans le cloud et sécuriser les accès -
+                                30 à 60 jours.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card soft">
+                    <div class="kicker">À ne pas faire maintenant</div>
+                    <h3>Multiplier les logiciels isolés</h3>
+                    <p class="small">Éviter souscrire à de nouveaux abonnements SaaS spécifiques tant que le flux de
+                        données principal n'est pas stabilisé et centralisé.</p>
+                </div>
+            </div>
+
+            <div style="height:5mm"></div>
+
+            <div class="grid2">
+                <div class="card">
+                    <div class="kicker">Pour décider avec plus de confiance</div>
+                    <h3>Données à renforcer</h3>
+                    <div class="data-item"><span class="sq"></span><span>Cartographie des logiciels et comptes
+                            applicatifs utilisés</span></div>
+                    <div class="data-item"><span class="sq"></span><span>Inventaire des formats de fichiers de suivi
+                            existants</span></div>
+                    <div class="data-item"><span class="sq"></span><span>Volumes hebdomadaires de transactions et
+                            d'entrées d'inventaire</span></div>
+                    <div class="data-item"><span class="sq"></span><span>Liste des droits d'accès et identifiants
+                            stratégiques</span></div>
+                    <div style="margin-top:3mm" class="small"><b>Niveau de preuve :</b> informel → outil isolé → données
+                        centralisées → flux automatisés.</div>
+                </div>
+
+                <div class="card cyan">
+                    <div class="kicker">Prochaine étape</div>
+                    <h3>Cadrer un atelier de feuille de route digitale</h3>
+                    <p>Un échange ciblé permettra de choisir les connecteurs les plus adéquats et de prioriser les
+                        modules applicatifs à déployer sans perturber le travail des équipes. Préparer au préalable
+                        l'inventaire des outils actuels.</p>
+                    <div style="margin-top:2.5mm"><span class="tag t">Étape clé</span></div>
+                </div>
+            </div>
+
+            <div style="height:4mm"></div>
+
+            <div class="callout">
+                <b>À retenir :</b> La digitalisation réussie repose sur la simplicité des flux et l'adhésion des
+                utilisateurs ; priorisez l'automatisation des tâches récurrentes avant toute surcouche technologique.
+            </div>
+
+            <div style="height:3mm"></div>
+
+            <div class="disclaimer">
+                Business Check-up produit une lecture indicative fondée sur les réponses et confirmations fournies par
+                l’utilisateur. Il ne constitue ni un audit informatique, ni une préconisation d'architecture SI
+                engageante. Les recommandations doivent être appréciées au regard de la situation réelle de l’entreprise
+                et approfondies avec des spécialistes métier au besoin.
+            </div>
+        </div>
+    </section>
+
+</body>
+
+</html>

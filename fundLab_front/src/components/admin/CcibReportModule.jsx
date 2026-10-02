@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Calendar,
   Download,
@@ -199,7 +200,50 @@ export const CcibReportModule = () => {
     }
   });
 
+  // Classify PMEs based on diagnostic_runs_count, question_count_expected and question_count_answered
+  const completedPmeRows = [];
+  const incompletePmeRows = [];
+  const noDiagPmeRows = [];
+
+  distinctPmeList.forEach((item, idx) => {
+    const business = item?.business ?? null;
+    const user = item?.user ?? null;
+    const runs = Array.isArray(item?.diagnostic_runs) ? item.diagnostic_runs : [];
+    const runsCount = typeof item?.diagnostic_runs_count === 'number' ? item.diagnostic_runs_count : runs.length;
+
+    // Check if at least 1 run completed the first run (answered >= expected)
+    const hasCompletedRun = runs.some(r =>
+      r?.completion_status === 'completed' ||
+      (typeof r?.question_count_expected === 'number' && r.question_count_expected > 0 && Number(r?.question_count_answered || 0) >= Number(r.question_count_expected))
+    );
+
+    // Check if initiated but incomplete
+    const hasIncompleteRun = !hasCompletedRun && (
+      runsCount > 0 ||
+      runs.some(r => Number(r?.question_count_answered || 0) > 0 || r?.completion_status === 'started' || r?.completion_status === 'draft')
+    );
+
+    const row = {
+      name: item?.business_name ?? business?.business_name ?? item?.company_name ?? `Entreprise PME #${idx + 1}`,
+      sector: item?.sector ?? business?.sector ?? 'Secteur d\'activité',
+      zone: [item?.commune, item?.region || item?.city || business?.city, item?.country].filter(Boolean).join(', ') || 'Cotonou (Littoral)',
+      contact: user?.full_name ?? item?.contact_name ?? item?.user_name ?? 'Dirigeant PME',
+      email: user?.email ?? item?.email ?? 'contact@pme.bj',
+    };
+
+    if (hasCompletedRun) {
+      completedPmeRows.push(row);
+    } else if (hasIncompleteRun) {
+      incompletePmeRows.push(row);
+    } else {
+      noDiagPmeRows.push(row);
+    }
+  });
+
   const totalPme = distinctPmeList.length > 0 ? distinctPmeList.length : (overviewStats?.diagnostics?.started || pmesList.length || 0);
+  const completedPmeCount = completedPmeRows.length;
+  const incompletePmeCount = incompletePmeRows.length;
+  const noDiagPmeCount = noDiagPmeRows.length;
 
   // ── Dynamic Sector Breakdown (Matching Dashboard sectorStats / overviewStats.sectors) ──
   let rawSectors = [];
@@ -291,20 +335,11 @@ export const CcibReportModule = () => {
     };
   });
 
-  const enterpriseRows = distinctPmeList.map((item, idx) => {
-    const business = item?.business ?? null;
-    const user = item?.user ?? null;
-    return {
-      name: item?.business_name ?? business?.business_name ?? item?.company_name ?? `Entreprise PME #${idx + 1}`,
-      sector: item?.sector ?? business?.sector ?? 'Secteur d\'activité',
-      zone: [item?.commune, item?.region || item?.city || business?.city, item?.country].filter(Boolean).join(', ') || 'Cotonou (Littoral)',
-      contact: user?.full_name ?? item?.contact_name ?? item?.user_name ?? 'Dirigeant PME',
-      email: user?.email ?? item?.email ?? 'contact@pme.bj',
-    };
-  });
-
   const reportData = {
     totalPme,
+    completedPmeCount,
+    incompletePmeCount,
+    noDiagPmeCount,
     rdvCount,
     rdvPct,
     avgScore,
@@ -313,48 +348,69 @@ export const CcibReportModule = () => {
     geography: geoData,
     serviceNeeds,
     topServices,
-    enterpriseRows,
+    completedPmeRows,
+    incompletePmeRows,
+    noDiagPmeRows,
+    enterpriseRows: [...completedPmeRows, ...incompletePmeRows, ...noDiagPmeRows],
   };
 
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState({ current: 0, total: 0, percent: 0 });
 
   // ── Handlers ──
   const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
     try {
       setDownloadingPdf(true);
+      setPdfProgress({ current: 0, total: 0, percent: 2 });
+
       const [{ jsPDF }, html2canvas] = await Promise.all([
         import('jspdf'),
         import('html2canvas').then(m => m.default),
       ]);
 
       const pages = Array.from(reportRef.current.querySelectorAll('.ccib-report-page'));
-      if (pages.length === 0) {
-        window.print();
-        return;
-      }
+      const totalPages = pages.length;
+      if (totalPages === 0) return;
+
+      setPdfProgress({ current: 0, total: totalPages, percent: 5 });
 
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
       const imgWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
 
-      for (let i = 0; i < pages.length; i++) {
+      for (let i = 0; i < totalPages; i++) {
         if (i > 0) pdf.addPage();
+
+        const currentPct = Math.round(((i + 0.1) / totalPages) * 90);
+        setPdfProgress({ current: i + 1, total: totalPages, percent: currentPct });
+
+        // Yield execution to allow React UI progress bar to repaint smoothly
+        await new Promise(r => setTimeout(r, 20));
+
         const canvas = await html2canvas(pages[i], {
-          scale: 2,
+          scale: 3.5, // High resolution crisp rendering
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
+          windowWidth: 1200,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, Math.min(imgHeight, pageHeight));
+
+        const imgData = canvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, pageHeight, undefined, 'FAST');
+
+        const endPct = Math.round(((i + 1) / totalPages) * 90);
+        setPdfProgress({ current: i + 1, total: totalPages, percent: endPct });
       }
+
+      setPdfProgress({ current: totalPages, total: totalPages, percent: 96 });
+      await new Promise(r => setTimeout(r, 40));
 
       let suffix = '';
       if (selectedPeriod === 'all') {
@@ -373,11 +429,13 @@ export const CcibReportModule = () => {
 
       const fileName = `Rapport_Pilotage_CCIB_${suffix}.pdf`;
       pdf.save(fileName);
+      setPdfProgress({ current: totalPages, total: totalPages, percent: 100 });
     } catch (err) {
-      console.error('[handleDownloadPdf] Error generating PDF, fallback to print:', err);
-      window.print();
+      console.error('[handleDownloadPdf] Error generating PDF:', err);
     } finally {
-      setDownloadingPdf(false);
+      setTimeout(() => {
+        setDownloadingPdf(false);
+      }, 500);
     }
   };
 
@@ -486,8 +544,8 @@ export const CcibReportModule = () => {
       />
 
       {/* ── Modal Email ── */}
-      {showEmailModal && (
-        <div className="admin-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+      {showEmailModal && createPortal(
+        <div className="admin-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }}>
           <div className="admin-card" style={{ width: '100%', maxWidth: '520px', padding: '24px', background: '#ffffff', borderRadius: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, fontSize: '1.1rem', color: '#0b2545' }}>
@@ -556,7 +614,71 @@ export const CcibReportModule = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ── PDF GENERATION PROGRESS MODAL OVERLAY ── */}
+      {downloadingPdf && createPortal(
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            padding: '28px 36px',
+            width: '400px',
+            maxWidth: '90%',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: '#e6f4ed',
+              color: '#007A3D',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px auto',
+            }}>
+              <Download className="animate-bounce" size={24} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0b2545', margin: '0 0 6px 0' }}>
+              Génération du PDF en cours...
+            </h3>
+            <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#007A3D', margin: '0 0 16px 0' }}>
+              Page {pdfProgress.current} sur {pdfProgress.total} ({pdfProgress.percent}%)
+            </p>
+
+            {/* Progress Bar Track */}
+            <div style={{ width: '100%', background: '#e2e8f0', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${pdfProgress.percent}%`,
+                background: '#007A3D',
+                height: '100%',
+                borderRadius: '5px',
+                transition: 'width 0.2s linear',
+              }} />
+            </div>
+
+            <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '14px' }}>
+              Génération haute définition du document en cours.
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

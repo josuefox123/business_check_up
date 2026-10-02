@@ -61,7 +61,7 @@ export const DiagnosticHistoryScreen = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [moduleFilter, setModuleFilter] = useState('');
-  const [statusTab, setStatusTab] = useState('completed'); // 'completed' | 'all' | 'started'
+  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'completed' | 'started'
   const [downloadingRunId, setDownloadingRunId] = useState(null);
   const [trueCompletedCount, setTrueCompletedCount] = useState(null);
   const [trueStartedCount, setTrueStartedCount] = useState(null);
@@ -352,24 +352,6 @@ export const DiagnosticHistoryScreen = () => {
           <div style={{ display: 'flex', background: 'var(--slate-100, #F1F5F9)', padding: '4px', borderRadius: '12px', gap: '4px' }}>
             <button
               type="button"
-              onClick={() => setStatusTab('completed')}
-              style={{
-                border: 'none',
-                background: statusTab === 'completed' ? '#FFFFFF' : 'transparent',
-                color: statusTab === 'completed' ? '#0F172A' : '#64748B',
-                fontWeight: statusTab === 'completed' ? 700 : 500,
-                fontSize: '0.85rem',
-                padding: '6px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: statusTab === 'completed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Diagnostics finalisés ({completedOnPage})
-            </button>
-            <button
-              type="button"
               onClick={() => setStatusTab('all')}
               style={{
                 border: 'none',
@@ -385,6 +367,24 @@ export const DiagnosticHistoryScreen = () => {
               }}
             >
               Tous ({totalOnPage})
+            </button>
+            <button
+              type="button"
+              onClick={() => setStatusTab('completed')}
+              style={{
+                border: 'none',
+                background: statusTab === 'completed' ? '#FFFFFF' : 'transparent',
+                color: statusTab === 'completed' ? '#0F172A' : '#64748B',
+                fontWeight: statusTab === 'completed' ? 700 : 500,
+                fontSize: '0.85rem',
+                padding: '6px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: statusTab === 'completed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              Diagnostics finalisés ({completedOnPage})
             </button>
             <button
               type="button"

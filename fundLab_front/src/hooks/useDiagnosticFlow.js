@@ -173,6 +173,23 @@ export function useDiagnosticFlow() {
     } else {
       setIsRestored(true);
     }
+
+    try {
+      const rawPendingOtp = localStorage.getItem('bc_pending_otp');
+      if (rawPendingOtp) {
+        const parsed = JSON.parse(rawPendingOtp);
+        if (parsed?.timestamp && (Date.now() - parsed.timestamp) < 15 * 60 * 1000) {
+          if (parsed.pendingProfileData) {
+            setPendingProfileData(parsed.pendingProfileData);
+            setIsVerifyingEmail(true);
+          }
+        } else {
+          localStorage.removeItem('bc_pending_otp');
+        }
+      }
+    } catch (e) {
+      console.error('Error restoring pending OTP state:', e);
+    }
   }, []);
 
   useEffect(() => {
@@ -404,6 +421,7 @@ export function useDiagnosticFlow() {
       setEmailVerificationError('');
       setIsEmailLoading(true);
       setIsVerifyingEmail(true);
+      localStorage.setItem('bc_pending_otp', JSON.stringify({ pendingProfileData: profileData, timestamp: Date.now() }));
 
       try {
         await requestEmailVerificationApi({
@@ -421,6 +439,7 @@ export function useDiagnosticFlow() {
     }
 
     // CAS 2 (Flow 1 & Flow 2) : Nouvelle saisie de profil -> SANS OTP ! Passage direct à la suite.
+    localStorage.removeItem('bc_pending_otp');
     setIsVerifyingEmail(false);
     onTriageProfileSubmit(profileData);
   };
@@ -449,7 +468,16 @@ export function useDiagnosticFlow() {
       }
 
       if (pendingProfileData?.is_post_enrichment) {
+        localStorage.removeItem('bc_pending_otp');
         setIsVerifyingEmail(false);
+        const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID) || localStorage.getItem('last_run_id');
+        if (runIdToFetch) {
+          try {
+            await apiFetch(`/diagnostics/${runIdToFetch}/details`);
+          } catch (err) {
+            console.error('Error triggering webhook report on /details:', err);
+          }
+        }
         navigate('/diagnostic/fin');
         return res;
       }
@@ -848,14 +876,6 @@ export function useDiagnosticFlow() {
 
     if (questionIndex + 1 >= questions.length) {
       if (isEnrichmentMode) {
-        const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID) || localStorage.getItem('last_run_id');
-        if (runIdToFetch) {
-          try {
-            await apiFetch(`/diagnostics/${runIdToFetch}/details`);
-          } catch (err) {
-            console.error('Error fetching diagnostic details:', err);
-          }
-        }
         setShowEnrichmentCompletionModal(true);
       } else {
         startBackendCalculation();
@@ -874,14 +894,16 @@ export function useDiagnosticFlow() {
 
     if (!isDeviceVerified) {
       if (userEmail) {
-        setPendingProfileData({
+        const profileWithEnrichment = {
           ...(pendingProfileData || {}),
           email: userEmail,
           is_post_enrichment: true
-        });
+        };
+        setPendingProfileData(profileWithEnrichment);
         setEmailVerificationError('');
         setIsEmailLoading(true);
         setIsVerifyingEmail(true);
+        localStorage.setItem('bc_pending_otp', JSON.stringify({ pendingProfileData: profileWithEnrichment, timestamp: Date.now() }));
 
         try {
           await requestEmailVerificationApi({
@@ -900,6 +922,14 @@ export function useDiagnosticFlow() {
         setShowPostEnrichmentEmailModal(true);
       }
     } else {
+      const runIdToFetch = currentRunId || localStorage.getItem(STORAGE_KEYS.CURRENT_RUN_ID) || localStorage.getItem('last_run_id');
+      if (runIdToFetch) {
+        try {
+          await apiFetch(`/diagnostics/${runIdToFetch}/details`);
+        } catch (err) {
+          console.error('Error triggering webhook report on /details for verified user:', err);
+        }
+      }
       navigate('/diagnostic/fin');
     }
   };
@@ -922,6 +952,7 @@ export function useDiagnosticFlow() {
     setEmailVerificationError('');
     setIsEmailLoading(true);
     setIsVerifyingEmail(true);
+    localStorage.setItem('bc_pending_otp', JSON.stringify({ pendingProfileData: updatedProfile, timestamp: Date.now() }));
 
     try {
       await requestEmailVerificationApi({

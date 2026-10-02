@@ -25,6 +25,7 @@ export function clearDiagnosticStorage() {
       STORAGE_KEYS.CURRENT_RUN_ID,
     ];
     diagnosticKeys.forEach(key => localStorage.removeItem(key));
+    localStorage.removeItem('bc_pending_otp');
   } catch (e) {
     console.error('Error clearing diagnostic storage keys:', e);
   }

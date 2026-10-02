@@ -1,0 +1,179 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Business Check-up - Modèle rapport augmenté 3 pages - FIN-07</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: Lato, Arial, sans-serif; color:#17212D; background:#edf1f4; }
+.page { width:210mm; height:297mm; position:relative; overflow:hidden; background:#fff; page-break-after:always; }
+.page:last-child { page-break-after:auto; }
+.header { position:absolute; left:17mm; right:17mm; top:8mm; height:12mm; display:flex; align-items:center; justify-content:space-between; border-bottom:.35mm solid #D8E0E6; padding-bottom:3mm; }
+.header img { height:8.5mm; width:auto; }
+.header .meta { color:#65727E; font-size:7.2pt; text-transform:uppercase; letter-spacing:.06em; }
+.footer { position:absolute; left:17mm; right:17mm; bottom:7mm; border-top:.3mm solid #D8E0E6; padding-top:2.4mm; display:flex; justify-content:space-between; font-size:7pt; color:#65727E; }
+.pad { padding:27mm 17mm 17mm; height:100%; }
+.kicker { color:#34BED5; font-weight:900; font-size:8.6pt; letter-spacing:.12em; text-transform:uppercase; }
+h1 { font-size:31pt; line-height:1.03; letter-spacing:-.03em; margin:3.5mm 0 5mm; font-weight:900; }
+h2 { font-size:18.5pt; line-height:1.12; margin:1mm 0 4mm; font-weight:900; }
+h3 { font-size:11.5pt; line-height:1.2; margin:0 0 2mm; font-weight:900; }
+p { font-size:9.3pt; line-height:1.45; margin:0 0 3mm; }
+.small { font-size:7.8pt; line-height:1.4; color:#65727E; }
+.lead { font-size:12pt; line-height:1.45; color:#485563; }
+.card { border:.35mm solid #D8E0E6; border-radius:4mm; padding:4mm 4.5mm; background:#fff; }
+.card.soft { background:#F4F7F9; border-color:#E1E7EB; }
+.card.navy { background:#17212D; border-color:#17212D; color:#fff; }
+.card.cyan { background:#EAF9FC; border-color:#BDECF3; }
+.card.green { background:#EEF8F4; border-color:#CCE8DD; }
+.card.amber { background:#FFF7E8; border-color:#F1D9A5; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:3mm; }
+.grid6040 { display:grid; grid-template-columns:3fr 2fr; gap:5mm; }
+.grid7030 { display:grid; grid-template-columns:7fr 3fr; gap:5mm; }
+.section-title { display:flex; align-items:flex-start; gap:3mm; margin-bottom:5mm; }
+.section-no { width:11mm; height:11mm; border-radius:3mm; background:#17212D; color:#34BED5; display:flex; align-items:center; justify-content:center; font-size:12pt; font-weight:900; flex:0 0 auto; }
+.big-score { font-size:38pt; line-height:1; font-weight:900; color:#34BED5; }
+.score-unit { font-size:14pt; font-weight:800; }
+.band { font-size:12pt; font-weight:900; margin-top:2mm; line-height:1.25; }
+.tag { display:inline-block; padding:1.2mm 2.2mm; border-radius:10mm; background:#F3F6F8; color:#344252; font-size:7.4pt; font-weight:800; margin:0 1mm 1mm 0; }
+.tag.t { background:#E6F8FB; color:#0B8598; }
+.tag.a { background:#FFF4DE; color:#9A6815; }
+.tag.g { background:#EAF6F1; color:#2F7B65; }
+.bullet { display:grid; grid-template-columns:4.5mm 1fr; gap:2mm; margin:2.2mm 0; font-size:8.8pt; line-height:1.38; }
+.dot { width:3mm; height:3mm; border-radius:50%; background:#34BED5; margin-top:1.2mm; }
+.dot.green { background:#2F7B65; }
+.dot.amber { background:#D58A00; }
+.bar-row { display:grid; grid-template-columns:28mm 1fr 12mm; align-items:center; gap:3mm; margin:2.5mm 0; font-size:8pt; }
+.bar-bg { height:3.5mm; border-radius:5mm; background:#E7EDF1; overflow:hidden; }
+.bar-fill { height:100%; background:#34BED5; border-radius:5mm; }
+.bar-fill.n { background:#17212D; }
+.bar-fill.a { background:#D58A00; }
+.bar-fill.g { background:#2F7B65; }
+.rule { width:16mm; height:.8mm; background:#34BED5; margin:3.5mm 0; }
+.action { display:grid; grid-template-columns:8mm 1fr; gap:3mm; margin:3mm 0; }
+.action .n { width:7mm; height:7mm; border-radius:50%; background:#34BED5; color:#17212D; font-size:8pt; font-weight:900; display:flex; align-items:center; justify-content:center; }
+.action b { font-size:9pt; }
+.action span { font-size:8.2pt; line-height:1.35; color:#53606D; }
+.data-item { display:grid; grid-template-columns:4mm 1fr; gap:2mm; margin:2mm 0; font-size:8.3pt; line-height:1.3; }
+.sq { width:3.3mm; height:3.3mm; border:.4mm solid #34BED5; border-radius:.6mm; margin-top:.8mm; }
+.callout { background:#F5FBFC; border-left:1.2mm solid #34BED5; padding:3.5mm 4mm; font-size:8.7pt; line-height:1.42; }
+.disclaimer { font-size:6.8pt; line-height:1.35; color:#65727E; }
+/* cover */
+.cover .shape1 { position:absolute; width:115mm; height:135mm; border:10mm solid rgba(52,190,213,.10); transform:rotate(12deg); top:-45mm; right:-28mm; border-radius:22mm; }
+.cover .shape2 { position:absolute; width:80mm; height:105mm; border:5mm solid rgba(23,33,45,.04); transform:rotate(-9deg); bottom:-45mm; left:-20mm; border-radius:20mm; }
+.cover .top-logo { position:absolute; top:18mm; left:17mm; width:71mm; height:auto; }
+.cover .body { position:absolute; left:17mm; right:17mm; top:65mm; }
+.cover .title { font-size:34pt; line-height:1; font-weight:900; max-width:145mm; margin:4mm 0 6mm; letter-spacing:-.03em; }
+.cover .sub { font-size:13pt; line-height:1.43; color:#4C5965; max-width:145mm; }
+.cover .cards { position:absolute; left:17mm; right:17mm; bottom:38mm; display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:3mm; }
+.cover .cards .cell { padding:4mm 4.5mm; border-top:1mm solid #34BED5; background:#F6F9FA; min-height:28mm; }
+.cover .label { font-size:7.3pt; text-transform:uppercase; color:#65727E; letter-spacing:.08em; font-weight:800; }
+.cover .value { font-size:11pt; line-height:1.28; font-weight:900; margin-top:2mm; }
+.cover .foot { position:absolute; left:17mm; right:17mm; bottom:14mm; display:flex; align-items:flex-end; justify-content:space-between; font-size:7.2pt; color:#65727E; }
+.cover .foot img { width:34mm; height:auto; }
+.watermark { position:absolute; right:-18mm; bottom:6mm; width:70mm; height:70mm; border:2mm solid rgba(52,190,213,.07); transform:rotate(12deg); border-radius:10mm; }
+.placeholder { color:#65727E; font-style:italic; }
+</style></head><body><section class="page cover">
+      <div class="shape1"></div><div class="shape2"></div><div style="position:absolute;top:6mm;right:17mm;font-size:7pt;background:#FFF4DE;color:#9A6815;padding:1.5mm 2.5mm;border-radius:10mm;font-weight:800">EXEMPLE ILLUSTRATIF</div>
+      <img class="top-logo" src="business_checkup_logo_crop.png">
+      <div class="body">
+        <div class="kicker">Rapport augmenté</div>
+        <div class="title">Diagnostic Finance / Viabilité</div>
+        <div class="sub">Une lecture personnalisée de votre situation, de vos priorités et des conditions à réunir pour mieux décider.</div>
+        <div class="rule"></div>
+        <p class="lead"><b>Entreprise :</b> ATELIER KORA SARL<br><b>Dirigeant :</b> A. HOUNKPÈ</p>
+      </div>
+      <div class="cards">
+        <div class="cell"><div class="label">Lecture générale</div><div class="value">Base stable, lisibilité à renforcer</div></div>
+        <div class="cell"><div class="label">Confiance</div><div class="value">Partielle</div></div>
+        <div class="cell"><div class="label">Date</div><div class="value">11 août 2026</div></div>
+      </div>
+      <div class="foot"><div>Document personnel - établi à partir des informations déclarées dans Business Check-up.</div><img src="fundlab_logo_on_white.png"></div>
+    </section><section class="page">
+      <div class="header"><img src="business_checkup_logo_crop.png"><div class="meta">Rapport augmenté · Diagnostic Finance / Viabilité</div></div><div class="footer"><span>Business Check-up - Powered by FUND.lab</span><span>02</span></div>
+      <div class="pad">
+        <div class="section-title"><div class="section-no">01</div><div><div class="kicker">Votre lecture en 1 minute</div><h2>Ce que le diagnostic fait ressortir</h2></div></div>
+        <div class="grid6040">
+          <div class="card navy">
+            <div class="small" style="color:#BFD2DB">Votre lecture globale</div>
+            <div style="display:flex;align-items:flex-end;gap:2mm;margin-top:1.5mm"><div class="big-score">64</div><div class="score-unit">/100</div></div>
+            <div class="band">Base stable, lisibilité à renforcer</div>
+            <div style="margin-top:3mm"><span class="tag t">Confiance : Partielle</span><span class="tag">FIN-07</span></div>
+          </div>
+          <div class="card soft">
+            <h3>Ce que cela signifie</h3>
+            <p>L’entreprise dispose d’une base financière exploitable pour suivre l’activité, mais plusieurs informations doivent encore être fiabilisées avant d’appuyer des décisions importantes sur les chiffres.</p>
+            <div class="callout"><b>Priorité de lecture :</b> renforcer d’abord la visibilité sur la marge, le cash et le cycle d’encaissement avant tout nouvel engagement financier significatif.</div>
+          </div>
+        </div>
+
+        <div style="height:5mm"></div>
+        <div class="card cyan">
+          <h3>Notre lecture de votre situation</h3>
+          <p>Les réponses décrivent une activité réelle, avec des ventes, des dépenses et plusieurs supports de suivi déjà disponibles. La difficulté principale n’est donc pas l’absence totale de données : elle tient à leur capacité à raconter ensemble la marge, la trésorerie et les engagements à venir. Les questions d’enrichissement indiquent par ailleurs que l’entreprise souhaite préparer un investissement sans détériorer sa capacité à couvrir les charges courantes. Le bon enjeu consiste donc à fiabiliser une lecture commune des flux, puis à tester la décision d’investissement contre un scénario prudent de trésorerie.</p>
+        </div>
+
+        <div style="height:5mm"></div>
+        <div class="grid2">
+          <div class="card green"><h3 style="color:#2F7B65">Points d’appui</h3><div class="bullet"><span class="dot green"></span><span>Une activité économique réelle est observable et plusieurs flux peuvent être reconstitués.</span></div><div class="bullet"><span class="dot green"></span><span>Le dirigeant dispose déjà d’une pratique de suivi qui peut servir de socle à un pilotage plus fiable.</span></div><div class="bullet"><span class="dot green"></span><span>La prochaine décision est identifiable : préparer un investissement sans fragiliser les charges courantes.</span></div></div>
+          <div class="card amber"><h3 style="color:#9A6815">Points de vigilance</h3><div class="bullet"><span class="dot amber"></span><span>La marge reste insuffisamment stabilisée : le chiffre d’affaires ne suffit pas à lire la rentabilité réelle.</span></div><div class="bullet"><span class="dot amber"></span><span>Le cycle de cash doit être reconstitué car certaines dépenses précèdent les encaissements.</span></div><div class="bullet"><span class="dot amber"></span><span>Les retraits personnels ou engagements peu formalisés peuvent brouiller la lecture du cash produit par l’entreprise.</span></div></div>
+        </div>
+
+        <div style="height:5mm"></div>
+        <div class="grid6040">
+          <div class="card soft">
+            <h3>Niveau de confiance de cette lecture</h3>
+            <p>Plusieurs signaux convergent et des supports concrets existent, mais certaines informations restent déclaratives ou partiellement documentées. La bande de résultat peut guider la décision, à condition de confirmer les éléments de marge, de dette et de cycle de trésorerie avant une décision irréversible.</p>
+            <div style="margin-top:2.5mm"><span class="tag t">Partielle</span><span class="tag">Lecture indicative</span></div>
+          </div>
+          <div class="card">
+            <h3>3 repères de lecture</h3>
+            <div class="bar-row"><span>Lisibilité</span><div class="bar-bg"><div class="bar-fill " style="width:68%"></div></div><b>68</b></div><div class="bar-row"><span>Résilience cash</span><div class="bar-bg"><div class="bar-fill a" style="width:55%"></div></div><b>55</b></div><div class="bar-row"><span>Préparation décision</span><div class="bar-bg"><div class="bar-fill n" style="width:61%"></div></div><b>61</b></div>
+            <div class="small" style="margin-top:2mm">Indices de lecture du module ; ils ne constituent ni une notation bancaire ni une décision d’éligibilité.</div>
+          </div>
+        </div>
+      </div><div class="watermark"></div>
+    </section><section class="page">
+      <div class="header"><img src="business_checkup_logo_crop.png"><div class="meta">Rapport augmenté · Diagnostic Finance / Viabilité</div></div><div class="footer"><span>Business Check-up - Powered by FUND.lab</span><span>03</span></div>
+      <div class="pad">
+        <div class="section-title"><div class="section-no">02</div><div><div class="kicker">Décision & passage à l’action</div><h2>Ce qui compte maintenant</h2></div></div>
+
+        <div class="card navy" style="padding:5mm">
+          <div class="kicker">Arbitrage central</div>
+          <h2 style="font-size:17pt;color:#fff;margin-top:2mm">Investir maintenant ou fiabiliser d’abord la visibilité sur le cash ?</h2>
+          <p style="color:#D7E1E7">La lecture recommande une séquence intermédiaire : consolider trois à six mois de données sur une même base, reconstituer le cycle réel d’encaissement et tester l’investissement dans un scénario prudent. La décision ne doit pas être prise seulement à partir du montant disponible aujourd’hui, mais à partir de son effet sur le BFR, les charges courantes et les engagements déjà existants.</p>
+          <div style="margin-top:2mm"><span class="tag t">Décision réversible</span><span class="tag a">Cash à protéger</span><span class="tag">Horizon : 30-90 jours</span></div>
+        </div>
+
+        <div style="height:5mm"></div>
+        <div class="grid7030">
+          <div>
+            <div class="kicker">Vos 3 priorités</div>
+            <h3 style="margin-top:1mm">Plan d’action recommandé</h3>
+            <div class="action"><div class="n">1</div><div><b>Reconstituer les flux des six derniers mois</b><br><span>Ventes, dépenses, apports, retraits et dettes sur une base commune - 0 à 15 jours.</span></div></div><div class="action"><div class="n">2</div><div><b>Calculer la marge des trois offres principales</b><br><span>Prix, coûts directs et coûts spécifiques de livraison - 15 à 30 jours.</span></div></div><div class="action"><div class="n">3</div><div><b>Tester l’investissement dans trois scénarios</b><br><span>Prudent, central et sous-performance, avec une ligne rouge de trésorerie explicite - 30 à 60 jours.</span></div></div>
+          </div>
+          <div class="card soft">
+            <div class="kicker">À ne pas faire maintenant</div>
+            <h3>Accélérer sur une hypothèse non chiffrée</h3>
+            <p class="small">Ne pas engager une nouvelle dette ou une dépense importante avant d’avoir testé son effet sur le cash et les charges essentielles.</p>
+          </div>
+        </div>
+
+        <div style="height:5mm"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="kicker">Pour décider avec plus de confiance</div>
+            <h3>Données à renforcer</h3>
+            <div class="data-item"><span class="sq"></span><span>Relevés bancaires et Mobile Money des six derniers mois</span></div><div class="data-item"><span class="sq"></span><span>Cahier de caisse, factures et historique des ventes</span></div><div class="data-item"><span class="sq"></span><span>Prix et coûts directs des principales offres</span></div><div class="data-item"><span class="sq"></span><span>Liste des dettes, échéances et engagements non formalisés</span></div>
+            <div style="margin-top:3mm" class="small"><b>Niveau de preuve :</b> déclaratif → indice concret → document disponible → donnée vérifiable.</div>
+          </div>
+          <div class="card cyan">
+            <div class="kicker">Prochaine étape</div>
+            <h3>Préparer une revue financière ciblée</h3>
+            <p>Une revue avec un expert peut être utile pour challenger la reconstitution du cash, tester les scénarios d’investissement et fixer une ligne rouge financière. Avant l’échange, préparer les quatre blocs de données listés ci-contre.</p>
+            <div style="margin-top:2.5mm"><span class="tag t">Rendez-vous utile</span></div>
+          </div>
+        </div>
+
+        <div style="height:4mm"></div>
+        <div class="callout"><b>À retenir :</b> L’activité dispose d’une base réelle ; la prochaine qualité de décision viendra surtout d’une lecture fiable de la marge, du cash et des engagements avant d’accélérer.</div>
+        <div style="height:3mm"></div>
+        <div class="disclaimer">Business Check-up produit une lecture indicative fondée sur les réponses et confirmations fournies par l’utilisateur. Il ne constitue ni un audit, ni une due diligence, ni une décision d’éligibilité à un financement. Les recommandations doivent être appréciées au regard de la situation réelle de l’entreprise et, lorsque nécessaire, approfondies avec un professionnel compétent.</div>
+      </div>
+    </section></body></html>

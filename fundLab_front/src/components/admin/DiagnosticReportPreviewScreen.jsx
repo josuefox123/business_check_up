@@ -288,21 +288,21 @@ export const DiagnosticReportPreviewScreen = () => {
   const getCardHeight = (resp) => {
     const qLen = resp.questionText?.length || 0;
     const aLen = resp.displayAnswer?.length || 0;
-    
+
     // Estimate lines (average line lengths: question ~ 38 chars, answer ~ 34 chars in container width)
     const qLines = Math.max(1, Math.ceil(qLen / 38));
     const aLines = Math.max(1, Math.ceil(aLen / 34));
-    
+
     // Base card height is 90px (which covers padding and 1-line question + 1-line answer)
     let cardHeight = 90;
-    
+
     if (qLines > 1) {
       cardHeight += (qLines - 1) * 16;
     }
     if (aLines > 1) {
       cardHeight += (aLines - 1) * 15;
     }
-    
+
     return cardHeight;
   };
 
@@ -583,7 +583,7 @@ export const DiagnosticReportPreviewScreen = () => {
                 <img src={logoFundlab} alt="FUND.lab" style={{ height: '30px', objectFit: 'contain' }} />
               </div>
               <span style={{ fontSize: '0.66rem', color: '#475569', fontWeight: 700, letterSpacing: '0.2px' }}>
-                www.cci.bj &bull; contact@fundlab.bj &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {new Date().toLocaleDateString('fr-FR')} &nbsp;&nbsp;|&nbsp;&nbsp; PAGE 1/{totalPages}
+                www.cci.bj &bull; info@fund-lab.org &nbsp;&nbsp;|&nbsp;&nbsp; Généré le {new Date().toLocaleDateString('fr-FR')} &nbsp;&nbsp;|&nbsp;&nbsp; PAGE 1/{totalPages}
               </span>
             </div>
           </div>
