@@ -1,112 +1,69 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, Shield, BarChart2, Download, Zap, Compass, Search, FileText, Users } from 'lucide-react';
-import logoImg from '../../../assets/logo_compact.png';
+import { ArrowRight } from 'lucide-react';
+import hiwOrientationImg from '../../../assets/hiw_orientation.jpg';
+import hiwDiagnosticImg from '../../../assets/hiw_diagnostic.jpg';
+import hiwRestitutionImg from '../../../assets/hiw_restitution.jpg';
 import './CommentCaMarche.css';
 
 export const CommentCaMarche = ({ onStart }) => {
-  // Extract, declare and normalize configuration arrays before return() (Rule 9)
   const steps = [
     {
       num: '01',
-      icon: <Users size={20} />,
-      title: 'Choisissez votre profil',
-      desc: 'Sélectionnez la situation qui décrit le mieux votre activité parmi nos 6 profils. Cela permet d\'ajuster immédiatement le parcours à vos enjeux de départ.',
-      tag: '< 1 min',
+      title: 'Profil & Orientation',
+      desc: 'Quelques questions simples pour cerner votre contexte et cibler immédiatement l\'évaluation la plus pertinente.',
+      image: hiwOrientationImg,
+      imageAlt: 'Orientation et choix du profil',
     },
     {
       num: '02',
-      icon: <Search size={20} />,
-      title: 'Répondez au pré-diagnostic',
-      desc: 'Quelques questions rapides permettent à notre moteur de comprendre votre contexte — secteur, région, préoccupation principale, signaux de risque.',
-      tag: '2–3 min',
+      title: 'Évaluation ciblée',
+      desc: 'Un questionnaire déclaratif sans justificatifs comptables, pensé pour aller droit au but à votre rythme.',
+      image: hiwDiagnosticImg,
+      imageAlt: 'Questionnaire d\'évaluation',
     },
     {
       num: '03',
-      icon: <Zap size={20} />,
-      title: 'Recevez votre orientation',
-      desc: 'Notre algorithme intelligent vous oriente vers le diagnostic le plus adapté à votre profil et votre situation.',
-      tag: 'Instantané',
+      title: 'Restitution & Plan d\'action',
+      desc: 'Votre score global de viabilité, vos points de vigilance et vos priorités concrètes, téléchargeables immédiatement en PDF.',
+      image: hiwRestitutionImg,
+      imageAlt: 'Scorecard et plan d\'action',
     },
-    {
-      num: '04',
-      icon: <FileText size={20} />,
-      title: 'Complétez le questionnaire',
-      desc: 'Répondez aux questions du module recommandé à votre rythme. Des estimations suffisent — une option "Je ne sais pas" est disponible à chaque étape.',
-      tag: '7–45 min',
-    },
-    {
-      num: '05',
-      icon: <BarChart2 size={20} />,
-      title: 'Obtenez votre rapport personnalisé',
-      desc: 'Score de maturité, forces, fragilités, priorités d\'action et recommandations personnalisées — téléchargeables en PDF immédiatement.',
-      tag: 'Immédiat',
-    },
-  ];
-
-  const features = [
-    { icon: <Shield size={22} />, title: '100% confidentiel', desc: 'Vos données restent privées. Aucune inscription requise.' },
-    { icon: <Clock size={22} />, title: 'De 7 à 45 minutes', desc: 'Choisissez le module adapté à votre disponibilité.' },
-    { icon: <BarChart2 size={22} />, title: 'Score & analyse', desc: 'Un score de maturité + des recommandations concrètes.' },
-    { icon: <Download size={22} />, title: 'Rapport PDF', desc: 'Téléchargez et conservez votre rapport de diagnostic.' },
   ];
 
   return (
-    <div className="how-it-works-page">
-
-      {/* ── HERO ── */}
+    <div className="hiw-page">
+      {/* ── EN-TÊTE ÉPURÉ ── */}
       <section className="hiw-hero">
-        <div className="container hiw-hero-inner">
-          <h1 className="hiw-hero-title">
-            Un parcours guidé,<br />
-            <span style={{ color: 'var(--color-accent)' }}>étape par étape</span>
+        <div className="hiw-container">
+          <span className="hiw-tag">Méthodologie</span>
+          <h1 className="hiw-title">
+            Comment ça <span className="hiw-title-accent">marche.</span>
           </h1>
-          <p className="hiw-hero-subtitle">
-            En quelques questions, notre outil vous oriente vers le diagnostic le plus adapté, analyse votre situation et vous livre un rapport personnalisé.
+          <p className="hiw-subtitle">
+            3 étapes simples pour évaluer la santé de votre entreprise et obtenir votre feuille de route.
           </p>
         </div>
       </section>
 
-      {/* ── STEPS ── */}
-      <section className="section" style={{ background: 'var(--bg-white)', paddingTop: 'var(--space-16)' }}>
-        <div className="container hiw-steps-container">
-          <div className="hiw-steps-line" />
-          {steps.map((step, i) => (
-            <div key={i} className={`hiw-step-row animate-fade-up delay-${Math.min(i, 5) + 1}00`}>
-              <div className="hiw-step-left">
-                <div className="hiw-step-num-wrap">
-                  <div className="hiw-step-icon">{step.icon}</div>
-                  <div className="hiw-step-num">{step.num}</div>
+      {/* ── LES 3 ÉTAPES CLAIRES ── */}
+      <section className="hiw-steps-section">
+        <div className="hiw-container">
+          <div className="hiw-steps-grid">
+            {steps.map((step, idx) => (
+              <div key={step.num} className={`hiw-step-item ${idx % 2 === 1 ? 'reverse' : ''}`}>
+                <div className="hiw-step-info">
+                  <span className="hiw-step-number">{step.num}</span>
+                  <h2 className="hiw-step-heading">{step.title}</h2>
+                  <p className="hiw-step-text">{step.desc}</p>
                 </div>
-              </div>
-              <div className="hiw-step-card">
-                <div className="hiw-step-header">
-                  <h3 className="hiw-step-title">{step.title}</h3>
-                  <span className="hiw-step-tag">
-                    <Clock size={11} /> {step.tag}
-                  </span>
-                </div>
-                <p className="hiw-step-desc">{step.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ── FEATURES ── */}
-      <section className="section" style={{ background: 'var(--bg-app)' }}>
-        <div className="container">
-          <div className="section-header animate-fade-up">
-            <h2>Ce que vous obtenez</h2>
-            <p>Un diagnostic complet, gratuit et exploitable immédiatement.</p>
-          </div>
-          <div className="grid-2 hiw-features-grid animate-fade-up delay-200">
-            {features.map((f, i) => (
-              <div key={i} className="hiw-feature-card">
-                <div className="hiw-feature-icon">{f.icon}</div>
-                <div>
-                  <div className="hiw-feature-title">{f.title}</div>
-                  <div className="hiw-feature-desc">{f.desc}</div>
+                <div className="hiw-step-mockup">
+                  <img
+                    src={step.image}
+                    alt={step.imageAlt}
+                    className="hiw-mockup-img"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             ))}
@@ -114,17 +71,16 @@ export const CommentCaMarche = ({ onStart }) => {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="hiw-cta-section">
-        <div className="container" style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-          <h2 style={{ color: '#fff', marginBottom: '14px', fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-            Prêt à lancer votre diagnostic ?
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '32px', maxWidth: '460px', margin: '0 auto 32px' }}>
-            Aucune inscription requise. Vos réponses restent confidentielles.
+      {/* ── CTA FINAL SOBRE ── */}
+      <section className="hiw-cta">
+        <div className="hiw-container hiw-cta-inner">
+          <h2 className="hiw-cta-heading">Prêt à faire le point ?</h2>
+          <p className="hiw-cta-text">
+            L'évaluation est gratuite, sans engagement et sans inscription obligatoire.
           </p>
-          <button className="hiw-btn-cta" onClick={onStart}>
-            Commencer le diagnostic
+          <button type="button" className="hiw-cta-button" onClick={onStart}>
+            Commencer mon diagnostic
+            <ArrowRight size={18} />
           </button>
         </div>
       </section>
