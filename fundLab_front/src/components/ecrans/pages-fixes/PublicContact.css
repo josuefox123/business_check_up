@@ -1,0 +1,522 @@
+/* ══════════════════════════════════════════════════════════════════════
+   FUND.lab — Contact & Support (Compact & Space-Optimized)
+   Strict adherence to style.md & harmonized with LandingPage:
+   - Palette: Bleu Crépuscule (#17212D), Dark Turquoise (#34BED5), Blanc Pur (#FFFFFF)
+   - Typographie: Lato (Black 900 pour titres, Bold 700, Regular 400 pour corps)
+   - Utilisation optimale de l'espace : marges resserrées, zéro redondance
+   ══════════════════════════════════════════════════════════════════════ */
+
+.contact-page {
+  background-color: #FFFFFF;
+  min-height: 100vh;
+  font-family: 'Lato', sans-serif;
+  color: #17212D;
+  overflow-x: hidden;
+  padding-top: 76px; /* Dégagement navbar */
+  padding-bottom: 56px;
+}
+
+.contact-container {
+  width: 100%;
+  max-width: 960px; /* Aligné sur la page d'accueil */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* ── EN-TÊTE ÉPURÉ & COMPACT ── */
+.contact-header {
+  padding: 36px 0 24px;
+  text-align: left;
+}
+
+.contact-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Lato', sans-serif;
+  color: #17212D;
+  background: rgba(52, 190, 213, 0.08);
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(52, 190, 213, 0.25);
+  border-left: 3px solid #34BED5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  user-select: none;
+}
+
+.contact-title {
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 900; /* Lato Black */
+  color: #17212D;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  margin: 0 0 10px 0;
+}
+
+.contact-title-accent {
+  color: #34BED5; /* Dark Turquoise */
+}
+
+.contact-desc {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.98rem;
+  color: #475569;
+  line-height: 1.55;
+  max-width: 600px;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── GRILLE PRINCIPALE (UTILISATION COMPACTE) ── */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── CARTE FORMULAIRE ── */
+.contact-form-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #34BED5; /* Signature True North */
+  border-radius: 6px;
+  padding: 28px 28px;
+  box-shadow: 0 4px 20px -2px rgba(23, 33, 45, 0.04), 0 1px 3px rgba(23, 33, 45, 0.02);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* Marges resserrées et confortables */
+}
+
+.contact-form-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.contact-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.contact-field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #17212D;
+}
+
+.contact-label-icon {
+  color: #34BED5;
+  flex-shrink: 0;
+}
+
+.contact-required-star {
+  color: #34BED5;
+  margin-left: 2px;
+}
+
+/* Inputs & Textareas */
+.contact-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.contact-input,
+.contact-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1.5px solid #E2E8F0;
+  font-size: 0.92rem;
+  font-family: 'Lato', sans-serif;
+  color: #17212D;
+  background-color: #F8FAFC;
+  outline: none;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.contact-input:focus,
+.contact-textarea:focus {
+  border-color: #34BED5;
+  box-shadow: 0 0 0 3px rgba(52, 190, 213, 0.15);
+  background-color: #FFFFFF;
+}
+
+.contact-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.contact-email-feedback {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.contact-email-feedback.valid {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.contact-email-feedback.invalid {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Message d'erreur API */
+.contact-error-banner {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-left: 3px solid #DC2626;
+  color: #991B1B;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-retry-btn {
+  align-self: flex-start;
+  background: #991B1B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Actions Formulaire */
+.contact-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.contact-submit-btn {
+  flex: 2;
+  font-family: 'Lato', sans-serif;
+  background-color: #17212D;
+  color: #FFFFFF;
+  padding: 12px 22px;
+  border-radius: 6px;
+  border: 1.5px solid #17212D;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(23, 33, 45, 0.15);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+}
+
+.contact-submit-btn:hover:not(:disabled) {
+  background-color: #0B131D;
+  border-color: #34BED5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(23, 33, 45, 0.25);
+}
+
+.contact-submit-btn:disabled {
+  background-color: #E2E8F0;
+  border-color: #E2E8F0;
+  color: #94A3B8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.contact-cancel-btn {
+  flex: 1;
+  font-family: 'Lato', sans-serif;
+  background-color: #FFFFFF;
+  color: #475569;
+  padding: 12px 18px;
+  border-radius: 6px;
+  border: 1.5px solid #CBD5E1;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 46px;
+  white-space: nowrap;
+}
+
+.contact-cancel-btn:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+  color: #17212D;
+}
+
+/* État succès */
+.contact-success-box {
+  text-align: center;
+  padding: 28px 16px;
+}
+
+.contact-success-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(52, 190, 213, 0.15);
+  color: #147285;
+  border: 2px solid #34BED5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.contact-success-title {
+  font-family: 'Lato', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #17212D;
+  margin: 0 0 8px 0;
+}
+
+.contact-success-desc {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.92rem;
+  color: #475569;
+  line-height: 1.55;
+  max-width: 380px;
+  margin: 0 auto 24px;
+}
+
+/* ── CARTE COORDONNÉES DIRECTES (COMPACTE & SOBRE) ── */
+.contact-info-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #34BED5; /* Signature True North */
+  border-radius: 6px;
+  padding: 24px 22px;
+  box-shadow: 0 4px 16px -2px rgba(23, 33, 45, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-info-title {
+  font-family: 'Lato', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #17212D;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.contact-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contact-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  color: inherit;
+}
+
+.contact-info-row:hover {
+  border-color: #34BED5;
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(52, 190, 213, 0.1);
+}
+
+.contact-info-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  background: rgba(52, 190, 213, 0.1);
+  color: #147285;
+  border: 1px solid rgba(52, 190, 213, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contact-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-info-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748B;
+  letter-spacing: 0.06em;
+}
+
+.contact-info-text {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #17212D;
+  line-height: 1.4;
+}
+
+.contact-info-text.link {
+  color: #147285;
+}
+
+.contact-info-row:hover .contact-info-text.link {
+  color: #34BED5;
+}
+
+.contact-maps-link {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #34BED5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 3px;
+  display: inline-block;
+}
+
+/* Réassurance intégrée en pied de carte */
+.contact-reassurance-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.contact-reassurance-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.contact-reassurance-icon {
+  color: #34BED5;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN (MOBILE VIEWPORTS)
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contact-page {
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+
+  .contact-header {
+    padding: 24px 0 18px;
+  }
+
+  .contact-container {
+    padding: 0 16px; /* Aligné sur l'accueil */
+  }
+
+  .contact-tag {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+  }
+
+  .contact-title {
+    font-size: clamp(1.75rem, 5.8vw, 2.1rem);
+    margin-bottom: 8px;
+  }
+
+  .contact-desc {
+    font-size: 0.92rem;
+  }
+
+  .contact-form-card {
+    padding: 20px 16px;
+    border-left-width: 3.5px;
+  }
+
+  .contact-form-two-col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .contact-actions-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .contact-submit-btn,
+  .contact-cancel-btn {
+    width: 100%;
+  }
+
+  .contact-info-card {
+    padding: 20px 16px;
+    border-left-width: 3px;
+  }
+
+  .contact-info-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-container {
+    padding: 0 12px;
+  }
+
+  .contact-form-card {
+    padding: 16px 14px;
+    border-left-width: 3px;
+  }
+
+  .contact-title {
+    font-size: 1.6rem;
+  }
+}
