@@ -237,7 +237,7 @@ export const PublicContactScreen = ({ onBack }) => {
                 </div>
                 <div className="contact-info-content">
                   <span className="contact-info-label">Siège social</span>
-                  <span className="contact-info-text">Cotonou, Bénin • Marché de Wologuèdè</span>
+                  <span className="contact-info-text">Cotonou, Bénin - Marché de Wologuèdè</span>
                   <a
                     href="https://maps.app.goo.gl/zAXiCx6rSomNADwn7?g_st=aw"
                     target="_blank"

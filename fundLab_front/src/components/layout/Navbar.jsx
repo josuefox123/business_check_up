@@ -56,7 +56,7 @@ export const Navbar = ({ onGoHome }) => {
 
   const links = [
     { to: '/', label: 'Accueil', end: true, icon: Home },
-    { to: '/comment-ca-marche', label: 'Fonctionnement', icon: Compass },
+    { to: '/comment-ca-marche', label: "Comment ça marche ?", icon: Compass },
     { to: '/a-propos', label: 'À propos', icon: HelpCircle },
     { to: '/contact', label: 'Contact', icon: Mail },
   ];

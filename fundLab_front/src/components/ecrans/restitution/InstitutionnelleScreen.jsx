@@ -28,14 +28,14 @@ export const InstitutionnelleScreen = ({ onBack, onContact }) => (
     {onBack && <TopBackLink onClick={onBack} />}
     <div className="about-page animate-fade-up">
       <div className="about-container">
-        
+
         {/* ── HERO & MISSION/VISION ── */}
         <section className="about-hero-card">
           <div className="about-hero-layout">
             <div className="about-hero-content">
               <span className="about-tag">Mission & Vision</span>
               <h1 className="about-title">
-                À propos du <span className="about-title-accent">Business Check-up.</span>
+                À propos de <span className="about-title-accent">Business Check-up.</span>
               </h1>
 
               <div className="about-pillars">
