@@ -76,11 +76,9 @@ export const TriageScreen = ({ step, question, hint, choices = [], multi = false
 
       </div>
 
-      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page */}
+      {/* Boutons d'action simples Retour et Continuer intégrés en bas de page (Hors de l'animation transform) */}
       <div className="screen-nav">
-        {onBack ? (
-          <Button variant="outline" onClick={onBack}>Retour</Button>
-        ) : <div />}
+        {onBack && <Button variant="outline" onClick={onBack}>Retour</Button>}
         <Button variant="primary" disabled={!canContinue} onClick={handleContinueSubmit}>
           Continuer
         </Button>

@@ -159,33 +159,6 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
     setAnswer(val);
   };
 
-  // Rule 9: Normalisation des variables d'action pour le bouton principal (Solution 1 : Bouton dynamique)
-  const isOptional = Boolean(questionData?.isOptional || onSkip);
-  let actionBtnText = 'Continuer';
-  let actionBtnVariant = 'primary';
-  let actionBtnDisabled = false;
-  let actionBtnHandler = handleContinue;
-
-  if (isSubmitting) {
-    actionBtnText = 'Enregistrement...';
-    actionBtnDisabled = true;
-  } else if (canContinue) {
-    actionBtnText = 'Continuer';
-    actionBtnVariant = 'primary';
-    actionBtnDisabled = false;
-    actionBtnHandler = handleContinue;
-  } else if (isOptional) {
-    actionBtnText = 'Ignorer';
-    actionBtnVariant = 'outline';
-    actionBtnDisabled = false;
-    actionBtnHandler = () => (onSkip ? onSkip() : onContinue(null, null, null, null, null));
-  } else {
-    actionBtnText = 'Continuer';
-    actionBtnVariant = 'primary';
-    actionBtnDisabled = true;
-    actionBtnHandler = handleContinue;
-  }
-
   return (
     <ScreenWrapper className={themeClass}>
       {showQuitModal && (
@@ -363,13 +336,23 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             Retour
           </Button>
         ) : <div />}
-        <Button
-          variant={actionBtnVariant}
-          disabled={actionBtnDisabled}
-          onClick={actionBtnHandler}
-        >
-          {actionBtnText}
-        </Button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {(questionData?.isOptional || onSkip) && (
+            <Button
+              variant="ghost"
+              onClick={() => onSkip ? onSkip() : onContinue(null, null, null, null, null)}
+            >
+              Ignorer
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            disabled={(!canContinue && !(questionData?.isOptional || onSkip)) || isSubmitting}
+            onClick={handleContinue}
+          >
+            {isSubmitting ? 'Enregistrement...' : 'Continuer'}
+          </Button>
+        </div>
       </div>
     </ScreenWrapper>
   );

@@ -38,6 +38,7 @@ import { EmailVerificationModal } from './components/ecrans/triage/EmailVerifica
 import { PostEnrichmentEmailModal } from './components/ecrans/triage/PostEnrichmentEmailModal.jsx';
 import { EnrichmentCompletionModal } from './components/ecrans/questionnaire/EnrichmentCompletionModal.jsx';
 import { TriageCompletionModal } from './components/ecrans/triage/TriageCompletionModal.jsx';
+import { TriageCombinedScreen } from './components/ecrans/triage/TriageCombinedScreen.jsx';
 import { DiagnosticHistoryScreen } from './components/ecrans/restitution/DiagnosticHistoryScreen.jsx';
 import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
@@ -507,6 +508,27 @@ function DiagnosticApp() {
             )}
             {flow.triageStep >= 5 && (() => {
               const triageList = flow.triageQuestions || [];
+              const totalAdjusted = Math.max(1, triageList.length - 1);
+
+              // Étape 5 : Combinaison ergonomique de Q01 (Profil) et Q02 (Stade de vente)
+              if (flow.triageStep === 5 && triageList.length >= 2) {
+                const q1 = triageList[0];
+                const q2 = triageList[1];
+                return (
+                  <TriageCombinedScreen
+                    key="triage_combined_1_2"
+                    question1={q1}
+                    question2={q2}
+                    progress={{ current: 1, total: totalAdjusted }}
+                    onContinue={(ans1, ans2) => flow.onTriageCombinedAnswer(q1.id, ans1, q2.id, ans2)}
+                    onBack={() => flow.setTriageStep(4)}
+                    initialAnswer1={flow.triageAnswers[q1.id] ?? null}
+                    initialAnswer2={flow.triageAnswers[q2.id] ?? null}
+                  />
+                );
+              }
+
+              // Étapes suivantes (Q03, Q04, Q05, Q06, Q07...)
               const triageIndex = flow.triageStep - 5;
               if (triageList.length > 0 && triageIndex < triageList.length) {
                 const currentQ = triageList[triageIndex];
@@ -516,12 +538,12 @@ function DiagnosticApp() {
                     key={currentQ.id || `tri_${triageIndex}`}
                     step={`TRI_${triageIndex}`}
                     question={currentQ}
-                    progress={{ current: triageIndex + 1, total: triageList.length }}
+                    progress={{ current: triageIndex, total: totalAdjusted }}
                     multi={isMulti}
                     onContinue={(ans) => flow.onTriageDynamicAnswer(currentQ.id, ans, triageIndex)}
                     onBack={() => {
-                      if (flow.triageStep === 5) {
-                        flow.setTriageStep(4);
+                      if (flow.triageStep === 7) {
+                        flow.setTriageStep(5);
                       } else {
                         flow.setTriageStep(flow.triageStep - 1);
                       }

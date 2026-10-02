@@ -123,6 +123,7 @@ export const ResultatSyntheseScreen = ({
 
   const hasPointsAppui = pointsAppui.length > 0;
   const hasFragilities = fragilitiesList.length > 0;
+  const hasOrientationText = hasContent(restData?.orientation_text);
   const defaultDisclaimer = "Diagnostic indicatif fondé sur vos déclarations et nos modèles d'analyse. Il ne constitue ni un audit financier, ni une due diligence, ni une décision de financement, et ne remplace pas une mission d'expertise comptable agréée.";
   const displayedDisclaimer = restitution?.disclaimer || defaultDisclaimer;
   const hasDisclaimers = Boolean(displayedDisclaimer || restitution?.disclaimer_financing);

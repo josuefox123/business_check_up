@@ -156,7 +156,7 @@ export const DiagnosticRunDetailScreen = () => {
         const found = list.find(r => r?.diagnostic_run_id === runId);
         if (found) {
           matched = mergeDetails(matched, found, resDiag?.user);
-          
+
           const targetUserId = found.user_id || passedUserId;
           if (targetUserId) {
             const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
