@@ -9,7 +9,8 @@ import {
   AlertCircle,
   X,
   Send,
-  Filter
+  Filter,
+  Paperclip
 } from 'lucide-react';
 import { statistiquesApi } from '../../api/statistiquesApi.js';
 import { pmeApi } from '../../api/pmeApi.js';
@@ -599,8 +600,9 @@ export const CcibReportModule = () => {
                 />
               </div>
 
-              <div style={{ fontSize: '0.76rem', color: '#64748b', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px' }}>
-                📎 Le rapport <strong>Rapport_CCIB_{periodLabel.replace(/\s+/g, '_')}.pdf</strong> sera joint automatiquement.
+              <div style={{ fontSize: '0.76rem', color: '#64748b', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Paperclip size={13} style={{ flexShrink: 0, color: '#34BED5' }} />
+                <span>Le rapport <strong>Rapport_CCIB_{periodLabel.replace(/\s+/g, '_')}.pdf</strong> sera joint automatiquement.</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>

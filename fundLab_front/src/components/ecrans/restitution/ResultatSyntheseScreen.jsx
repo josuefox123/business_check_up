@@ -123,8 +123,9 @@ export const ResultatSyntheseScreen = ({
 
   const hasPointsAppui = pointsAppui.length > 0;
   const hasFragilities = fragilitiesList.length > 0;
-  const hasOrientationText = hasContent(restData?.orientation_text);
-  const hasDisclaimers = Boolean(restitution?.disclaimer || restitution?.disclaimer_financing);
+  const defaultDisclaimer = "Diagnostic indicatif fondé sur vos déclarations et nos modèles d'analyse. Il ne constitue ni un audit financier, ni une due diligence, ni une décision de financement, et ne remplace pas une mission d'expertise comptable agréée.";
+  const displayedDisclaimer = restitution?.disclaimer || defaultDisclaimer;
+  const hasDisclaimers = Boolean(displayedDisclaimer || restitution?.disclaimer_financing);
 
   // SVG Gauge calculations
   const radius = 68;
@@ -213,8 +214,11 @@ export const ResultatSyntheseScreen = ({
             </div>
 
             {credScore && (
-              <div style={{ marginTop: '12px', fontSize: '0.82rem', color: '#64748B' }}>
-                Indice de crédibilité : <strong>{credScore}</strong>
+              <div style={{ marginTop: '12px', fontSize: '0.82rem', color: '#64748B', lineHeight: 1.4 }}>
+                <div>Indice de corroboration : <strong>{credScore}</strong></div>
+                <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '2px' }}>
+                  (Niveau de preuve déclaratif sans justificatifs comptables rattachés)
+                </div>
               </div>
             )}
             {redFlagCount !== undefined && redFlagCount !== null && redFlagCount !== '' && Number(redFlagCount) > 0 && (
@@ -430,9 +434,9 @@ export const ResultatSyntheseScreen = ({
         {/* Disclaimers if present */}
         {hasDisclaimers && (
           <div style={{ marginTop: '24px', textAlign: 'center' }}>
-            {restitution?.disclaimer && (
+            {displayedDisclaimer && (
               <p style={{ fontSize: '0.78rem', color: '#94A3B8', lineHeight: '1.5', margin: '0 0 6px 0' }}>
-                {restitution.disclaimer}
+                {displayedDisclaimer}
               </p>
             )}
             {restitution?.disclaimer_financing && (

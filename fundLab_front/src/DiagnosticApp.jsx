@@ -9,7 +9,7 @@ import { LandingPage } from './components/ecrans/pages-fixes/LandingPage.jsx';
 import { CommentCaMarche } from './components/ecrans/pages-fixes/CommentCaMarche.jsx';
 import { Navbar } from './components/layout/Navbar.jsx';
 import { PublicContactScreen } from './components/ecrans/pages-fixes/PublicContact.jsx';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RotateCcw, WifiOff } from 'lucide-react';
 import { useDiagnosticFlow } from './hooks/useDiagnosticFlow.js';
 import { clearDiagnosticStorage } from './constants/storageKeys.js';
 
@@ -39,6 +39,7 @@ import { EmailVerificationModal } from './components/ecrans/triage/EmailVerifica
 import { PostEnrichmentEmailModal } from './components/ecrans/triage/PostEnrichmentEmailModal.jsx';
 import { EnrichmentCompletionModal } from './components/ecrans/questionnaire/EnrichmentCompletionModal.jsx';
 import { TriageCompletionModal } from './components/ecrans/triage/TriageCompletionModal.jsx';
+import { TriageCombinedScreen } from './components/ecrans/triage/TriageCombinedScreen.jsx';
 import { DiagnosticHistoryScreen } from './components/ecrans/restitution/DiagnosticHistoryScreen.jsx';
 import { PdfTestScreen } from './mail/pages/PdfTestScreen.jsx';
 
@@ -106,6 +107,22 @@ const ErrorModal = ({ title, message, onClose, actionLabel, onAction }) => (
         >
           {actionLabel ? 'Fermer' : 'Fermer'}
         </button>
+      </div>
+
+      <div style={{
+        marginTop: '18px',
+        paddingTop: '14px',
+        borderTop: '1px solid #F1F5F9',
+        fontSize: '0.78rem',
+        color: '#64748B',
+        lineHeight: 1.5
+      }}>
+        Vos réponses restent sauvegardées sur cet appareil.<br />
+        Support technique :{' '}
+        <a href="mailto:info@fund-lab.org" style={{ color: '#1A9DB8', fontWeight: 700, textDecoration: 'none' }}>
+          info@fund-lab.org
+        </a>{' '}
+        • WhatsApp : <strong style={{ color: '#17212D' }}>+229 01 9797 1299</strong>
       </div>
     </div>
   </div>
@@ -178,6 +195,70 @@ const ResumeDiagnosticModal = ({ onConfirm, onCancel }) => (
   </div>
 );
 
+const ExitConfirmModal = ({ onConfirm, onCancel }) => (
+  <div style={{
+    position: 'fixed', inset: 0, zIndex: 9999,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '20px',
+    background: 'rgba(7, 14, 36, 0.55)',
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    animation: 'fadeIn 0.18s ease',
+  }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: '20px',
+      padding: '36px 32px 28px',
+      maxWidth: '420px',
+      width: '100%',
+      boxShadow: '0 24px 60px rgba(7,14,36,0.18)',
+      textAlign: 'center',
+      animation: 'scaleIn 0.2s cubic-bezier(0.16,1,0.3,1)',
+    }}>
+      <div style={{
+        width: '56px', height: '56px',
+        background: '#FEF2F2',
+        borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <AlertTriangle size={26} color="#EF4444" strokeWidth={2.3} />
+      </div>
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#17212D', marginBottom: '10px', fontFamily: 'var(--font)' }}>
+        Quitter le diagnostic en cours ?
+      </h2>
+      <p style={{ fontSize: '0.88rem', color: '#64748B', lineHeight: 1.6, marginBottom: '28px', fontFamily: 'var(--font)' }}>
+        Vous avez un diagnostic en cours. Si vous retournez à l'accueil maintenant, votre progression risque d'être réinitialisée.
+      </p>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button
+          onClick={onCancel}
+          style={{
+            flex: 1, padding: '13px 16px', borderRadius: '12px',
+            fontWeight: 600, fontSize: '0.9rem', border: '1.5px solid var(--slate-200)',
+            background: '#fff', color: '#475569', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+          }}
+        >
+          Continuer mon test
+        </button>
+        <button
+          onClick={onConfirm}
+          style={{
+            flex: 1, padding: '13px 16px', borderRadius: '12px',
+            fontWeight: 750, fontSize: '0.9rem', border: 'none',
+            background: '#EF4444', color: '#fff', cursor: 'pointer',
+            fontFamily: 'var(--font)', transition: 'all 0.15s',
+            boxShadow: '0 4px 14px rgba(239,68,68,0.25)',
+          }}
+        >
+          Quitter
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 function DiagnosticApp() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -223,7 +304,16 @@ function DiagnosticApp() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px', textAlign: 'center' }}>
         <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⚠️</div>
+          <div style={{
+            width: '64px', height: '64px',
+            background: '#FEF2F2',
+            borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+            color: '#EF4444'
+          }}>
+            <WifiOff size={32} strokeWidth={2.2} />
+          </div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#17212D', marginBottom: '16px' }}>Service temporairement indisponible</h1>
           <p style={{ fontSize: '0.92rem', color: '#64748B', lineHeight: '1.6', marginBottom: '24px' }}>
             L'accès aux diagnostics nécessite une connexion au serveur. Veuillez vérifier votre réseau ou réessayer la connexion.
@@ -246,10 +336,11 @@ function DiagnosticApp() {
                 gap: '8px'
               }}
             >
-              {flow.isRetrying ? 'Connexion en cours...' : '🔄 Réessayer'}
+              <RotateCcw size={16} />
+              <span>{flow.isRetrying ? 'Connexion en cours...' : 'Réessayer'}</span>
             </button>
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={flow.onGoHome}
               style={{
                 background: '#F1F5F9',
                 color: '#475569',
@@ -283,6 +374,12 @@ function DiagnosticApp() {
             clearDiagnosticStorage();
             flow.setIsRestored(true);
           }}
+        />
+      )}
+      {flow.showExitConfirmModal && (
+        <ExitConfirmModal
+          onConfirm={flow.executeGoHome}
+          onCancel={() => flow.setShowExitConfirmModal(false)}
         />
       )}
       {flow.errorModal && (
@@ -418,6 +515,27 @@ function DiagnosticApp() {
             )}
             {flow.triageStep >= 5 && (() => {
               const triageList = flow.triageQuestions || [];
+              const totalAdjusted = Math.max(1, triageList.length - 1);
+
+              // Étape 5 : Combinaison ergonomique de Q01 (Profil) et Q02 (Stade de vente)
+              if (flow.triageStep === 5 && triageList.length >= 2) {
+                const q1 = triageList[0];
+                const q2 = triageList[1];
+                return (
+                  <TriageCombinedScreen
+                    key="triage_combined_1_2"
+                    question1={q1}
+                    question2={q2}
+                    progress={{ current: 1, total: totalAdjusted }}
+                    onContinue={(ans1, ans2) => flow.onTriageCombinedAnswer(q1.id, ans1, q2.id, ans2)}
+                    onBack={() => flow.setTriageStep(4)}
+                    initialAnswer1={flow.triageAnswers[q1.id] ?? null}
+                    initialAnswer2={flow.triageAnswers[q2.id] ?? null}
+                  />
+                );
+              }
+
+              // Étapes suivantes (Q03, Q04, Q05, Q06, Q07...)
               const triageIndex = flow.triageStep - 5;
               if (triageList.length > 0 && triageIndex < triageList.length) {
                 const currentQ = triageList[triageIndex];
@@ -425,12 +543,18 @@ function DiagnosticApp() {
                 return (
                   <TriageScreen
                     key={currentQ.id || `tri_${triageIndex}`}
-                    step={`TRI_${triageIndex + 1}`}
+                    step={`TRI_${triageIndex}`}
                     question={currentQ}
-                    progress={{ current: triageIndex + 1, total: triageList.length }}
+                    progress={{ current: triageIndex, total: totalAdjusted }}
                     multi={isMulti}
                     onContinue={(ans) => flow.onTriageDynamicAnswer(currentQ.id, ans, triageIndex)}
-                    onBack={() => flow.setTriageStep(flow.triageStep - 1)}
+                    onBack={() => {
+                      if (flow.triageStep === 7) {
+                        flow.setTriageStep(5);
+                      } else {
+                        flow.setTriageStep(flow.triageStep - 1);
+                      }
+                    }}
                     initialAnswer={flow.triageAnswers[currentQ.id] ?? null}
                   />
                 );

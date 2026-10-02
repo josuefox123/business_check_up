@@ -39,14 +39,25 @@ export async function apiFetch(endpoint, options = {}) {
     headers['Authorization'] = `Bearer ${adminToken}`;
   }
 
+  const timeoutMs = options.timeoutMs || 20000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   let response;
   try {
     response = await fetch(url, {
       ...options,
       credentials: 'include',
-      headers
+      headers,
+      signal: options.signal || controller.signal
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      const timeoutError = new Error(`Délai d'attente dépassé (${Math.round(timeoutMs / 1000)}s). Le serveur n'a pas répondu à temps.`);
+      timeoutError.status = 504;
+      timeoutError.isTimeout = true;
+      throw timeoutError;
+    }
     if (typeof window !== 'undefined' && window.navigator && window.navigator.onLine === false) {
       window.dispatchEvent(new CustomEvent('api-offline', { detail: true }));
     }
@@ -54,6 +65,8 @@ export async function apiFetch(endpoint, options = {}) {
     error.status = 503;
     error.isNetworkError = true;
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!response.ok) {

@@ -41,6 +41,7 @@ export function useDiagnosticFlow() {
 
   const { saveState, loadState, clearState } = useSessionPersist();
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showExitConfirmModal, setShowExitConfirmModal] = useState(false);
   const [pendingResumeState, setPendingResumeState] = useState(null);
   const [isRestored, setIsRestored] = useState(false);
 
@@ -276,7 +277,29 @@ export function useDiagnosticFlow() {
 
   const onGoToCatalog = () => navigate('/catalog');
   const onLearnMore = () => navigate('/a-propos');
+
   const onGoHome = () => {
+    const isDiagnosticPath =
+      location.pathname.startsWith('/triage') ||
+      location.pathname.startsWith('/diagnostic') ||
+      location.pathname === '/catalog';
+
+    const hasActiveProgress = Boolean(
+      currentModule ||
+      Object.keys(triageAnswers).length > 0 ||
+      Object.keys(moduleAnswers).length > 0 ||
+      questionIndex > 0
+    );
+
+    if (isDiagnosticPath && hasActiveProgress && location.pathname !== '/diagnostic/fin') {
+      setShowExitConfirmModal(true);
+      return;
+    }
+    executeGoHome();
+  };
+
+  const executeGoHome = () => {
+    setShowExitConfirmModal(false);
     clearState();
     setTriageAnswers({});
     setConsentAnswers({ diag: false, stats: false, contact: false });
@@ -387,6 +410,16 @@ export function useDiagnosticFlow() {
     } else {
       setTriageStep(p => p + 1);
     }
+  };
+
+  const onTriageCombinedAnswer = (q1Id, ans1, q2Id, ans2) => {
+    const updated = {
+      ...triageAnswers,
+      [q1Id]: ans1,
+      [q2Id]: ans2
+    };
+    setTriageAnswers(updated);
+    setTriageStep(7);
   };
 
   const handleInitiateEmailVerification = async (profileData) => {
@@ -1409,7 +1442,10 @@ export function useDiagnosticFlow() {
     references,
     triageQuestions,
     onTriageDynamicAnswer,
+    onTriageCombinedAnswer,
     showResumeModal, setShowResumeModal,
+    showExitConfirmModal, setShowExitConfirmModal,
+    executeGoHome,
     pendingResumeState, setPendingResumeState,
     isRestored, setIsRestored,
 

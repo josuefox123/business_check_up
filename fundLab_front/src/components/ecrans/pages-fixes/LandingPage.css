@@ -1,77 +1,94 @@
-/* LandingPage — Left-Aligned, Single-Line Pills, Brand Colors (#17212D & #34BED5), No Overlaps */
+/* ══════════════════════════════════════════════════════════════════════
+   FUND.lab (True North) — Landing Page Design System
+   Strict adherence to style.md:
+   - Primary chromatic tokens: Bleu Crépuscule (#17212D), Dark Turquoise (#34BED5), Blanc Pur (#FFFFFF)
+   - Strict typography: Lato (Black/Bold for titles, Regular/Medium for body)
+   - Geometry: Controlled angles, 3px-4px lateral left border (#34BED5)
+   - Zero hardcoded emojis, full mobile touch ergonomics
+   ══════════════════════════════════════════════════════════════════════ */
 
 .lp-full-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: #ffffff; /* Fond blanc pur sans pointillé */
+  background-color: #FFFFFF;
   position: relative;
   box-sizing: border-box;
-  font-family: var(--font, 'Inter', sans-serif);
-  
-  /* Evite le chevauchement avec le menu haut (navbar fixed 72px) */
-  padding-top: 88px; 
+  font-family: 'Lato', sans-serif;
+  color: #17212D;
+  padding-top: 88px;
   padding-bottom: 0;
+  overflow-x: hidden;
 }
 
-@media (max-width: 768px) {
-  .lp-full-page {
-    padding-top: 72px;
-    padding-bottom: 72px; /* Evite le chevauchement avec la barre d'onglets mobile */
-  }
-}
-
-/* Hero Section */
+/* ── Hero Section ── */
 .lp-hero-section {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 40px 0 60px;
+  justify-content: center;
+  padding: 56px 0 64px;
   width: 100%;
 }
 
 .lp-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 28px;
   box-sizing: border-box;
 }
 
-/* Hero Content — Totalement Aligné à Gauche */
-.lp-hero-content {
+/* ── Hero Strategic Card (Concept "Fenêtre stratégique / Porte ouverte") ── */
+.lp-hero-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #34BED5; /* Signature latérale True North */
+  border-radius: 6px; /* Angles nets et institutionnels (non-SaaS standard) */
+  padding: 52px 48px;
+  box-shadow: 0 8px 30px -4px rgba(23, 33, 45, 0.06), 0 2px 8px -2px rgba(23, 33, 45, 0.04);
+  position: relative;
+  transition: box-shadow 0.3s ease;
 }
 
-/* Tag in Dark Turquoise (#34BED5) */
+.lp-hero-card:hover {
+  box-shadow: 0 12px 36px -4px rgba(23, 33, 45, 0.08), 0 4px 12px -2px rgba(23, 33, 45, 0.05);
+}
+
+/* ── Institutional Badge / Tag ── */
 .lp-tag {
-  color: #34BED5;
-  background: rgba(52, 190, 213, 0.1);
-  padding: 8px 18px;
-  border-radius: 99px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Lato', sans-serif;
+  color: #17212D;
+  background: rgba(52, 190, 213, 0.08);
+  padding: 6px 14px;
+  border-radius: 4px;
   border: 1px solid rgba(52, 190, 213, 0.25);
-  align-self: flex-start;
+  border-left: 3px solid #34BED5;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 24px;
+  user-select: none;
 }
 
-/* Hero Title with Bleu Crépuscule (#17212D) & Dark Turquoise (#34BED5) */
+/* ── Hero Title ── */
 .lp-hero-title {
-  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
-  font-weight: 900;
-  color: #17212D; /* Bleu crépuscule */
-  line-height: 1.15;
-  letter-spacing: -0.035em;
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(2.2rem, 4.2vw, 3.2rem);
+  font-weight: 900; /* Lato Black */
+  color: #17212D; /* Bleu Crépuscule */
+  line-height: 1.16;
+  letter-spacing: -0.025em;
   margin: 0 0 20px 0;
-  max-width: 800px;
+  max-width: 820px;
   text-align: left;
 }
 
@@ -79,115 +96,145 @@
   color: #34BED5; /* Dark Turquoise */
 }
 
-
-
-/* Description */
+/* ── Hero Description ── */
 .lp-hero-desc {
-  font-size: clamp(1rem, 1.3vw, 1.15rem);
-  color: #475569;
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(1.02rem, 1.35vw, 1.16rem);
+  color: #475569; /* Gris charbon fluide */
   line-height: 1.65;
-  margin: 0 0 32px 0;
-  max-width: 620px;
-  font-weight: 500;
+  margin: 0 0 36px 0;
+  max-width: 660px;
+  font-weight: 400; /* Lato Regular */
   text-align: left;
 }
 
-/* Pills Row — Tightened to strictly fit all 3 words on ONE SINGLE LINE */
-.lp-pills-row {
-  display: flex;
-  flex-wrap: nowrap; /* Maintient les mots sur la MÊME ligne */
-  align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  margin-bottom: 36px;
-  max-width: 100%;
-}
-
-.lp-pill {
-  background: #F1F5F9;
-  color: #17212D; /* Bleu crépuscule */
-  padding: 6px 12px;
-  border-radius: 99px;
-  font-size: clamp(0.68rem, 2.6vw, 0.82rem);
-  font-weight: 700;
-  border: 1px solid #E2E8F0;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Buttons — Alignés à Gauche */
+/* ── Action Buttons Container ── */
 .lp-hero-actions {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 16px;
+}
+
+.lp-cta-group {
+  display: flex;
   align-items: center;
   justify-content: flex-start;
-  flex-wrap: wrap;
   gap: 16px;
+  flex-wrap: wrap;
   width: 100%;
 }
 
+/* Primary CTA — Solid Bleu Crépuscule (#17212D) with True North Elevation */
 .lp-btn-primary {
-  background: #17212D; /* Bleu crépuscule */
-  color: #ffffff;
-  padding: 18px 34px;
-  border-radius: 14px;
-  font-weight: 800;
+  font-family: 'Lato', sans-serif;
+  background-color: #17212D;
+  color: #FFFFFF;
+  padding: 16px 32px;
+  border-radius: 6px;
+  font-weight: 700; /* Lato Bold */
   font-size: 1rem;
-  border: none;
+  line-height: 1.25;
+  border: 1.5px solid #17212D;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(23, 33, 45, 0.2);
-  transition: all 0.2s ease;
-  font-family: inherit;
+  box-shadow: 0 4px 14px rgba(23, 33, 45, 0.18);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 48px;
+  white-space: nowrap;
 }
 
 .lp-btn-primary:hover {
-  background: #0f1720;
+  background-color: #0B131D;
+  border-color: #34BED5;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(23, 33, 45, 0.3);
+  box-shadow: 0 8px 24px rgba(23, 33, 45, 0.28);
 }
 
-.lp-btn-secondary {
-  background: #ffffff;
-  color: #17212D; /* Bleu crépuscule */
-  padding: 17px 30px;
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 0.96rem;
+.lp-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(23, 33, 45, 0.2);
+}
+
+.lp-btn-primary:focus-visible {
+  outline: 3px solid rgba(52, 190, 213, 0.5);
+  outline-offset: 2px;
+}
+
+/* Secondary CTA — Clean Executive Outline */
+.lp-btn-link {
+  font-family: 'Lato', sans-serif;
+  background-color: #FFFFFF;
+  color: #17212D;
+  padding: 15px 28px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.25;
   border: 1.5px solid #CBD5E1;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.lp-btn-secondary:hover {
-  border-color: #34BED5;
-  color: #34BED5;
-  background: rgba(52, 190, 213, 0.04);
-  transform: translateY(-1px);
-}
-
-.lp-btn-link {
-  background: none;
-  border: none;
-  color: #17212D; /* Bleu crépuscule */
-  font-weight: 800;
-  font-size: 0.95rem;
-  cursor: pointer;
-  padding: 12px 18px;
-  transition: color 0.2s ease;
-  font-family: inherit;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 48px;
+  white-space: nowrap;
 }
 
 .lp-btn-link:hover {
-  color: #34BED5; /* Dark Turquoise */
-  text-decoration: underline;
+  border-color: #34BED5;
+  color: #147285;
+  background-color: rgba(52, 190, 213, 0.05);
+  transform: translateY(-1px);
 }
 
-/* Footer Banner in Bleu Crépuscule (#17212D) & Dark Turquoise (#34BED5) — Aligné à Gauche */
+.lp-btn-link:active {
+  transform: translateY(0);
+}
+
+.lp-btn-link:focus-visible {
+  outline: 3px solid rgba(52, 190, 213, 0.5);
+  outline-offset: 2px;
+}
+
+/* Catalog Link — Understated Corporate Link */
+.lp-catalog-link {
+  font-family: 'Lato', sans-serif;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: #64748B;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  line-height: 1.4;
+}
+
+.lp-catalog-link:hover {
+  color: #34BED5;
+  text-decoration-color: #34BED5;
+}
+
+.lp-catalog-link:focus-visible {
+  outline: 2px solid #34BED5;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Footer Disclaimer Banner ── */
 .lp-disclaimer-footer {
-  background: #17212D; /* Bleu crépuscule */
+  background-color: #17212D; /* Bleu Crépuscule */
   width: 100%;
-  padding: 28px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 32px 0 28px;
+  border-top: 3px solid #34BED5; /* Soulignement True North */
 }
 
 .lp-disclaimer-content {
@@ -199,69 +246,176 @@
 }
 
 .lp-disclaimer-title {
+  font-family: 'Lato', sans-serif;
   color: #34BED5; /* Dark Turquoise */
   font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 900; /* Lato Black */
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  margin-bottom: 2px;
 }
 
 .lp-disclaimer-text {
+  font-family: 'Lato', sans-serif;
   color: #E2E8F0;
   font-size: 0.86rem;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
-  font-weight: 450;
-  max-width: 760px;
+  font-weight: 400; /* Lato Regular */
+  max-width: 800px;
 }
 
-/* Powered by FUND.lab centered footer brand */
+/* Powered by FUND.lab signature */
 .lp-disclaimer-powered {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #94A3B8; /* cool slate grey */
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 16px;
 }
 
+.lp-powered-label {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 0.02em;
+}
 
-/* ══════════════════════════════════════════
-   RESPONSIVE DESIGN (Mobile)
-   ══════════════════════════════════════════ */
+.lp-powered-link {
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s ease;
+}
+
+.lp-powered-link:hover {
+  opacity: 0.85;
+}
+
+.lp-powered-logo {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN & MOBILE VIEWPORTS
+   ══════════════════════════════════════════════════════════════════════ */
+
 @media (max-width: 768px) {
+  .lp-full-page {
+    padding-top: 76px;
+    padding-bottom: 0;
+  }
+
+  .lp-hero-section {
+    padding: 28px 0 40px;
+  }
+
   .lp-container {
-    padding: 0 18px;
+    padding: 0 16px;
+  }
+
+  .lp-hero-card {
+    padding: 32px 20px;
+    border-radius: 6px;
+    border-left-width: 3.5px;
+  }
+
+  .lp-tag {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    margin-bottom: 18px;
   }
 
   .lp-hero-title {
-    font-size: 2.1rem;
+    font-size: clamp(1.85rem, 6.2vw, 2.35rem);
+    line-height: 1.2;
+    margin-bottom: 16px;
   }
 
   .lp-hero-desc {
-    font-size: 0.95rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    margin-bottom: 28px;
   }
 
   .lp-hero-actions {
+    width: 100%;
+    gap: 14px;
+  }
+
+  .lp-cta-group {
     flex-direction: column;
     width: 100%;
+    gap: 12px;
   }
 
   .lp-btn-primary,
-  .lp-btn-secondary,
   .lp-btn-link {
     width: 100%;
-    text-align: center;
-    justify-content: center;
+    min-height: 48px;
+    padding: 14px 20px;
+    font-size: 0.96rem;
   }
 
-  .lp-pill {
-    padding: 7px 14px;
-    font-size: 0.78rem;
+  .lp-catalog-link {
+    width: 100%;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.9rem;
+  }
+
+  .lp-disclaimer-footer {
+    padding: 24px 0 20px;
+    border-top-width: 2.5px;
+  }
+
+  .lp-disclaimer-text {
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  .lp-disclaimer-powered {
+    margin-top: 18px;
+    padding-top: 16px;
+  }
+
+  .lp-powered-logo {
+    height: 38px;
   }
 }
+
+@media (max-width: 480px) {
+  .lp-container {
+    padding: 0 12px;
+  }
+
+  .lp-hero-card {
+    padding: 24px 16px;
+    border-left-width: 3px;
+  }
+
+  .lp-hero-title {
+    font-size: 1.7rem;
+    letter-spacing: -0.02em;
+  }
+
+  .lp-hero-desc {
+    font-size: 0.92rem;
+  }
+
+  .lp-btn-primary,
+  .lp-btn-link {
+    padding: 13px 16px;
+    font-size: 0.92rem;
+  }
+
+  .lp-disclaimer-text {
+    font-size: 0.8rem;
+  }
+}
+

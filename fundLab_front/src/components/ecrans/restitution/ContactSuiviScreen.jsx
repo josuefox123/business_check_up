@@ -22,6 +22,8 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip, initialData }) => {
   const pdfBtnText = isSubmitting ? 'Traitement en cours...' : 'Télécharger mon résumé PDF';
   const suiviBtnText = isSubmitting ? 'Envoi en cours...' : 'Demander un suivi';
 
+  const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
   const handleAction = async (actionType) => {
     setErrorMsg('');
     if (actionType === 'pdf') {
@@ -29,9 +31,17 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip, initialData }) => {
         setErrorMsg('Le nom et l\'adresse e-mail sont obligatoires pour recevoir le résumé PDF.');
         return;
       }
+      if (!EMAIL_REGEX.test(form.email.trim())) {
+        setErrorMsg('Veuillez renseigner une adresse e-mail valide (ex: contact@entreprise.bj).');
+        return;
+      }
     } else if (actionType === 'suivi') {
       if (!form.nom || !form.tel) {
         setErrorMsg('Le nom et le numéro de téléphone / WhatsApp sont obligatoires pour être recontacté.');
+        return;
+      }
+      if (form.email && !EMAIL_REGEX.test(form.email.trim())) {
+        setErrorMsg('L\'adresse e-mail saisie n\'est pas valide (ex: contact@entreprise.bj).');
         return;
       }
     }
@@ -53,7 +63,7 @@ export const ContactSuiviScreen = ({ onSubmit, onSkip, initialData }) => {
       await onSubmit(payload);
     } catch (err) {
       console.error('Erreur de soumission du formulaire de contact :', err);
-      setErrorMsg(err?.message || '[submit_contact_error] Impossible d\'envoyer le formulaire. Veuillez réessayer.');
+      setErrorMsg(err?.message || 'Une difficulté temporaire est survenue lors de l\'enregistrement. Vos réponses restent sauvegardées sur cet appareil. Réessayez dans un instant ou contactez notre équipe à info@fund-lab.org (WhatsApp : +229 01 9797 1299).');
     } finally {
       setIsSubmitting(false);
     }

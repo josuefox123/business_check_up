@@ -1,6 +1,5 @@
 import React from 'react';
 import './LandingPage.css';
-import logoImg from '../../../assets/logo_compact.png';
 import whiteLogoImg from '../../../assets/white_logo.png';
 
 export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
@@ -9,7 +8,7 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
       {/* Hero Section */}
       <section className="lp-hero-section">
         <div className="lp-container">
-          <div className="lp-hero-content">
+          <div className="lp-hero-card">
 
             <span className="lp-tag">Auto-diagnostic entrepreneurial</span>
 
@@ -21,18 +20,23 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
               Identifiez ce qui fonctionne, ce qui fragilise votre progression et les actions prioritaires à engager d’abord.
             </p>
 
-            {/* Action Buttons (Sans icônes devant) */}
+            {/* Action Buttons */}
             <div className="lp-hero-actions">
-              <button className="lp-btn-primary" onClick={onStart}>
-                Commencer mon diagnostic
-              </button>
+              <div className="lp-cta-group">
+                <button type="button" className="lp-btn-primary" onClick={onStart}>
+                  Commencer mon diagnostic
+                </button>
+                <button type="button" className="lp-btn-link" onClick={onLearnMore}>
+                  Comprendre l’outil
+                </button>
+              </div>
 
-              <button className="lp-btn-secondary" onClick={onGoToCatalog}>
-                Voir les diagnostics disponibles
-              </button>
-
-              <button className="lp-btn-link" onClick={onLearnMore}>
-                Comprendre l’outil
+              <button
+                type="button"
+                className="lp-catalog-link"
+                onClick={onGoToCatalog}
+              >
+                Consulter directement le catalogue →
               </button>
             </div>
 
@@ -46,18 +50,20 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
           <div className="lp-disclaimer-content">
             <span className="lp-disclaimer-title">NOTE DE PRUDENCE</span>
             <p className="lp-disclaimer-text">
-              Diagnostic indicatif fondé sur vos réponses. Il ne constitue ni un audit, ni une due diligence, ni une décision de financement.
+              Diagnostic indicatif fondé sur vos déclarations et nos modèles d'analyse. Il ne constitue ni un audit financier, ni une due diligence, ni une décision de financement, et ne remplace pas une mission d'expertise comptable agréée.
             </p>
-            <div className="lp-disclaimer-powered" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
-              <span>Powered by</span>
-              <a href="https://fund-lab.org/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <div className="lp-disclaimer-powered">
+              <span className="lp-powered-label">Powered by</span>
+              <a
+                href="https://fund-lab.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-powered-link"
+              >
                 <img
                   src={whiteLogoImg}
                   alt="FUND.lab"
-                  style={{
-                    height: '48px',
-                    width: 'auto'
-                  }}
+                  className="lp-powered-logo"
                 />
               </a>
             </div>
@@ -67,3 +73,4 @@ export const LandingPage = ({ onStart, onLearnMore, onGoToCatalog }) => {
     </div>
   );
 };
+

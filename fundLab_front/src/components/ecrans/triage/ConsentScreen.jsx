@@ -86,6 +86,22 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
               <span>J'accepte d'être recontacté</span>
             </div>
           </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: '#F8FAFC',
+            border: '1px solid #E2E8F0',
+            fontSize: '0.83rem',
+            color: '#64748B',
+            marginTop: '8px'
+          }}>
+            <Lock size={15} style={{ color: '#34BED5', flexShrink: 0 }} />
+            <span>Vos réponses en cours sont sauvegardées automatiquement et conservées pendant <strong>7 jours</strong> sur cet appareil.</span>
+          </div>
         </div>
       </div>
 

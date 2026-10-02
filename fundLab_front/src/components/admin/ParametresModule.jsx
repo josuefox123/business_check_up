@@ -197,9 +197,15 @@ export const ParametresModule = () => {
                   <div style={{ width: `${100 - settings.scoreThresholds.moyen}%`, background: '#10b981', height: '100%' }} title="Zone Solide" />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>
-                  <span>0 - {settings.scoreThresholds.critique} : Critique 🟥</span>
-                  <span>{settings.scoreThresholds.critique + 1} - {settings.scoreThresholds.moyen} : Moyen 🟧</span>
-                  <span>{settings.scoreThresholds.moyen + 1} - 100 : Excellent 🟩</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    0 - {settings.scoreThresholds.critique} : Critique <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#ef4444', display: 'inline-block' }} />
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {settings.scoreThresholds.critique + 1} - {settings.scoreThresholds.moyen} : Moyen <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#f59e0b', display: 'inline-block' }} />
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {settings.scoreThresholds.moyen + 1} - 100 : Excellent <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#10b981', display: 'inline-block' }} />
+                  </span>
                 </div>
               </div>
             </div>

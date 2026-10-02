@@ -495,22 +495,22 @@ export const ReportsModule = () => {
                           )} */}
 
                           {/* État : failed */}
-                          {/* {isErr && !isSending && ( */}
-                          <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-                            <span title={state?.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '4px 8px', borderRadius: '20px', cursor: 'help' }}>
-                              <AlertCircle size={11} /> Échec
-                            </span>
-                            <button
-                              onClick={() => handleResendReport(item)}
-                              className="btn btn-primary btn-sm"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
-                              title="Relancer l'envoi du rapport"
-                            >
-                              <Send size={13} />
-                              Relancer
-                            </button>
-                          </div>
-                          {/* )} */}
+                          {isErr && !isSending && (
+                            <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                              <span title={state?.message} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', background: '#FEF2F2', padding: '4px 8px', borderRadius: '20px', cursor: 'help' }}>
+                                <AlertCircle size={11} /> Échec
+                              </span>
+                              <button
+                                onClick={() => handleResendReport(item)}
+                                className="btn btn-primary btn-sm"
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#1A9DB8', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, color: '#FFF', cursor: 'pointer' }}
+                                title="Relancer l'envoi du rapport"
+                              >
+                                <Send size={13} />
+                                Relancer
+                              </button>
+                            </div>
+                          )}
 
                           {/* État : pending (par défaut, pas encore envoyé et aucune action en cours/erreur) */}
                           {!isAlreadySent && !isSuccess && !isSending && !isErr && (
