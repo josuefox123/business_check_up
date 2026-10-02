@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Lock, Check, ArrowRight, ArrowLeft, RotateCcw, AlertOctagon } from 'lucide-react';
-import { Button } from '../../ui/index.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
+import { Lock, Check, ArrowRight, ArrowLeft, RotateCcw, AlertOctagon, Signature } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
+import './ConsentScreen.css';
 
 export const ConsentScreen = ({ onContinue, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,95 +26,91 @@ export const ConsentScreen = ({ onContinue, onBack }) => {
 
   return (
     <ScreenWrapper>
-      {onBack && <TopBackLink onClick={onBack} />}
-      <div className="consent-wrap animate-fade-up" style={{ maxWidth: '580px', margin: '0 auto' }}>
-        <div className="screen-icon-header" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-          <div className="screen-icon" style={{ background: 'rgba(23, 33, 45, 0.04)', color: '#17212D', padding: '12px', borderRadius: '50%' }}>
-            <Lock size={32} />
-          </div>
+      <div className="consent-wrap animate-fade-up">
+
+        {/* ── EN-TÊTE ── */}
+        <div className="consent-header">
+          <h1 className="consent-title">Avant de commencer</h1>
         </div>
-        
-        <h1 className="screen-title" style={{ textAlign: 'center', marginBottom: '24px' }}>Avant de commencer</h1>
-        
-        {/* Error state with localized retry */}
+
+        {/* ── ÉTAT D'ERREUR AVEC RETRY LOCALISÉ ── */}
         {errorMsg && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '14px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '0.86rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="consent-error-box">
+            <div className="consent-error-content">
               <AlertOctagon size={16} />
               <span>{errorMsg}</span>
             </div>
-            <Button variant="outline" size="sm" onClick={handleSubmit} disabled={isSubmitting} style={{ gap: '4px' }}>
+            <button
+              type="button"
+              className="consent-btn-outline"
+              style={{ minHeight: '34px', padding: '6px 12px', fontSize: '0.8rem' }}
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
               <RotateCcw size={12} />
               <span>Réessayer</span>
-            </Button>
+            </button>
           </div>
         )}
 
-        <div style={{ 
-          background: '#ffffff', 
-          padding: '24px', 
-          borderRadius: '16px', 
-          border: '1px solid rgba(23, 33, 45, 0.15)', 
-          lineHeight: '1.6', 
-          color: 'var(--slate-800)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          <p style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--slate-900)', margin: 0 }}>
-            Vos réponses serviront à produire votre diagnostic, à vous orienter et à produire des statistiques agrégées pour mieux comprendre les besoins des entrepreneurs.
+        {/* ── CARTE DE CONSENTEMENT (TRUE NORTH) ── */}
+        <div className="consent-card">
+          <p className="consent-intro-text">
+            Vos réponses servent à établir votre diagnostic et vous orienter.
           </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div className="consent-checklist">
+            <div className="consent-check-item">
+              <div className="consent-check-icon-wrap">
                 <Check size={13} strokeWidth={3} />
               </div>
               <span>J'accepte l'utilisation de mes réponses pour le diagnostic</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div className="consent-check-item">
+              <div className="consent-check-icon-wrap">
                 <Check size={13} strokeWidth={3} />
               </div>
               <span>J'accepte l'usage agrégé des données</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 500 }}>
-              <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#F0FDFA', color: '#0D9488', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div className="consent-check-item">
+              <div className="consent-check-icon-wrap">
                 <Check size={13} strokeWidth={3} />
               </div>
               <span>J'accepte d'être recontacté</span>
             </div>
           </div>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            background: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            fontSize: '0.83rem',
-            color: '#64748B',
-            marginTop: '8px'
-          }}>
-            <Lock size={15} style={{ color: '#34BED5', flexShrink: 0 }} />
-            <span>Vos réponses en cours sont sauvegardées automatiquement et conservées pendant <strong>7 jours</strong> sur cet appareil.</span>
+          <div className="consent-storage-note">
+            <Lock size={15} className="consent-storage-icon" />
+            <span>Vos réponses sont sauvegardées automatiquement et conservées pendant <strong>7 jours</strong> sur cet appareil.</span>
           </div>
         </div>
-      </div>
 
-      <div className="screen-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
-        {onBack ? (
-          <Button variant="outline" onClick={onBack} disabled={isSubmitting} style={{ gap: '8px' }}>
-            <ArrowLeft size={16} />
-            <span>Retour</span>
-          </Button>
-        ) : <div />}
-        <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting} style={{ gap: '8px' }}>
-          <span>{submitBtnText}</span>
-          {!isSubmitting && <ArrowRight size={16} />}
-        </Button>
+        {/* ── NAVIGATION ── */}
+        <div className="consent-nav-row">
+          {onBack ? (
+            <button
+              type="button"
+              className="consent-btn-outline"
+              onClick={onBack}
+              disabled={isSubmitting}
+            >
+              <ArrowLeft size={16} />
+              <span>Retour</span>
+            </button>
+          ) : <div />}
+
+          <button
+            type="button"
+            className="consent-btn-primary"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            <span>{submitBtnText}</span>
+            {!isSubmitting && <ArrowRight size={16} />}
+          </button>
+        </div>
+
       </div>
     </ScreenWrapper>
   );

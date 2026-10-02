@@ -322,7 +322,9 @@ export function useDiagnosticFlow() {
         navigate('/diagnostic/profil-initial');
       }
     } else {
-      setTriageStep(1);
+      const hasEntry = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+      const targetStep = isAuthenticated ? 5 : (hasEntry ? 3 : 4);
+      setTriageStep(targetStep);
       navigate('/triage/wizard');
     }
 
@@ -331,8 +333,10 @@ export function useDiagnosticFlow() {
         const sessionId = res?.data?.session_id || res?.session_id;
         if (sessionId) {
           localStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
+          const hasEntry = triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+          const targetStep = isAuthenticated ? 5 : (hasEntry ? 3 : 4);
           saveState({
-            triageStep: 3,
+            triageStep: targetStep,
             triageAnswers: {},
             consentAnswers: { diag: true, stats: false, contact: false },
             currentModule: currentModule,

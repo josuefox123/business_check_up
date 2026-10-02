@@ -15,7 +15,6 @@ import { clearDiagnosticStorage } from './constants/storageKeys.js';
 
 import {
   ConsentScreen,
-  TriageStartLoadingScreen,
   DiagnosticStartLoadingScreen,
   ChoixEntreeScreen,
   TriageScreen,
@@ -465,19 +464,13 @@ function DiagnosticApp() {
         } />
         <Route path="/triage/wizard" element={
           <>
-            {(flow.triageStep === 1 || flow.triageStep === 2 || !flow.triageStep) && (
-              <TriageStartLoadingScreen
-                onComplete={() => {
-                  const isAuthenticated = localStorage.getItem('bc_is_authenticated') === 'true';
-                  if (isAuthenticated) {
-                    flow.setTriageStep(5);
-                  } else {
-                    const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
-                    flow.setTriageStep(hasEntry ? 3 : 4);
-                  }
-                }}
-              />
-            )}
+            {(!flow.triageStep || flow.triageStep < 3) && (() => {
+              const isAuthenticated = localStorage.getItem('bc_is_authenticated') === 'true';
+              const hasEntry = flow.triageQuestions?.some(q => q.axe === 'entry_choice' || q.id === 'TRI-00-Q00');
+              const targetStep = isAuthenticated ? 5 : (hasEntry ? 3 : 4);
+              setTimeout(() => flow.setTriageStep(targetStep), 0);
+              return null;
+            })()}
             {flow.triageStep === 3 && (
               <ChoixEntreeScreen
                 question={getTriageQuestion('entry_choice')}
