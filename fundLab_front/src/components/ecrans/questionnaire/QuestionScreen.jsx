@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, MessageSquare, Mail, Phone, AlertCircle } from 'lucide-react';
+import { AlertTriangle, MessageSquare, Mail, Phone, AlertCircle, Info } from 'lucide-react';
 import { Button, ChoiceCard, CheckboxCard, ProgressBar, TextArea, CurrencyInput } from '../../ui/index.jsx';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
@@ -181,7 +181,31 @@ export const QuestionScreen = ({ moduleId, questionData, current, total, savedAn
             </span>
           )}
         </div>
-        {questionData.hint && <p className="question-desc" style={{ marginBottom: 'var(--space-6)' }}>{questionData.hint}</p>}
+        {(() => {
+          const hintText = questionData.helper_text || questionData.hint || questionData.help_text || questionData.hint_text || null;
+          if (!hintText) return null;
+          return (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                marginTop: '10px',
+                marginBottom: 'var(--space-6)',
+                padding: '10px 14px',
+                background: '#F8FAFC',
+                borderLeft: '3px solid #34BED5',
+                borderRadius: '6px',
+                fontSize: '0.86rem',
+                color: '#475569',
+                lineHeight: 1.5,
+              }}
+            >
+              <Info size={16} color="#0F7F90" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>{hintText}</span>
+            </div>
+          );
+        })()}
 
         {questionData.relance && (
           <div className="alert alert-info" style={{ marginBottom: 'var(--space-8)', display: 'flex', alignItems: 'center', gap: '8px' }}>

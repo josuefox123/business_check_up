@@ -23,13 +23,10 @@ class DashboardController extends BaseController
      * Vue d'ensemble du dashboard
      * GET /api/bc/admin/dashboard
      */
-    public function overview(Request $request): JsonResponse
+    public function overview(): JsonResponse
     {
-        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
-
-        $sessions = UserSession::whereBetween('started_at', [$startDate, $endDate . ' 23:59:59']);
-        $diagnostics = DiagnosticRun::whereBetween('started_at', [$startDate, $endDate . ' 23:59:59']);
+        $sessions = UserSession::query();
+        $diagnostics = DiagnosticRun::where('module_code', '!=', 'TRI-00');
         
         $total = ScoringResult::count();
 
@@ -46,22 +43,25 @@ class DashboardController extends BaseController
             ];
         });
 
+        $diagsCount = $diagnostics->count();
+        $diagsCompleted = (clone $diagnostics)->where('completion_status', CompletionStatus::COMPLETED->value)->count();
+        $diagsAbandoned = (clone $diagnostics)->where('completion_status', CompletionStatus::ABANDONED->value)->count();
+
         return $this->respondSuccess([
-            'period' => ['from' => $startDate, 'to' => $endDate],
             'traffic' => [
                 'total_visitors' => $sessions->count(),
-                'new_sessions' => $sessions->where('session_status', SessionStatus::STARTED->value)->count(),
-                'completed_sessions' => $sessions->where('session_status', SessionStatus::COMPLETED->value)->count(),
-                'abandoned_sessions' => $sessions->where('session_status', SessionStatus::ABANDONED->value)->count(),
+                'new_sessions' => (clone $sessions)->where('session_status', SessionStatus::STARTED->value)->count(),
+                'completed_sessions' => (clone $sessions)->where('session_status', SessionStatus::COMPLETED->value)->count(),
+                'abandoned_sessions' => (clone $sessions)->where('session_status', SessionStatus::ABANDONED->value)->count(),
             ],
             'diagnostics' => [
-                'started' => $diagnostics->count(),
-                'completed' => $diagnostics->where('completion_status', CompletionStatus::COMPLETED)->count(),
-                'abandoned' => $diagnostics->where('completion_status', CompletionStatus::ABANDONED)->count(),
-                'completion_rate' => $this->calculateCompletionRate($diagnostics),
+                'started' => $diagsCount,
+                'completed' => $diagsCompleted,
+                'abandoned' => $diagsAbandoned,
+                'completion_rate' => $diagsCount > 0 ? round(($diagsCompleted / $diagsCount) * 100, 2) : 0,
             ],
             'follow_ups' => [
-                'total_requests' => FollowUpLead::whereBetween('created_at', [$startDate, $endDate . ' 23:59:59'])->count(),
+                'total_requests' => FollowUpLead::count(),
                 'urgent' => FollowUpLead::where('lead_priority', 'urgent')->count(),
                 'high' => FollowUpLead::where('lead_priority', 'high')->count(),
                 'new' => FollowUpLead::where('lead_status', 'new')->count(),
@@ -80,15 +80,12 @@ class DashboardController extends BaseController
      * Répartition par module
      * GET /api/bc/admin/dashboard/modules
      */
-    public function modules(Request $request): JsonResponse
+    public function modules(): JsonResponse
     {
-        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
-
-        $modules = DiagnosticRun::select('module_code')
+        $modules = DiagnosticRun::where('module_code', '!=', 'TRI-00')
+            ->select('module_code')
             ->selectRaw('COUNT(*) as count')
             ->selectRaw('SUM(CASE WHEN completion_status = ? THEN 1 ELSE 0 END) as completed', [CompletionStatus::COMPLETED->value])
-            ->whereBetween('started_at', [$startDate, $endDate . ' 23:59:59'])
             ->groupBy('module_code')
             ->orderByDesc('count')
             ->get();
@@ -167,22 +164,16 @@ class DashboardController extends BaseController
         return response()->json($responseArray);
     }
 
-
-
     /**
      * Scores moyens par module
      *  GET /api/bc/admin/dashboard/scores
      */
-    public function scores(Request $request): JsonResponse
+    public function scores(): JsonResponse
     {
-        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
-
         $scores = ScoringResult::select('module_code')
             ->selectRaw('AVG(converted_score_0_100) as avg_score')
             ->selectRaw('AVG(credibilized_score_0_100) as avg_credibilized_score')
             ->selectRaw('COUNT(*) as total')
-            ->whereBetween('score_calculated_at', [$startDate, $endDate . ' 23:59:59'])
             ->groupBy('module_code')
             ->get();
 
@@ -195,16 +186,13 @@ class DashboardController extends BaseController
      * Répartition territoriale
      *  GET /api/bc/admin/dashboard/territory
      */
-    public function territory(Request $request): JsonResponse
+    public function territory(): JsonResponse
     {
-        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
-
         $regions = DB::table('bc_business_profiles as bp')
             ->join('bc_diagnostic_runs as dr', 'bp.business_id', '=', 'dr.business_id')
+            ->where('dr.module_code', '!=', 'TRI-00')
             ->select('bp.region')
             ->selectRaw('COUNT(*) as diagnostic_count')
-            ->whereBetween('dr.started_at', [$startDate, $endDate . ' 23:59:59'])
             ->groupBy('bp.region')
             ->orderByDesc('diagnostic_count')
             ->get();

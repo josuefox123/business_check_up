@@ -65,7 +65,8 @@ export const questionsApi = {
               order: q.order || (idx + 1),
               axe: q.role || q.dimension || 'Général',
               question: q.text || q.label || q.question || '[question_text non disponible]',
-              hint: q.helper_text || q.hint || null,
+              hint: q.helper_text || q.hint || q.help_text || null,
+              helper_text: q.helper_text || q.hint || q.help_text || null,
               type: type,
               choices: choices,
             };
