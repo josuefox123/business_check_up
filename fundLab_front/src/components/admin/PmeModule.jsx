@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -83,8 +84,15 @@ const formatDate = (iso) => {
   });
 };
 
-// Composant Fiche Entreprise (Modal / Drawer sobre et accessible)
 const CompanyProfileModal = ({ pme, onClose }) => {
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
   const user = pme.user ?? null;
 
   const fields = [
@@ -107,18 +115,19 @@ const CompanyProfileModal = ({ pme, onClose }) => {
   if (pme.rccm_available != null) docs.push({ label: 'RCCM', ok: Boolean(pme.rccm_available) });
   if (pme.bank_account_available != null) docs.push({ label: 'Compte bancaire', ok: Boolean(pme.bank_account_available) });
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9999,
-        background: 'rgba(15, 23, 42, 0.55)',
+        zIndex: 999999,
+        background: 'rgba(15, 23, 42, 0.6)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        backdropFilter: 'blur(3px)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
       }}
       onClick={onClose}
     >
@@ -129,9 +138,9 @@ const CompanyProfileModal = ({ pme, onClose }) => {
           borderTop: '4px solid #34BED5',
           maxWidth: '560px',
           width: '100%',
-          maxHeight: '90vh',
+          maxHeight: '85vh',
           overflowY: 'auto',
-          boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.35)',
           padding: '24px 28px',
           boxSizing: 'border-box',
           fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif',
@@ -262,7 +271,8 @@ const CompanyProfileModal = ({ pme, onClose }) => {
           Fermer la fiche
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -585,8 +595,8 @@ export const PmeModule = () => {
           </div>
           <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
             Ce répertoire recense l'ensemble des entreprises enregistrées sur la plateforme. Une entreprise (fiche PME) est initialisée dès le formulaire de triage ou d'orientation, même si elle n'a pas encore validé de questionnaire thématique.
-            Utilisez les filtres ci-dessous pour distinguer les entreprises ayant des <strong>diagnostics actifs</strong> de celles <strong>inscrites sans diagnostic</strong> (prospects à relancer par la CCIB).
-            Le bouton <em>« Diagnostics »</em> permet d'afficher directement les parcours réalisés par l'entreprise et d'accéder à leurs bilans.
+            Utilisez les filtres ci-dessous pour distinguer les entreprises ayant des <strong>diagnostics actifs</strong> de celles <strong>inscrites sans diagnostic</strong>.
+            Cliquez sur l'indicateur d'activité diagnostic d'une entreprise pour dérouler directement ses parcours et accéder à ses bilans.
           </p>
         </div>
       </div>
@@ -826,62 +836,44 @@ export const PmeModule = () => {
                         >
                           {/* 1. Entreprise */}
                           <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                              <div
-                                style={{
-                                  width: '34px',
-                                  height: '34px',
-                                  borderRadius: '6px',
-                                  background: '#F1F5F9',
-                                  color: '#17212D',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  flexShrink: 0,
-                                  marginTop: '2px',
-                                }}
-                              >
-                                <Building2 size={16} />
+                            <div>
+                              <div style={{ fontWeight: 800, color: '#17212D', fontSize: '0.88rem' }}>
+                                {pme.name}
                               </div>
-                              <div>
-                                <div style={{ fontWeight: 800, color: '#17212D', fontSize: '0.88rem' }}>
-                                  {pme.name}
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
-                                  {pme.year_created && (
-                                    <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                                      Créée en {pme.year_created}
-                                    </span>
-                                  )}
-                                  {pme.activityStageLabel && (
-                                    <span
-                                      style={{
-                                        background: '#E0F2FE',
-                                        color: '#0369A1',
-                                        fontWeight: 700,
-                                        fontSize: '0.68rem',
-                                        padding: '1px 6px',
-                                        borderRadius: '4px',
-                                      }}
-                                    >
-                                      {pme.activityStageLabel}
-                                    </span>
-                                  )}
-                                  {pme.ifu_available && (
-                                    <span
-                                      style={{
-                                        background: '#ECFDF5',
-                                        color: '#065F46',
-                                        fontWeight: 700,
-                                        fontSize: '0.68rem',
-                                        padding: '1px 5px',
-                                        borderRadius: '3px',
-                                      }}
-                                    >
-                                      IFU ✓
-                                    </span>
-                                  )}
-                                </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                {pme.year_created && (
+                                  <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                                    Créée en {pme.year_created}
+                                  </span>
+                                )}
+                                {pme.activityStageLabel && (
+                                  <span
+                                    style={{
+                                      background: '#E0F2FE',
+                                      color: '#0369A1',
+                                      fontWeight: 700,
+                                      fontSize: '0.68rem',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                    }}
+                                  >
+                                    {pme.activityStageLabel}
+                                  </span>
+                                )}
+                                {pme.ifu_available && (
+                                  <span
+                                    style={{
+                                      background: '#ECFDF5',
+                                      color: '#065F46',
+                                      fontWeight: 700,
+                                      fontSize: '0.68rem',
+                                      padding: '1px 5px',
+                                      borderRadius: '3px',
+                                    }}
+                                  >
+                                    IFU ✓
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -962,31 +954,38 @@ export const PmeModule = () => {
                             </div>
                           </td>
 
-                          {/* 4. Activité Diagnostics */}
+                          {/* 4. Activité Diagnostics (unifié et interactif) */}
                           <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
                             {pme.hasDiagnostics ? (
-                              <div>
+                              <button
+                                type="button"
+                                onClick={() => setExpandedPmeId(isExpanded ? null : pme.pmeId)}
+                                style={{
+                                  background: isExpanded ? '#0F7F90' : '#F0FCFF',
+                                  border: '1px solid',
+                                  borderColor: isExpanded ? '#0F7F90' : '#BAE6FD',
+                                  borderRadius: '6px',
+                                  padding: '6px 10px',
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  display: 'inline-flex',
+                                  flexDirection: 'column',
+                                  gap: '2px',
+                                  transition: 'all 0.15s ease',
+                                }}
+                                title={isExpanded ? 'Masquer les parcours de cette entreprise' : 'Cliquer pour afficher les parcours de cette entreprise'}
+                              >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <span
-                                    style={{
-                                      background: '#ECFDF5',
-                                      color: '#065F46',
-                                      fontWeight: 800,
-                                      fontSize: '0.78rem',
-                                      padding: '3px 8px',
-                                      borderRadius: '4px',
-                                      border: '1px solid #A7F3D0',
-                                    }}
-                                  >
+                                  <span style={{ fontWeight: 800, fontSize: '0.78rem', color: isExpanded ? '#FFFFFF' : '#0369A1' }}>
                                     {pme.runsCount} diagnostic{pme.runsCount > 1 ? 's' : ''}
                                   </span>
+                                  {isExpanded ? (
+                                    <ChevronUp size={13} color={isExpanded ? '#FFFFFF' : '#0369A1'} />
+                                  ) : (
+                                    <ChevronDown size={13} color="#0369A1" />
+                                  )}
                                 </div>
-                                <div style={{ fontSize: '0.73rem', color: '#475569', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <span style={{ color: '#059669', fontWeight: 700 }}>{pme.completedCount} finalisé(s)</span>
-                                  <span style={{ color: '#CBD5E1' }}>•</span>
-                                  <span style={{ color: '#D97706', fontWeight: 600 }}>{pme.inProgressCount} en cours</span>
-                                </div>
-                              </div>
+                              </button>
                             ) : (
                               <div>
                                 <span
@@ -1002,88 +1001,37 @@ export const PmeModule = () => {
                                 >
                                   0 diagnostic
                                 </span>
-                                <div style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '3px' }}>
+                                <div style={{ fontSize: '0.71rem', color: '#94A3B8', marginTop: '3px' }}>
                                   Inscrite au triage
                                 </div>
                               </div>
                             )}
                           </td>
 
-                          {/* 5. Actions */}
+                          {/* 5. Actions (uniquement la Fiche entreprise) */}
                           <td style={{ padding: '14px 16px', verticalAlign: 'top', textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                              {pme.hasDiagnostics ? (
-                                <button
-                                  type="button"
-                                  onClick={() => setExpandedPmeId(isExpanded ? null : pme.pmeId)}
-                                  style={{
-                                    background: isExpanded ? '#0F7F90' : '#FFFFFF',
-                                    border: '1px solid',
-                                    borderColor: isExpanded ? '#0F7F90' : '#CBD5E1',
-                                    color: isExpanded ? '#FFFFFF' : '#0F7F90',
-                                    borderRadius: '6px',
-                                    padding: '5px 10px',
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: '0.76rem',
-                                    fontWeight: 800,
-                                    transition: 'all 0.15s ease',
-                                  }}
-                                  title="Dérouler la liste des diagnostics de cette entreprise"
-                                >
-                                  <ClipboardList size={13} />
-                                  <span>Diagnostics ({pme.runsCount})</span>
-                                  {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  disabled
-                                  style={{
-                                    background: '#F8FAFC',
-                                    border: '1px solid #E2E8F0',
-                                    color: '#94A3B8',
-                                    borderRadius: '6px',
-                                    padding: '5px 10px',
-                                    cursor: 'not-allowed',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: '0.74rem',
-                                    fontWeight: 600,
-                                  }}
-                                  title="Cette entreprise a complété son orientation mais n'a pas encore validé de diagnostic thématique."
-                                >
-                                  <ClipboardList size={13} />
-                                  <span>Aucun diagnostic</span>
-                                </button>
-                              )}
-
-                              <button
-                                type="button"
-                                onClick={() => setSelectedPmeForModal(pme)}
-                                style={{
-                                  background: '#FFFFFF',
-                                  border: '1px solid #CBD5E1',
-                                  color: '#17212D',
-                                  borderRadius: '6px',
-                                  padding: '5px 8px',
-                                  cursor: 'pointer',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '3px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  transition: 'background 0.15s ease',
-                                }}
-                                title="Voir la fiche détaillée de l'entreprise"
-                              >
-                                <Info size={14} color="#0F7F90" />
-                                <span>Fiche</span>
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPmeForModal(pme)}
+                              style={{
+                                background: '#FFFFFF',
+                                border: '1px solid #CBD5E1',
+                                color: '#17212D',
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                fontSize: '0.76rem',
+                                fontWeight: 700,
+                                transition: 'all 0.15s ease',
+                              }}
+                              title="Consulter la fiche détaillée de l'entreprise"
+                            >
+                              <Info size={14} color="#0F7F90" />
+                              <span>Fiche</span>
+                            </button>
                           </td>
                         </tr>
 
@@ -1159,7 +1107,7 @@ export const PmeModule = () => {
                                               color: isComp ? '#166534' : '#92400E',
                                             }}
                                           >
-                                            {isComp ? 'Bilan finalisé' : 'En cours'}
+                                            {isComp ? 'Finalisé' : 'En cours'}
                                           </span>
                                         </div>
                                         <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px' }}>

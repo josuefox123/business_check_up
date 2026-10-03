@@ -571,7 +571,7 @@ export const DiagnosticHistoryScreen = () => {
               <thead>
                 <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                   <th style={{ padding: '12px 16px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Entreprise &amp; Déclarant
+                    Entreprise
                   </th>
                   <th style={{ padding: '12px 14px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Module
