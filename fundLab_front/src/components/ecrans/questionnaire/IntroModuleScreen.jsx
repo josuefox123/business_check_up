@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, BarChart2, Lightbulb } from 'lucide-react';
+import { Clock, FileText, BarChart2, Lightbulb, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { ScreenWrapper } from '../../layout/Navbar.jsx';
-import { TopBackLink } from '../partage/sharedUI.jsx';
 import { getModuleThemeClass } from '../../../utils/themeUtils.js';
 
 import iconFinanceStrategy from '../../../assets/icone diagnostique/icon_strategy.png';
@@ -40,7 +39,7 @@ const getIconForModule = (modId) => {
     'COM': iconCommercialCustom,
     'FIN': iconFinanceStrategy,
     'GOV': iconGovernanceCustom,
-    '360': icon360Custom
+    '360': icon360Custom,
   };
   return prefixMap[prefix] || icon360Custom;
 };
@@ -77,7 +76,7 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
               name: d.name,
               duration: d.target_duration_formatted || d.target_duration || '',
               description: d.description || '',
-              question_count: d.question_count || null
+              question_count: d.question_count || null,
             });
           }
         })
@@ -86,187 +85,253 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
     });
   }, [moduleId, moduleData]);
 
-  const title = backendModule?.name || moduleData?.name || moduleId || 'Diagnostic';
+  // ─── Normalisation des données (Rule 9) ───────────────────────────────────
+  const title = backendModule?.name || moduleData?.name || moduleId || 'Diagnostic stratégique';
   const rawDuration = backendModule?.duration || moduleData?.duration || '';
-  
-  // Séparer la partie numérique et l'unité si présent (ex: "8 - 12 min")
-  let durationNumber = '';
-  let durationUnit = '';
+
+  let durationDisplay = '8 - 12 min';
   if (rawDuration) {
-    const durationParts = String(rawDuration).split(/min/i);
-    durationNumber = durationParts[0]?.trim() || rawDuration;
-    durationUnit = durationParts.length > 1 ? 'MIN' : '';
+    durationDisplay = String(rawDuration).toLowerCase().includes('min')
+      ? String(rawDuration)
+      : `${rawDuration} min`;
   }
+
   const qCount = backendModule?.question_count || moduleData?.question_count || null;
+  const moduleCode = targetId ? String(targetId).toUpperCase() : null;
 
   return (
-    <ScreenWrapper className={themeClass} style={{ background: '#F4F9FB', minHeight: '100vh' }}>
-      {onBack && <TopBackLink onClick={onBack} />}
-      
+    <ScreenWrapper className={themeClass} style={{ background: '#F8FAFC', minHeight: '100vh', fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       <style>{`
-        .intro-card-container {
-          max-width: 480px;
-          margin: 20px auto 40px auto;
-          background: #ffffff;
-          border-radius: 32px;
-          border: 1px solid rgba(226, 232, 240, 0.8);
-          box-shadow: 0 15px 40px rgba(15, 23, 42, 0.04);
-          padding: 36px 24px;
-          text-align: center;
+        .intro-container {
+          width: 100%;
+          max-width: 440px;
+          margin: 6px auto 24px auto;
+          padding: 0 12px;
           box-sizing: border-box;
         }
 
-        .intro-badge-outer {
-          width: 96px;
-          height: 96px;
-          border-radius: 50%;
-          display: flex;
+        .intro-back-link {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          margin: 0 auto 20px auto;
-          background: var(--color-accent-light, rgba(52, 190, 213, 0.15));
-          border: 2px solid var(--color-blue-ring, rgba(52, 190, 213, 0.35));
-        }
-
-        .intro-badge-inner {
-          width: 72px;
-          height: 72px;
-          border-radius: 50%;
-          background: #ffffff;
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .intro-badge-img {
-          width: 44px;
-          height: 44px;
-          object-fit: contain;
-          filter: brightness(0);
-        }
-
-        .intro-duration-block {
-          margin: 20px 0 24px 0;
-          min-height: 64px;
-        }
-
-        .intro-duration-val {
-          font-size: 2.8rem;
-          font-weight: 800;
-          color: #17212D;
-          line-height: 1;
-          letter-spacing: -0.03em;
-        }
-
-        .intro-duration-unit {
-          font-size: 1.2rem;
-          font-weight: 800;
-          margin-left: 6px;
-          color: var(--color-accent, #34BED5);
-        }
-
-        .intro-duration-sub {
-          font-size: 0.88rem;
-          color: #94A3B8;
-          font-weight: 500;
-          margin-top: 4px;
-        }
-
-        .intro-skeleton-bar {
-          background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
-          background-size: 200% 100%;
-          animation: introSkeletonShimmer 1.5s infinite ease-in-out;
-        }
-
-        @keyframes introSkeletonShimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-
-        .intro-pills-stack {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          margin-bottom: 24px;
-        }
-
-        .intro-pill-questions {
-          background: var(--color-accent-light, rgba(52, 190, 213, 0.15));
-          color: var(--color-accent-dark, var(--color-accent, #0F7F90));
-          border-radius: 24px;
-          padding: 12px 20px;
-          font-size: 0.92rem;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .intro-pill-scope {
-          background: #F8FAFC;
-          color: #475569;
-          border: 1px solid #F1F5F9;
-          border-radius: 24px;
-          padding: 12px 20px;
-          font-size: 0.78rem;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .intro-hint-alert {
-          background: #F0FCFF;
-          border: 1px solid #CFF4FC;
-          border-radius: 20px;
-          padding: 14px 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          color: #08596B;
-          font-size: 0.9rem;
-          font-weight: 500;
-          margin-bottom: 28px;
-        }
-
-        .intro-btn-primary {
-          background: #17212D;
-          color: #ffffff;
+          gap: 6px;
+          background: transparent;
           border: none;
-          border-radius: 28px;
-          padding: 16px 24px;
-          width: 100%;
-          font-size: 1.05rem;
+          color: #64748B;
+          font-size: 0.8rem;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s ease;
-          box-shadow: 0 10px 25px rgba(23, 33, 45, 0.2);
+          padding: 2px 2px 10px 2px;
+          transition: color 0.15s ease;
+          font-family: inherit;
+        }
+
+        .intro-back-link:hover {
+          color: #17212D;
+        }
+
+        .intro-card {
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-left: 3px solid #34BED5;
+          border-radius: 6px;
+          box-shadow: 0 8px 24px rgba(23, 33, 45, 0.05);
+          padding: 20px 18px;
+          box-sizing: border-box;
+          text-align: left;
+        }
+
+        @media (min-width: 640px) {
+          .intro-card {
+            padding: 28px 24px;
+          }
+        }
+
+        .intro-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .intro-icon-badge {
+          width: 44px;
+          height: 44px;
+          border-radius: 6px;
+          background: #17212D;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 10px rgba(23, 33, 45, 0.15);
+        }
+
+        .intro-icon-img {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+
+        .intro-tag {
+          font-size: 0.68rem;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          color: #34BED5;
+          text-transform: uppercase;
+          margin-bottom: 2px;
+        }
+
+        .intro-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: #17212D;
+          letter-spacing: -0.02em;
+          line-height: 1.25;
+          margin: 0;
+        }
+
+        /* Ruban de métriques sobre et unifié, sans retour à la ligne */
+        .intro-ribbon {
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-radius: 6px;
+          padding: 10px 12px;
+          margin-bottom: 16px;
+        }
+
+        .intro-ribbon-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          flex: 1;
+        }
+
+        .intro-ribbon-divider {
+          width: 1px;
+          height: 26px;
+          background: #E2E8F0;
+          margin: 0 8px;
+        }
+
+        .intro-ribbon-label {
+          font-size: 0.64rem;
+          font-weight: 800;
+          color: #64748B;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-bottom: 2px;
+          white-space: nowrap;
+        }
+
+        .intro-ribbon-value {
+          font-size: 0.92rem;
+          font-weight: 900;
+          color: #17212D;
+          white-space: nowrap;
+        }
+
+        /* Section des livrables */
+        .intro-deliverables-title {
+          font-size: 0.68rem;
+          font-weight: 800;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 10px;
+        }
+
+        .intro-deliverables-list {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 16px 0;
+          display: flex;
+          flex-direction: column;
           gap: 8px;
         }
 
-        .intro-btn-primary:hover {
+        .intro-deliverable-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          font-size: 0.82rem;
+          color: #334155;
+          line-height: 1.35;
+        }
+
+        .intro-check-dot {
+          width: 17px;
+          height: 17px;
+          border-radius: 4px;
+          background: #E0F7FA;
+          color: #0F7F90;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+
+        /* Note méthodologique légère */
+        .intro-advisory-note {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.76rem;
+          color: #64748B;
+          line-height: 1.4;
+          padding: 8px 10px;
+          background: #F1F5F9;
+          border-radius: 6px;
+          margin-bottom: 18px;
+        }
+
+        /* Boutons d'action */
+        .intro-btn-start {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          width: 100%;
+          background: #17212D;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 6px;
+          padding: 10px 16px;
+          font-size: 0.86rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          box-sizing: border-box;
+          letter-spacing: 0.01em;
+          white-space: nowrap;
+          box-shadow: 0 3px 10px rgba(23, 33, 45, 0.12);
+        }
+
+        .intro-btn-start:hover {
           background: #0F172A;
           transform: translateY(-1px);
-          box-shadow: 0 14px 30px rgba(23, 33, 45, 0.28);
+          box-shadow: 0 5px 14px rgba(23, 33, 45, 0.2);
         }
 
         .intro-btn-secondary {
+          display: block;
+          width: 100%;
           background: transparent;
           color: #64748B;
           border: none;
-          font-size: 0.92rem;
-          font-weight: 600;
-          margin-top: 16px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          margin-top: 8px;
+          padding: 6px 10px;
           cursor: pointer;
-          transition: color 0.2s ease;
+          text-align: center;
+          transition: color 0.15s ease;
         }
 
         .intro-btn-secondary:hover {
@@ -275,80 +340,117 @@ export const IntroModuleScreen = ({ moduleId, moduleData, onStart, onCatalog, on
         }
       `}</style>
 
-      <div className="intro-card-container animate-fade-up">
-        {/* Concentric badge with CSS theme variables */}
-        <div className="intro-badge-outer">
-          <div className="intro-badge-inner">
-            <img 
-              src={activeIcon} 
-              alt={title} 
-              className="intro-badge-img"
-            />
-          </div>
-        </div>
-
-        {/* Title */}
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#17212D', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
-          {title}
-        </h1>
-
-        {/* Duration Unit directly as sent by backend with Skeleton Shimmer while loading */}
-        <div className="intro-duration-block">
-          {loading ? (
-            <div style={{ padding: '8px 0' }}>
-              <div className="intro-skeleton-bar" style={{ width: '130px', height: '38px', margin: '0 auto 6px auto', borderRadius: '10px' }}></div>
-              <div className="intro-skeleton-bar" style={{ width: '85px', height: '14px', margin: '0 auto', borderRadius: '6px' }}></div>
-            </div>
-          ) : (
-            <div>
-              <div>
-                <span className="intro-duration-val">{durationNumber || '8 - 12'}</span>
-                <span className="intro-duration-unit">{durationUnit || 'MIN'}</span>
-              </div>
-              <div className="intro-duration-sub">Durée estimée</div>
-            </div>
-          )}
-        </div>
-
-        {/* Meta Chips Stack */}
-        <div className="intro-pills-stack">
-          {loading ? (
-            <div className="intro-skeleton-bar" style={{ width: '140px', height: '38px', margin: '0 auto', borderRadius: '24px' }}></div>
-          ) : (
-            qCount && (
-              <div className="intro-pill-questions animate-fade-up">
-                <FileText size={16} />
-                <span>{qCount} questions</span>
-              </div>
-            )
-          )}
-
-          <div className="intro-pill-scope">
-            <BarChart2 size={15} style={{ color: 'var(--color-accent-dark, #17212D)' }} />
-            <span>SCORE + FORCES + FRAGILITÉS + PRIORITÉS</span>
-          </div>
-        </div>
-
-        {/* Lightbulb Hint Alert */}
-        <div className="intro-hint-alert">
-          <Lightbulb size={18} style={{ color: 'var(--color-accent-dark, #08596B)', flexShrink: 0 }} />
-          <span>Répondez le plus simplement possible.</span>
-        </div>
-
-        {/* Action Buttons */}
-        <div>
-          <button className="intro-btn-primary" onClick={onStart}>
-            <span>Commencer le diagnostic</span>
-            <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>→</span>
+      <div className="intro-container animate-fade-up">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="intro-back-link"
+          >
+            <ArrowLeft size={14} />
+            <span>Retour</span>
           </button>
-          
-          {onCatalog && (
+        )}
+
+        <div className="intro-card">
+
+          {/* En-tête : Badge Bleu Crépuscule faisant ressortir l'icône + Code & Titre */}
+          <div className="intro-header">
+            <div className="intro-icon-badge">
+              <img
+                src={activeIcon}
+                alt={title}
+                className="intro-icon-img"
+              />
+            </div>
             <div>
-              <button className="intro-btn-secondary" onClick={onCatalog}>
+              <div className="intro-tag">
+                {moduleCode ? `Module · ${moduleCode}` : 'Module'}
+              </div>
+              <h1 className="intro-title">
+                {title}
+              </h1>
+            </div>
+          </div>
+
+          {/* Ruban unifié de métriques (Durée & Questions) sans retour à la ligne */}
+          <div className="intro-ribbon">
+            <div className="intro-ribbon-item">
+              <div className="intro-ribbon-label">
+                <Clock size={12} color="#34BED5" />
+                <span>Durée estimée</span>
+              </div>
+              <div className="intro-ribbon-value">
+                {loading ? '...' : durationDisplay}
+              </div>
+            </div>
+
+            <div className="intro-ribbon-divider" />
+
+            <div className="intro-ribbon-item">
+              <div className="intro-ribbon-label">
+                <FileText size={12} color="#34BED5" />
+                <span>Questionnaire</span>
+              </div>
+              <div className="intro-ribbon-value">
+                {loading ? '...' : `${qCount || '14'} questions`}
+              </div>
+            </div>
+          </div>
+
+          {/* Livrables stratégiques sous forme de liste fluide */}
+          <div className="intro-deliverables-title">
+            À l'issue de ce module, vous recevrez
+          </div>
+          <ul className="intro-deliverables-list">
+            <li className="intro-deliverable-item">
+              <div className="intro-check-dot">
+                <Check size={11} strokeWidth={3} />
+              </div>
+              <span><strong>Score de maturité</strong> et cartographie des forces &amp; fragilités.</span>
+            </li>
+            <li className="intro-deliverable-item">
+              <div className="intro-check-dot">
+                <Check size={11} strokeWidth={3} />
+              </div>
+              <span><strong>Plan d’action priorisé</strong> avec leviers de performance actionnables.</span>
+            </li>
+            <li className="intro-deliverable-item">
+              <div className="intro-check-dot">
+                <Check size={11} strokeWidth={3} />
+              </div>
+              <span><strong>Recommandations stratégiques</strong> adaptées à votre profil PME.</span>
+            </li>
+          </ul>
+
+          {/* Conseil méthodologique discret et rassurant */}
+          <div className="intro-advisory-note">
+            <Lightbulb size={16} color="#0F7F90" style={{ flexShrink: 0 }} />
+            <span>Répondez simplement avec vos estimations actuelles, sans document préalable requis.</span>
+          </div>
+
+          {/* Boutons d'action statutaires */}
+          <div>
+            <button
+              type="button"
+              className="intro-btn-start"
+              onClick={onStart}
+            >
+              <span>Commencer le diagnostic</span>
+              <ArrowRight size={15} />
+            </button>
+
+            {onCatalog && (
+              <button
+                type="button"
+                className="intro-btn-secondary"
+                onClick={onCatalog}
+              >
                 Voir les autres diagnostics
               </button>
-            </div>
-          )}
+            )}
+          </div>
+
         </div>
       </div>
     </ScreenWrapper>

@@ -1,205 +1,263 @@
 /* ============================================
-   ROUTE SCREEN — Diagnostic Recommendation Page
+   ROUTE SCREEN — True North Executive Layout
    ============================================ */
 
 .route-recommendation-container {
   width: 100%;
-  max-width: 540px;
-  margin: 0 auto;
-  padding: 16px 12px 32px 12px;
+  max-width: 440px;
+  margin: 6px auto 24px auto;
+  padding: 0 12px;
   box-sizing: border-box;
+}
+
+.route-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 2px 10px 2px;
+  transition: color 0.15s ease;
+  font-family: inherit;
+}
+
+.route-back-link:hover {
+  color: #17212D;
+}
+
+.route-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 3px solid #34BED5;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(23, 33, 45, 0.05);
+  padding: 20px 18px;
+  box-sizing: border-box;
+  text-align: left;
 }
 
 @media (min-width: 640px) {
-  .route-recommendation-container {
-    padding: 28px 20px 40px 20px;
+  .route-card {
+    padding: 28px 24px;
   }
 }
 
-.route-recommendation-card {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Header Circle Icon Badge */
-.route-header-icon {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2DD4BF 0%, #0D9488 100%);
-  color: #ffffff;
+.route-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px auto;
-  box-shadow: 0 8px 24px rgba(45, 212, 191, 0.28);
-}
-
-/* Title & Subtitle */
-.route-main-title {
-  font-size: clamp(1.3rem, 4vw, 1.6rem);
-  font-weight: 800;
-  color: #0F172A;
-  text-align: center;
-  margin-bottom: 10px;
-  letter-spacing: -0.025em;
-  line-height: 1.3;
-}
-
-.route-main-subtitle {
-  font-size: 0.92rem;
-  color: #64748B;
-  text-align: center;
-  line-height: 1.55;
-  margin-bottom: 24px;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* 4 Recommendation Info Cards List */
-.route-info-cards-list {
-  display: flex;
-  flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
-  width: 100%;
+  margin-bottom: 12px;
 }
 
-.route-info-card {
-  background: #ffffff;
-  border: 1px solid #E2E8F0;
-  border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.route-info-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
-  border-color: #CBD5E1;
-}
-
-.route-info-icon-wrap {
+.route-icon-badge {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: #EFF6FF;
-  color: #3B82F6;
+  border-radius: 6px;
+  background: #17212D;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(23, 33, 45, 0.15);
 }
 
-.route-info-content {
+.route-icon-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.route-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #34BED5;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.route-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #17212D;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.route-description {
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0 0 14px 0;
+}
+
+/* Ruban unifié de métriques */
+.route-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.route-ribbon-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  text-align: center;
   flex: 1;
-  text-align: left;
 }
 
-.route-info-label {
-  font-size: 0.7rem;
+.route-ribbon-divider {
+  width: 1px;
+  height: 26px;
+  background: #E2E8F0;
+  margin: 0 8px;
+}
+
+.route-ribbon-label {
+  font-size: 0.64rem;
   font-weight: 800;
   color: #64748B;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+  white-space: nowrap;
 }
 
-.route-info-value {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #0F172A;
-  line-height: 1.25;
+.route-ribbon-value {
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #17212D;
+  white-space: nowrap;
 }
 
-.route-info-value-text {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #334155;
+/* Alerte de vigilance */
+.route-warning-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  font-size: 0.78rem;
   line-height: 1.4;
+  font-weight: 600;
 }
 
-/* Actions Section */
-.route-actions-group {
+/* Section des livrables */
+.route-deliverables-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.route-deliverables-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+}
+
+.route-deliverable-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.route-check-dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  background: #E0F7FA;
+  color: #0F7F90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Note méthodologique légère */
+.route-advisory-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #64748B;
+  line-height: 1.4;
+  padding: 8px 10px;
+  background: #F1F5F9;
+  border-radius: 6px;
+  margin-bottom: 18px;
+}
+
+/* Boutons d'action */
+.route-btn-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   width: 100%;
-  margin-top: 8px;
+  background: #17212D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(23, 33, 45, 0.12);
 }
 
-.route-btn-primary {
-  height: 52px !important;
-  font-size: 1rem !important;
-  font-weight: 700 !important;
-  border-radius: 14px !important;
-  background: #1E293B !important;
-  color: #ffffff !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  box-shadow: 0 4px 14px rgba(30, 41, 59, 0.2) !important;
-  border: none !important;
-}
-
-.route-btn-primary:hover {
-  background: #0F172A !important;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.3) !important;
+.route-btn-start:hover {
+  background: #0F172A;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(23, 33, 45, 0.2);
 }
 
 .route-btn-secondary {
-  height: 48px !important;
-  font-size: 0.92rem !important;
-  font-weight: 700 !important;
-  border-radius: 14px !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #1E293B !important;
-  background: #ffffff !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.route-btn-secondary:hover {
-  background: #F8FAFC !important;
-  border-color: #CBD5E1 !important;
-}
-
-.route-btn-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: none;
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: #64748B;
   border: none;
-  color: #334155;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 8px;
+  padding: 6px 10px;
   cursor: pointer;
-  padding: 8px 0;
-  margin-top: 4px;
+  text-align: center;
   transition: color 0.15s ease;
 }
 
-.route-btn-link:hover {
-  color: #0F172A;
+.route-btn-secondary:hover {
+  color: #17212D;
   text-decoration: underline;
-}
-
-.route-footer-caption {
-  font-size: 0.78rem;
-  color: #94A3B8;
-  text-align: center;
-  margin-top: 10px;
-  font-weight: 500;
 }

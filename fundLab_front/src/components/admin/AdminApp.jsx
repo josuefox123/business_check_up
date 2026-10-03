@@ -31,40 +31,51 @@ export const AdminApp = () => {
   const [scoreDistrib, setScoreDistrib] = useState([]);
   const [activityChart, setActivityChart] = useState([]);
   const [topSectors, setTopSectors] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadAllData = () => {
+  const loadAllData = async () => {
     if (!isAuthenticated) return;
-    AdministrationService.diagnostics.getDiagnostics().then(list => {
-      setDiagnostics(list);
-      setStats(prev => ({ ...prev, _recentDiags: list.slice(0, 5) }));
-    });
-    AdministrationService.users.getUsers().then(setUsers);
-    AdministrationService.notifications.getNotifications().then(setNotifications);
-    AdministrationService.statistics.getOverview().then(data => {
-      setStats(prev => ({
-        ...prev,
-        ...data,
-        follow_ups: prev.follow_ups || data?.follow_ups
-      }));
-    });
-    AdministrationService.statistics.getModuleStats().then(setModuleStats);
-    AdministrationService.statistics.getScoreDistribution().then(setScoreDistrib);
-    AdministrationService.statistics.getActivityChart(7).then(setActivityChart);
-    AdministrationService.statistics.getTopSectors().then(setTopSectors);
-    AdministrationService.appointments.getAppointments().then(appts => {
-      const list = Array.isArray(appts) ? appts : [];
-      const total_requests = list.length;
-      const new_reqs = list.filter(a => a.status === 'requested').length;
-      const urgent_reqs = list.filter(a => a.priority === 'urgent').length;
-      setStats(prev => ({
-        ...prev,
-        follow_ups: {
-          total_requests,
-          new: new_reqs,
-          urgent: urgent_reqs
-        }
-      }));
-    });
+    setIsLoading(true);
+    try {
+      await Promise.allSettled([
+        AdministrationService.diagnostics.getDiagnostics().then(list => {
+          const safeList = Array.isArray(list) ? list : [];
+          setDiagnostics(safeList);
+          setStats(prev => ({ ...prev, _recentDiags: safeList.slice(0, 5) }));
+        }),
+        AdministrationService.users.getUsers().then(u => setUsers(Array.isArray(u) ? u : [])),
+        AdministrationService.notifications.getNotifications().then(n => setNotifications(Array.isArray(n) ? n : [])),
+        AdministrationService.statistics.getOverview().then(data => {
+          if (data) {
+            setStats(prev => ({
+              ...prev,
+              ...data,
+              follow_ups: prev.follow_ups || data?.follow_ups
+            }));
+          }
+        }),
+        AdministrationService.statistics.getModuleStats().then(m => setModuleStats(Array.isArray(m) ? m : [])),
+        AdministrationService.statistics.getScoreDistribution().then(s => setScoreDistrib(Array.isArray(s) ? s : [])),
+        AdministrationService.statistics.getActivityChart(7).then(a => setActivityChart(Array.isArray(a) ? a : [])),
+        AdministrationService.statistics.getTopSectors().then(t => setTopSectors(Array.isArray(t) ? t : [])),
+        AdministrationService.appointments.getAppointments().then(appts => {
+          const list = Array.isArray(appts) ? appts : [];
+          const total_requests = list.length;
+          const new_reqs = list.filter(a => a.status === 'requested').length;
+          const urgent_reqs = list.filter(a => a.priority === 'urgent').length;
+          setStats(prev => ({
+            ...prev,
+            follow_ups: {
+              total_requests,
+              new: new_reqs,
+              urgent: urgent_reqs
+            }
+          }));
+        })
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -124,6 +135,7 @@ export const AdminApp = () => {
             activityChart={activityChart}
             topSectors={topSectors}
             notifications={notifications} 
+            loading={isLoading}
             onMarkRead={handleMarkReadNotif}
             onRefresh={loadAllData}
           />

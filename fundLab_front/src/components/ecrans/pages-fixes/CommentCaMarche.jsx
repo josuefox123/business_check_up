@@ -57,14 +57,14 @@ export const CommentCaMarche = ({ onStart }) => {
                   <p className="hiw-step-text">{step.desc}</p>
                 </div>
 
-                <div className="hiw-step-mockup">
+                {/* <div className="hiw-step-mockup">
                   <img
                     src={step.image}
                     alt={step.imageAlt}
                     className="hiw-mockup-img"
                     loading="lazy"
                   />
-                </div>
+                </div> */}
               </div>
             ))}
           </div>

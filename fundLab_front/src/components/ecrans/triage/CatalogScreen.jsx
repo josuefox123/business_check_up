@@ -69,7 +69,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
     <ScreenWrapper>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }} className="no-print">
         <TopBackLink onClick={() => navigate(-1)} />
-        {onBack && (
+        {/* {onBack && (
           <button
             onClick={onBack}
             style={{
@@ -92,7 +92,7 @@ export const CatalogScreen = ({ onSelect, onBack, warningSignals }) => {
           >
             Retour à l'accueil
           </button>
-        )}
+        )} */}
       </div>
       <div className="catalog-wrap animate-fade-up">
         <h1 className="screen-title">Les diagnostics disponibles</h1>
