@@ -1,6 +1,27 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Search, Info, X, MapPin, Phone, Mail, User, CheckCircle2, XCircle, RotateCcw, Download, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react';
+import {
+  Building2,
+  Search,
+  Info,
+  X,
+  MapPin,
+  Phone,
+  Mail,
+  User,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Calendar,
+  AlertCircle,
+} from 'lucide-react';
 import { EntrepriseService } from '../../services/EntrepriseService.js';
 import { exportToExcel } from '../../utils/exportToExcel.js';
 
@@ -31,6 +52,18 @@ const USER_PROFILE_LABELS = {
   'active_entrepreneur': 'Entrepreneur actif',
 };
 
+const MODULE_NAMES = {
+  'FLH-01': 'Flash Diagnostic',
+  'PRJ-02': 'Diagnostic Projet',
+  'DIF-03': 'Difficultés & Restructuration',
+  'OPP-04': 'Opportunités & Croissance',
+  'PRO-05': 'Produits & Offre',
+  'COM-06': 'Commercial & Marché',
+  'FIN-07': 'Finance & Stratégie',
+  'GOV-08': 'Gouvernance & Organisation',
+  '360-09': 'Diagnostic Global 360°',
+};
+
 const formatActivityStage = (stage) => {
   if (!stage) return null;
   return ACTIVITY_STAGE_LABELS[stage] ?? stage;
@@ -41,8 +74,17 @@ const formatUserProfile = (profile) => {
   return USER_PROFILE_LABELS[profile] ?? profile;
 };
 
-// Composant popover inline (tooltip style sombre)
-const InfoPopover = ({ pme, onClose }) => {
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
+// Composant Fiche Entreprise (Modal / Drawer sobre et accessible)
+const CompanyProfileModal = ({ pme, onClose }) => {
   const user = pme.user ?? null;
 
   const fields = [
@@ -52,12 +94,12 @@ const InfoPopover = ({ pme, onClose }) => {
     pme.monthly_revenue_range_xof && { label: 'CA mensuel', value: `${pme.monthly_revenue_range_xof} FCFA` },
     pme.ca_n_1 && { label: 'CA N-1', value: pme.ca_n_1 },
     pme.ca_m_1 && { label: 'CA M-1', value: pme.ca_m_1 },
-    pme.customer_type && { label: 'Clients', value: pme.customer_type },
-    pme.sales_channel_main && { label: 'Canal vente', value: pme.sales_channel_main },
+    pme.customer_type && { label: 'Clients cibles', value: pme.customer_type },
+    pme.sales_channel_main && { label: 'Canal de vente principal', value: pme.sales_channel_main },
     pme.years_in_activity != null && { label: 'Années d\'activité', value: `${pme.years_in_activity} an(s)` },
     pme.description && { label: 'Description', value: pme.description },
-    user?.preferred_contact_channel && { label: 'Contact pref.', value: user.preferred_contact_channel },
-    user?.user_profile_type && { label: 'Profil', value: formatUserProfile(user.user_profile_type) },
+    user?.preferred_contact_channel && { label: 'Canal de contact préféré', value: user.preferred_contact_channel },
+    user?.user_profile_type && { label: 'Profil déclarant', value: formatUserProfile(user.user_profile_type) },
   ].filter(Boolean);
 
   const docs = [];
@@ -66,54 +108,160 @@ const InfoPopover = ({ pme, onClose }) => {
   if (pme.bank_account_available != null) docs.push({ label: 'Compte bancaire', ok: Boolean(pme.bank_account_available) });
 
   return (
-    <div style={{
-      position: 'absolute', right: '44px', top: '50%', transform: 'translateY(-50%)',
-      zIndex: 100, width: '290px',
-      background: '#1E293B', color: '#E2E8F0',
-      borderRadius: '16px', padding: '16px 18px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.32)',
-      animation: 'fadeInScale 0.15s ease',
-    }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-        <div>
-          <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#F1F5F9', lineHeight: 1.3 }}>
-            {pme.business_name || 'PME'}
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        background: 'rgba(15, 23, 42, 0.55)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        backdropFilter: 'blur(3px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '6px',
+          borderTop: '4px solid #34BED5',
+          maxWidth: '560px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
+          padding: '24px 28px',
+          boxSizing: 'border-box',
+          fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 800, color: '#64748B' }}>
+              Fiche Entreprise
+            </div>
+            <h3 style={{ margin: '4px 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#17212D' }}>
+              {pme.business_name || '[Entreprise sans nom]'}
+            </h3>
+            {pme.sector && (
+              <div style={{ fontSize: '0.82rem', color: '#0F7F90', fontWeight: 700, marginTop: '2px' }}>
+                {pme.sector} {pme.sub_sector ? `• ${pme.sub_sector}` : ''}
+              </div>
+            )}
           </div>
-          {pme.sector && (
-            <div style={{ fontSize: '0.74rem', color: '#94A3B8', marginTop: '2px' }}>{pme.sector}</div>
-          )}
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: '#F1F5F9',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px',
+              cursor: 'pointer',
+              color: '#64748B',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <X size={16} />
+          </button>
         </div>
+
+        {/* Coordonnées déclarant */}
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '12px 14px', marginBottom: '16px' }}>
+          <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '6px' }}>
+            Coordonnées du dirigeant / déclarant
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.82rem' }}>
+            <div style={{ fontWeight: 700, color: '#17212D' }}>
+              {user?.full_name || '[Nom non renseigné]'}
+            </div>
+            {user?.email && (
+              <div style={{ color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Mail size={13} color="#94A3B8" /> {user.email}
+              </div>
+            )}
+            {user?.phone_number && (
+              <div style={{ color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Phone size={13} color="#94A3B8" /> {user.phone_number}
+              </div>
+            )}
+            {user?.whatsapp_number && (
+              <div style={{ color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Phone size={13} /> WhatsApp: {user.whatsapp_number}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Détails d'activité */}
+        {fields.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '2px' }}>
+              Caractéristiques économiques
+            </div>
+            {fields.map((f, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '8px', fontSize: '0.8rem', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+                <span style={{ color: '#64748B', fontWeight: 600 }}>{f.label}</span>
+                <span style={{ color: '#17212D', fontWeight: 700, wordBreak: 'break-word' }}>{f.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Formalisation */}
+        {docs.length > 0 && (
+          <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '12px', marginBottom: '20px' }}>
+            <div style={{ fontSize: '0.74rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Statut de formalisation
+            </div>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              {docs.map((d, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '0.76rem',
+                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    background: d.ok ? '#ECFDF5' : '#FEF2F2',
+                    color: d.ok ? '#065F46' : '#991B1B',
+                    border: `1px solid ${d.ok ? '#A7F3D0' : '#FECACA'}`,
+                  }}
+                >
+                  {d.ok ? <CheckCircle2 size={13} /> : <XCircle size={13} />} {d.label} : {d.ok ? 'Disponible' : 'Non renseigné'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
+          type="button"
           onClick={onClose}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: '2px', lineHeight: 0, flexShrink: 0 }}
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: '#17212D',
+            color: '#FFFFFF',
+            borderRadius: '6px',
+            border: 'none',
+            fontWeight: 800,
+            fontSize: '0.84rem',
+            cursor: 'pointer',
+          }}
         >
-          <X size={16} />
+          Fermer la fiche
         </button>
       </div>
-
-      {/* Fields list */}
-      {fields.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: docs.length > 0 ? '10px' : 0 }}>
-          {fields.map((f, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: '6px', fontSize: '0.78rem' }}>
-              <span style={{ color: '#64748B', fontWeight: 600 }}>{f.label}</span>
-              <span style={{ color: '#CBD5E1', wordBreak: 'break-word' }}>{f.value}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Docs compliance */}
-      {docs.length > 0 && (
-        <div style={{ borderTop: '1px solid #334155', paddingTop: '8px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {docs.map((d, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.74rem', color: d.ok ? '#4ADE80' : '#F87171', fontWeight: 600 }}>
-              {d.ok ? <CheckCircle2 size={13} /> : <XCircle size={13} />} {d.label}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -124,19 +272,23 @@ export const PmeModule = () => {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [openPopoverId, setOpenPopoverId] = useState(null);
+  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'with_diags' | 'without_diags'
+  const [selectedPmeForModal, setSelectedPmeForModal] = useState(null);
+  const [expandedPmeId, setExpandedPmeId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const loadPmes = () => {
     setLoading(true);
     setErrorMsg('');
     EntrepriseService.getEnterprises()
-      .then(data => {
+      .then((data) => {
         setPmes(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('[PmeModule] Error loading PMEs:', err);
-        setErrorMsg('[pmes_fetch_error] Impossible de charger la liste des PME. Veuillez ré-essayer.');
+        setErrorMsg('[pmes_fetch_error] Impossible de charger le répertoire des entreprises. Veuillez ré-essayer.');
         setLoading(false);
       });
   };
@@ -145,73 +297,132 @@ export const PmeModule = () => {
     loadPmes();
   }, []);
 
-  // Close popover on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (!e.target.closest('[data-popover-row]')) setOpenPopoverId(null);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
-
-  /*
-  // Deduplicate PMEs by contact email (or fallback to business name/id)
-  const seenEmails = new Set();
-  const distinctPmes = pmes.filter(pme => {
+  // ─── Normalisation des données (Rule 9 & Rule 7) ───────────────────────────
+  const normalizedPmes = pmes.map((pme, idx) => {
+    const pmeId = pme.business_id ?? pme.id ?? `PME-${idx}`;
+    const name = pme.business_name || '[Entreprise sans nom]';
+    const sector = pme.sector || null;
+    const subSector = pme.sub_sector || null;
+    const region = pme.region || null;
+    const commune = pme.commune || null;
+    const country = pme.country || 'Bénin';
     const user = pme.user ?? null;
-    const email = (user?.email || pme.email || pme.user_email || '').trim().toLowerCase();
-    const key = email || (pme.business_name || pme.name || pme.business_id || pme.id);
-    if (!key) return true;
-    if (seenEmails.has(key)) return false;
-    seenEmails.add(key);
-    return true;
-  });
-  */
+    const contactName = user?.full_name ?? null;
+    const contactEmail = user?.email ?? null;
+    const contactPhone = user?.phone_number ?? null;
+    const contactWhatsapp = user?.whatsapp_number ?? null;
+    const userProfileLabel = formatUserProfile(user?.user_profile_type);
+    const activityStageLabel = formatActivityStage(pme.activity_stage);
 
-  const filteredPmes = pmes.filter(pme => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    const userName = pme.user?.full_name?.toLowerCase() ?? '';
-    const userEmail = pme.user?.email?.toLowerCase() ?? '';
-    const userPhone = pme.user?.phone_number?.toLowerCase() ?? '';
+    // Filtrage strict : exclure le module de pré-qualification TRI-00
+    const rawRuns = Array.isArray(pme.diagnostic_runs) ? pme.diagnostic_runs : [];
+    const validRuns = rawRuns.filter((r) => r.module_code !== 'TRI-00');
+    const runsCount = validRuns.length;
+    const completedRuns = validRuns.filter((r) => r.completion_status === 'completed');
+    const inProgressRuns = validRuns.filter((r) => r.completion_status !== 'completed');
+    const hasDiagnostics = runsCount > 0;
+
+    return {
+      ...pme,
+      pmeId,
+      name,
+      sector,
+      subSector,
+      region,
+      commune,
+      country,
+      contactName,
+      contactEmail,
+      contactPhone,
+      contactWhatsapp,
+      userProfileLabel,
+      activityStageLabel,
+      validRuns,
+      runsCount,
+      completedCount: completedRuns.length,
+      inProgressCount: inProgressRuns.length,
+      hasDiagnostics,
+    };
+  });
+
+  // Compteurs pour la segmentation
+  const totalCount = normalizedPmes.length;
+  const withDiagsCount = normalizedPmes.filter((p) => p.hasDiagnostics).length;
+  const withoutDiagsCount = normalizedPmes.filter((p) => !p.hasDiagnostics).length;
+
+  // Filtrage selon onglet et recherche textuelle
+  const filteredPmes = normalizedPmes.filter((pme) => {
+    if (statusTab === 'with_diags' && !pme.hasDiagnostics) return false;
+    if (statusTab === 'without_diags' && pme.hasDiagnostics) return false;
+
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.trim().toLowerCase();
     return (
-      (pme.business_name && pme.business_name.toLowerCase().includes(term)) ||
+      pme.name.toLowerCase().includes(term) ||
       (pme.sector && pme.sector.toLowerCase().includes(term)) ||
       (pme.region && pme.region.toLowerCase().includes(term)) ||
       (pme.commune && pme.commune.toLowerCase().includes(term)) ||
-      userName.includes(term) ||
-      userEmail.includes(term) ||
-      userPhone.includes(term)
+      (pme.contactName && pme.contactName.toLowerCase().includes(term)) ||
+      (pme.contactEmail && pme.contactEmail.toLowerCase().includes(term)) ||
+      (pme.contactPhone && pme.contactPhone.toLowerCase().includes(term))
     );
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredPmes.length / itemsPerPage));
   const paginatedPmes = filteredPmes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const handleTabChange = (newTab) => {
+    setStatusTab(newTab);
+    setCurrentPage(1);
+    setExpandedPmeId(null);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+    setExpandedPmeId(null);
+  };
+
   const handleExport = () => {
-    const headers = ['Nom Entreprise', 'Contact Nom', 'Email', 'Téléphone', 'WhatsApp', 'Secteur', 'Sous-secteur', 'Région', 'Commune', 'Pays', 'Stade d\'activité', 'Statut légal', 'Effectif', 'CA mensuel (FCFA)', 'Années d\'activité', 'IFU', 'RCCM', 'Compte bancaire'];
-    const rows = filteredPmes.map(p => {
-      const u = p.user ?? {};
+    const headers = [
+      'Nom Entreprise',
+      'Contact Nom',
+      'Email',
+      'Téléphone',
+      'WhatsApp',
+      'Secteur',
+      'Sous-secteur',
+      'Région',
+      'Commune',
+      'Pays',
+      'Stade d\'activité',
+      'Diagnostics Totaux',
+      'Diagnostics Finalisés',
+      'Diagnostics En cours',
+      'Statut légal',
+      'Effectif',
+      'CA mensuel (FCFA)',
+      'Années d\'activité',
+      'IFU',
+      'RCCM',
+      'Compte bancaire',
+    ];
+    const rows = filteredPmes.map((p) => {
       return [
-        p.business_name ?? '',
-        u.full_name ?? '',
-        u.email ?? '',
-        u.phone_number ?? '',
-        u.whatsapp_number ?? '',
+        p.name,
+        p.contactName ?? '',
+        p.contactEmail ?? '',
+        p.contactPhone ?? '',
+        p.contactWhatsapp ?? '',
         p.sector ?? '',
-        p.sub_sector ?? '',
+        p.subSector ?? '',
         p.region ?? '',
         p.commune ?? '',
         p.country ?? '',
-        formatActivityStage(p.activity_stage) ?? '',
+        p.activityStageLabel ?? '',
+        p.runsCount,
+        p.completedCount,
+        p.inProgressCount,
         p.legal_status ?? '',
         p.employee_count_range ?? '',
         p.monthly_revenue_range_xof ?? '',
@@ -221,214 +432,792 @@ export const PmeModule = () => {
         p.bank_account_available ? 'Oui' : 'Non',
       ];
     });
-    exportToExcel([headers, ...rows], 'pmes_export');
+    exportToExcel([headers, ...rows], 'repertoire_entreprises_pme');
   };
 
   return (
-    <div className="admin-page animate-fade-up">
-      <style>{`
-        @keyframes fadeInScale {
-          from { opacity: 0; transform: translateY(-50%) scale(0.96); }
-          to   { opacity: 1; transform: translateY(-50%) scale(1); }
-        }
-      `}</style>
-
-      <div className="admin-page-header">
+    <div
+      className="admin-page animate-fade-up"
+      style={{
+        fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif',
+        paddingBottom: '40px',
+      }}
+    >
+      {/* ── En-tête de page ── */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: '16px',
+          marginBottom: '20px',
+          paddingBottom: '16px',
+          borderBottom: '1px solid #E2E8F0',
+        }}
+      >
         <div>
-          <h1 className="admin-page-title">Entreprises (PME)</h1>
-          <p className="admin-page-sub">Consultez la liste des PME enregistrées et les coordonnées des dirigeants</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: '1.65rem',
+                fontWeight: 900,
+                color: '#17212D',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Répertoire des Entreprises (PME)
+            </h1>
+            <span
+              style={{
+                background: '#17212D',
+                color: '#FFFFFF',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                padding: '4px 10px',
+                borderRadius: '6px',
+              }}
+            >
+              {totalCount} entreprises
+            </span>
+          </div>
+          <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '0.88rem' }}>
+            Suivi des entreprises identifiées lors des étapes de pré-qualification, d'orientation et de diagnostic.
+          </p>
         </div>
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={handleExport}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          title="Exporter en Excel"
-        >
-          <Download size={14} /> Exporter
-        </button>
+
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={loadPmes}
+            disabled={loading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#17212D',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              padding: '8px 14px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <RotateCcw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            Actualiser
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExport}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: 'none',
+              background: '#0F7F90',
+              color: '#FFFFFF',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+            title="Exporter la sélection en Excel"
+          >
+            <Download size={14} /> Exporter Excel
+          </button>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
+      {/* ── Cadrage méthodologique & Guide de lecture ── */}
+      <div
+        style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #0F7F90',
+          borderRadius: '6px',
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '6px',
+            background: '#E0F2FE',
+            color: '#0F7F90',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: '2px',
+          }}
+        >
+          <Info size={16} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17212D' }}>
+              Guide de lecture du répertoire
+            </span>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                background: '#E2E8F0',
+                color: '#475569',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+              }}
+            >
+              Cadrage opérationnel
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+            Ce répertoire recense l'ensemble des entreprises enregistrées sur la plateforme. Une entreprise (fiche PME) est initialisée dès le formulaire de triage ou d'orientation, même si elle n'a pas encore validé de questionnaire thématique.
+            Utilisez les filtres ci-dessous pour distinguer les entreprises ayant des <strong>diagnostics actifs</strong> de celles <strong>inscrites sans diagnostic</strong> (prospects à relancer par la CCIB).
+            Le bouton <em>« Diagnostics »</em> permet d'afficher directement les parcours réalisés par l'entreprise et d'accéder à leurs bilans.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Filtres de segmentation (Tabs discrets + Recherche textuelle) ── */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '16px',
+        }}
+      >
+        {/* Tabs de segmentation */}
+        <div
+          style={{
+            display: 'inline-flex',
+            background: '#F1F5F9',
+            padding: '3px',
+            borderRadius: '6px',
+            gap: '2px',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => handleTabChange('all')}
+            style={{
+              border: 'none',
+              background: statusTab === 'all' ? '#17212D' : 'transparent',
+              color: statusTab === 'all' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'all' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Toutes les entreprises</span>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                background: statusTab === 'all' ? 'rgba(255,255,255,0.2)' : '#E2E8F0',
+                padding: '1px 6px',
+                borderRadius: '4px',
+              }}
+            >
+              {totalCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('with_diags')}
+            style={{
+              border: 'none',
+              background: statusTab === 'with_diags' ? '#17212D' : 'transparent',
+              color: statusTab === 'with_diags' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'with_diags' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Avec diagnostics actifs</span>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                background: statusTab === 'with_diags' ? '#059669' : '#DCFCE7',
+                color: statusTab === 'with_diags' ? '#FFFFFF' : '#166534',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                fontWeight: 700,
+              }}
+            >
+              {withDiagsCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('without_diags')}
+            style={{
+              border: 'none',
+              background: statusTab === 'without_diags' ? '#17212D' : 'transparent',
+              color: statusTab === 'without_diags' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'without_diags' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Sans diagnostic initié</span>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                background: statusTab === 'without_diags' ? '#D97706' : '#FEF3C7',
+                color: statusTab === 'without_diags' ? '#FFFFFF' : '#92400E',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                fontWeight: 700,
+              }}
+            >
+              {withoutDiagsCount}
+            </span>
+          </button>
+        </div>
+
+        {/* Champ de recherche */}
         <div style={{ position: 'relative', width: '320px' }}>
-          <Search size={16} color="var(--slate-400)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <Search
+            size={15}
+            color="#94A3B8"
+            style={{
+              position: 'absolute',
+              left: '11px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+          />
           <input
             type="text"
-            placeholder="Rechercher par PME, contact, secteur..."
+            placeholder="Rechercher PME, dirigeant, secteur..."
             value={searchTerm}
             onChange={handleSearchChange}
-            style={{ width: '100%', paddingLeft: '36px', height: '40px', borderRadius: '10px', border: '1px solid var(--adm-border)', outline: 'none', fontSize: '0.875rem', background: 'var(--adm-bg)', color: 'var(--adm-text)', boxSizing: 'border-box' }}
+            style={{
+              width: '100%',
+              paddingLeft: '34px',
+              paddingRight: '12px',
+              height: '36px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              outline: 'none',
+              fontSize: '0.82rem',
+              background: '#FFFFFF',
+              color: '#17212D',
+              boxSizing: 'border-box',
+            }}
           />
-        </div>
-        <div style={{ fontSize: '0.86rem', color: 'var(--slate-500)', fontWeight: 600 }}>
-          Total : <strong style={{ color: 'var(--brand-blue)' }}>{filteredPmes.length}</strong> PME
         </div>
       </div>
 
-      <div className="admin-card">
+      {/* ── Table des Entreprises ── */}
+      <div
+        style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '6px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+          overflow: 'hidden',
+        }}
+      >
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--slate-400)' }}>Chargement des PME...</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94A3B8', fontSize: '0.88rem' }}>
+            <RotateCcw size={22} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block', color: '#0F7F90' }} />
+            Chargement du répertoire des entreprises...
+          </div>
         ) : errorMsg ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600 }}>
-            <span>{errorMsg}</span>
-            <button onClick={loadPmes} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid #FCA5A5', borderRadius: '8px', padding: '6px 12px', color: '#991B1B', cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem' }}>
-              <RotateCcw size={14} /> Réessayer
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              padding: '16px 20px',
+              margin: '16px',
+              borderRadius: '6px',
+              fontSize: '0.86rem',
+              fontWeight: 600,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={16} />
+              <span>{errorMsg}</span>
+            </div>
+            <button
+              onClick={loadPmes}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#FFFFFF',
+                border: '1px solid #FCA5A5',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                color: '#991B1B',
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+              }}
+            >
+              <RotateCcw size={13} /> Réessayer
             </button>
           </div>
         ) : (
           <>
-            <div className="admin-table-wrap">
-              <table className="admin-table">
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
                 <thead>
-                  <tr>
-                    <th>Entreprise</th>
-                    <th>Contact / Dirigeant</th>
-                    <th>Secteur / Sous-secteur</th>
-                    <th>Localisation</th>
-                    <th>Stade d'activité</th>
-                    <th style={{ textAlign: 'right' }}>Détails</th>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <th style={{ padding: '12px 16px', fontWeight: 800 }}>Entreprise</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 800 }}>Contact / Dirigeant</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 800 }}>Secteur & Localisation</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 800 }}>Activité Diagnostics</th>
+                    <th style={{ padding: '12px 16px', fontWeight: 800, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedPmes.map((pme, idx) => {
-                    // Rule 9: normalisation avant le rendu JSX
-                    const pmeId = pme.business_id ?? pme.id ?? idx;
-                    const name = pme.business_name ?? 'Nom non spécifié';
-                    const sector = pme.sector ?? null;
-                    const subSector = pme.sub_sector ?? null;
-                    const region = pme.region ?? null;
-                    const commune = pme.commune ?? null;
-                    const country = pme.country ?? null;
-                    const activityStageLabel = formatActivityStage(pme.activity_stage);
-                    const isOpen = openPopoverId === pmeId;
-
-                    // Normalisation des infos utilisateur liées
-                    const user = pme.user ?? null;
-                    const contactName = user?.full_name ?? null;
-                    const contactEmail = user?.email ?? null;
-                    const contactPhone = user?.phone_number ?? null;
-                    const contactWhatsapp = user?.whatsapp_number ?? null;
-                    const userProfileLabel = formatUserProfile(user?.user_profile_type);
+                  {paginatedPmes.map((pme) => {
+                    const isExpanded = expandedPmeId === pme.pmeId;
 
                     return (
-                      <tr key={pmeId} data-popover-row="true" style={{ position: 'relative' }}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <Building2 size={18} />
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 700, color: 'var(--adm-text, #0F172A)', fontSize: '0.9rem' }}>{name}</div>
-                              {pme.year_created && <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>Créée en {pme.year_created}</div>}
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          {user ? (
-                            <div>
-                              {contactName && (
-                                <div style={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <User size={13} color="var(--brand-blue)" /> {contactName}
+                      <React.Fragment key={pme.pmeId}>
+                        <tr
+                          style={{
+                            borderBottom: '1px solid #E2E8F0',
+                            background: isExpanded ? '#F0FCFF' : '#FFFFFF',
+                            transition: 'background 0.15s ease',
+                          }}
+                        >
+                          {/* 1. Entreprise */}
+                          <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                              <div
+                                style={{
+                                  width: '34px',
+                                  height: '34px',
+                                  borderRadius: '6px',
+                                  background: '#F1F5F9',
+                                  color: '#17212D',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                  marginTop: '2px',
+                                }}
+                              >
+                                <Building2 size={16} />
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 800, color: '#17212D', fontSize: '0.88rem' }}>
+                                  {pme.name}
                                 </div>
-                              )}
-                              {userProfileLabel && (
-                                <div style={{ fontSize: '0.72rem', color: '#475569', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', width: 'fit-content', marginTop: '2px', fontWeight: 600 }}>
-                                  {userProfileLabel}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                  {pme.year_created && (
+                                    <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                                      Créée en {pme.year_created}
+                                    </span>
+                                  )}
+                                  {pme.activityStageLabel && (
+                                    <span
+                                      style={{
+                                        background: '#E0F2FE',
+                                        color: '#0369A1',
+                                        fontWeight: 700,
+                                        fontSize: '0.68rem',
+                                        padding: '1px 6px',
+                                        borderRadius: '4px',
+                                      }}
+                                    >
+                                      {pme.activityStageLabel}
+                                    </span>
+                                  )}
+                                  {pme.ifu_available && (
+                                    <span
+                                      style={{
+                                        background: '#ECFDF5',
+                                        color: '#065F46',
+                                        fontWeight: 700,
+                                        fontSize: '0.68rem',
+                                        padding: '1px 5px',
+                                        borderRadius: '3px',
+                                      }}
+                                    >
+                                      IFU ✓
+                                    </span>
+                                  )}
                                 </div>
-                              )}
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '3px', fontSize: '0.78rem', color: 'var(--slate-500)' }}>
-                                {contactEmail && (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <Mail size={12} color="var(--slate-400)" />
-                                    <a href={`mailto:${contactEmail}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactEmail}</a>
-                                  </div>
-                                )}
-                                {contactPhone && (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <Phone size={12} color="var(--slate-400)" />
-                                    <a href={`tel:${contactPhone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{contactPhone}</a>
-                                  </div>
-                                )}
-                                {contactWhatsapp && (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#16A34A', fontWeight: 600 }}>
-                                    <Phone size={12} /> WA: {contactWhatsapp}
-                                  </div>
-                                )}
                               </div>
                             </div>
-                          ) : (
-                            <span style={{ fontSize: '0.78rem', color: 'var(--slate-400)', fontStyle: 'italic' }}>Non renseigné</span>
-                          )}
-                        </td>
-                        <td>
-                          {sector && (
-                            <div>
-                              <div style={{ fontWeight: 600, color: 'var(--slate-700)', fontSize: '0.84rem' }}>{sector}</div>
-                              {subSector && <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)' }}>{subSector}</div>}
-                            </div>
-                          )}
-                        </td>
-                        <td>
-                          {(region || commune || country) && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem', color: 'var(--slate-600)' }}>
-                              <MapPin size={13} color="var(--slate-400)" />
-                              {[commune, region, country].filter(Boolean).join(', ')}
-                            </div>
-                          )}
-                        </td>
-                        <td>
-                          {activityStageLabel && (
-                            <span style={{ background: '#E0F2FE', color: '#0369A1', fontWeight: 600, fontSize: '0.76rem', padding: '3px 8px', borderRadius: '6px' }}>
-                              {activityStageLabel}
-                            </span>
-                          )}
-                        </td>
-                        <td style={{ textAlign: 'right', position: 'relative' }}>
-                          <button
-                            onClick={() => navigate('/admin/diagnostics', { state: { searchTerm: name } })}
-                            style={{
-                              background: 'transparent',
-                              border: '1px solid var(--adm-border, #E2E8F0)',
-                              color: '#10B981',
-                              borderRadius: '8px', padding: '5px 8px',
-                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
-                              fontSize: '0.75rem', fontWeight: 600,
-                              marginRight: '6px',
-                              transition: 'all 0.15s ease',
-                            }}
-                            title="Voir les diagnostics de cette PME"
-                          >
-                            <ClipboardList size={14} /> Diagnostics
-                          </button>
-                          <button
-                            onClick={() => setOpenPopoverId(isOpen ? null : pmeId)}
-                            style={{
-                              background: isOpen ? '#1E293B' : 'transparent',
-                              border: '1px solid',
-                              borderColor: isOpen ? '#1E293B' : 'var(--adm-border, #E2E8F0)',
-                              color: isOpen ? '#F1F5F9' : '#2563EB',
-                              borderRadius: '8px', padding: '5px 8px',
-                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '3px',
-                              fontSize: '0.75rem', fontWeight: 600,
-                              transition: 'all 0.15s ease',
-                            }}
-                            title="Voir les informations détaillées"
-                          >
-                            <Info size={15} />
-                          </button>
+                          </td>
 
-                          {/* Inline tooltip popover */}
-                          {isOpen && (
-                            <InfoPopover pme={pme} onClose={() => setOpenPopoverId(null)} />
-                          )}
-                        </td>
-                      </tr>
+                          {/* 2. Contact / Dirigeant */}
+                          <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                            {pme.contactName || pme.contactEmail || pme.contactPhone ? (
+                              <div>
+                                {pme.contactName && (
+                                  <div style={{ fontWeight: 700, color: '#17212D', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <User size={13} color="#0F7F90" /> {pme.contactName}
+                                  </div>
+                                )}
+                                {pme.userProfileLabel && (
+                                  <div
+                                    style={{
+                                      fontSize: '0.7rem',
+                                      color: '#475569',
+                                      background: '#F1F5F9',
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      width: 'fit-content',
+                                      marginTop: '3px',
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {pme.userProfileLabel}
+                                  </div>
+                                )}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px', fontSize: '0.76rem', color: '#64748B' }}>
+                                  {pme.contactEmail && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Mail size={12} color="#94A3B8" />
+                                      <a href={`mailto:${pme.contactEmail}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                        {pme.contactEmail}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {pme.contactPhone && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Phone size={12} color="#94A3B8" />
+                                      <a href={`tel:${pme.contactPhone}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                        {pme.contactPhone}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {pme.contactWhatsapp && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#059669', fontWeight: 700 }}>
+                                      <Phone size={12} /> WA: {pme.contactWhatsapp}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontStyle: 'italic' }}>
+                                Coordonnées non renseignées
+                              </span>
+                            )}
+                          </td>
+
+                          {/* 3. Secteur & Localisation */}
+                          <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                            <div>
+                              <div style={{ fontWeight: 700, color: '#17212D', fontSize: '0.82rem' }}>
+                                {pme.sector || '[Secteur non spécifié]'}
+                              </div>
+                              {pme.subSector && (
+                                <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '1px' }}>
+                                  {pme.subSector}
+                                </div>
+                              )}
+                              {(pme.commune || pme.region) && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.76rem', color: '#64748B', marginTop: '4px' }}>
+                                  <MapPin size={12} color="#94A3B8" />
+                                  {[pme.commune, pme.region].filter(Boolean).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* 4. Activité Diagnostics */}
+                          <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                            {pme.hasDiagnostics ? (
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span
+                                    style={{
+                                      background: '#ECFDF5',
+                                      color: '#065F46',
+                                      fontWeight: 800,
+                                      fontSize: '0.78rem',
+                                      padding: '3px 8px',
+                                      borderRadius: '4px',
+                                      border: '1px solid #A7F3D0',
+                                    }}
+                                  >
+                                    {pme.runsCount} diagnostic{pme.runsCount > 1 ? 's' : ''}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '0.73rem', color: '#475569', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <span style={{ color: '#059669', fontWeight: 700 }}>{pme.completedCount} finalisé(s)</span>
+                                  <span style={{ color: '#CBD5E1' }}>•</span>
+                                  <span style={{ color: '#D97706', fontWeight: 600 }}>{pme.inProgressCount} en cours</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <span
+                                  style={{
+                                    background: '#F1F5F9',
+                                    color: '#64748B',
+                                    fontWeight: 700,
+                                    fontSize: '0.74rem',
+                                    padding: '3px 8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid #E2E8F0',
+                                  }}
+                                >
+                                  0 diagnostic
+                                </span>
+                                <div style={{ fontSize: '0.72rem', color: '#94A3B8', marginTop: '3px' }}>
+                                  Inscrite au triage
+                                </div>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* 5. Actions */}
+                          <td style={{ padding: '14px 16px', verticalAlign: 'top', textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              {pme.hasDiagnostics ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedPmeId(isExpanded ? null : pme.pmeId)}
+                                  style={{
+                                    background: isExpanded ? '#0F7F90' : '#FFFFFF',
+                                    border: '1px solid',
+                                    borderColor: isExpanded ? '#0F7F90' : '#CBD5E1',
+                                    color: isExpanded ? '#FFFFFF' : '#0F7F90',
+                                    borderRadius: '6px',
+                                    padding: '5px 10px',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 800,
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                  title="Dérouler la liste des diagnostics de cette entreprise"
+                                >
+                                  <ClipboardList size={13} />
+                                  <span>Diagnostics ({pme.runsCount})</span>
+                                  {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  style={{
+                                    background: '#F8FAFC',
+                                    border: '1px solid #E2E8F0',
+                                    color: '#94A3B8',
+                                    borderRadius: '6px',
+                                    padding: '5px 10px',
+                                    cursor: 'not-allowed',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    fontSize: '0.74rem',
+                                    fontWeight: 600,
+                                  }}
+                                  title="Cette entreprise a complété son orientation mais n'a pas encore validé de diagnostic thématique."
+                                >
+                                  <ClipboardList size={13} />
+                                  <span>Aucun diagnostic</span>
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => setSelectedPmeForModal(pme)}
+                                style={{
+                                  background: '#FFFFFF',
+                                  border: '1px solid #CBD5E1',
+                                  color: '#17212D',
+                                  borderRadius: '6px',
+                                  padding: '5px 8px',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 700,
+                                  transition: 'background 0.15s ease',
+                                }}
+                                title="Voir la fiche détaillée de l'entreprise"
+                              >
+                                <Info size={14} color="#0F7F90" />
+                                <span>Fiche</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* ── Accordion déroulant des diagnostics de l'entreprise ── */}
+                        {isExpanded && (
+                          <tr style={{ background: '#F8FAFC' }}>
+                            <td colSpan="5" style={{ padding: '16px 20px', borderBottom: '2px solid #34BED5' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                <div>
+                                  <span style={{ fontSize: '0.84rem', fontWeight: 900, color: '#17212D' }}>
+                                    Parcours diagnostics rattachés à « {pme.name} »
+                                  </span>
+                                  <span style={{ fontSize: '0.76rem', color: '#64748B', marginLeft: '8px' }}>
+                                    ({pme.runsCount} session{pme.runsCount > 1 ? 's' : ''} enregistrée{pme.runsCount > 1 ? 's' : ''})
+                                  </span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => navigate('/admin/diagnostics', { state: { searchTerm: pme.name } })}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#0F7F90',
+                                    cursor: 'pointer',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <span>Voir dans le registre global</span>
+                                  <ExternalLink size={13} />
+                                </button>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {pme.validRuns.map((run, rIdx) => {
+                                  const isComp = run.completion_status === 'completed';
+                                  const modName = MODULE_NAMES[run.module_code] || run.module_code || 'Module';
+                                  const answered = run.question_count_answered ?? 0;
+                                  const expected = run.question_count_expected ?? 0;
+
+                                  return (
+                                    <div
+                                      key={run.diagnostic_run_id || rIdx}
+                                      style={{
+                                        background: '#FFFFFF',
+                                        border: '1px solid #E2E8F0',
+                                        borderLeft: `3px solid ${isComp ? '#059669' : '#D97706'}`,
+                                        borderRadius: '6px',
+                                        padding: '10px 14px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        gap: '10px',
+                                      }}
+                                    >
+                                      <div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                          <span style={{ fontWeight: 800, color: '#17212D', fontSize: '0.82rem' }}>
+                                            {run.module_code} — {modName}
+                                          </span>
+                                          <span
+                                            style={{
+                                              fontSize: '0.68rem',
+                                              fontWeight: 800,
+                                              padding: '1px 6px',
+                                              borderRadius: '4px',
+                                              background: isComp ? '#DCFCE7' : '#FEF3C7',
+                                              color: isComp ? '#166534' : '#92400E',
+                                            }}
+                                          >
+                                            {isComp ? 'Bilan finalisé' : 'En cours'}
+                                          </span>
+                                        </div>
+                                        <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                          <span>
+                                            Progression : <strong>{answered}</strong> / {expected} questions
+                                          </span>
+                                          <span>•</span>
+                                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <Calendar size={12} color="#94A3B8" /> {formatDate(run.started_at)}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          navigate(`/admin/diagnostics/${run.diagnostic_run_id}`, {
+                                            state: {
+                                              run,
+                                              businessName: pme.name,
+                                              userName: pme.contactName,
+                                              userEmail: pme.contactEmail,
+                                              moduleCode: run.module_code,
+                                            },
+                                          })
+                                        }
+                                        style={{
+                                          background: '#17212D',
+                                          color: '#FFFFFF',
+                                          border: 'none',
+                                          borderRadius: '6px',
+                                          padding: '5px 12px',
+                                          fontSize: '0.74rem',
+                                          fontWeight: 800,
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                        }}
+                                      >
+                                        <span>Consulter le bilan</span>
+                                        <ExternalLink size={12} />
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
 
                   {filteredPmes.length === 0 && (
                     <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>
-                        Aucune PME trouvée
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8' }}>
+                        Aucune entreprise ne correspond aux critères sélectionnés.
                       </td>
                     </tr>
                   )}
@@ -436,50 +1225,61 @@ export const PmeModule = () => {
               </table>
             </div>
 
-            {/* Pagination Controls Footer */}
+            {/* Pagination */}
             {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--adm-border, #E2E8F0)', background: 'var(--adm-bg, #FFFFFF)', borderRadius: '0 0 16px 16px' }}>
-                <span style={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 600 }}>
-                  Page <strong>{currentPage}</strong> sur <strong>{totalPages}</strong> ({filteredPmes.length} PME)
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 18px',
+                  borderTop: '1px solid #E2E8F0',
+                  background: '#F8FAFC',
+                }}
+              >
+                <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
+                  Page <strong>{currentPage}</strong> sur <strong>{totalPages}</strong> ({filteredPmes.length} entreprises affichées)
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '6px' }}>
                   <button
+                    type="button"
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     style={{
                       border: '1px solid #CBD5E1',
                       background: currentPage === 1 ? '#F1F5F9' : '#FFFFFF',
-                      color: currentPage === 1 ? '#94A3B8' : '#0F172A',
-                      padding: '6px 12px',
-                      borderRadius: '8px',
+                      color: currentPage === 1 ? '#94A3B8' : '#17212D',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
                       cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontSize: '0.82rem',
-                      fontWeight: 700
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
                     }}
                   >
-                    <ChevronLeft size={16} /> Précédent
+                    <ChevronLeft size={14} /> Précédent
                   </button>
                   <button
+                    type="button"
                     disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     style={{
                       border: '1px solid #CBD5E1',
                       background: currentPage === totalPages ? '#F1F5F9' : '#FFFFFF',
-                      color: currentPage === totalPages ? '#94A3B8' : '#0F172A',
-                      padding: '6px 12px',
-                      borderRadius: '8px',
+                      color: currentPage === totalPages ? '#94A3B8' : '#17212D',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
                       cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontSize: '0.82rem',
-                      fontWeight: 700
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
                     }}
                   >
-                    Suivant <ChevronRight size={16} />
+                    Suivant <ChevronRight size={14} />
                   </button>
                 </div>
               </div>
@@ -487,7 +1287,14 @@ export const PmeModule = () => {
           </>
         )}
       </div>
+
+      {/* ── Modal Fiche Entreprise Complète ── */}
+      {selectedPmeForModal && (
+        <CompanyProfileModal
+          pme={selectedPmeForModal}
+          onClose={() => setSelectedPmeForModal(null)}
+        />
+      )}
     </div>
   );
 };
-
