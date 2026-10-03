@@ -23,6 +23,8 @@ import {
   ChevronRight,
   Filter,
   CheckCircle,
+  AlertCircle,
+  XCircle,
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
 
@@ -144,59 +146,61 @@ export const DiagnosticRunDetailScreen = () => {
     };
   };
 
-  // Eager enrichment from admin diagnostics list and historical records
+  // Eager enrichment from admin diagnostics list and direct details endpoint
   const tryEnrichDetail = async () => {
     setIsEnriching(true);
     setEnrichError(false);
     try {
       let matched = detailData ? { ...detailData } : null;
 
-      // 1. Chercher dans la liste paginée des diagnostics admin (avec relations user, business)
-      const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
-      const list = extractDiagnosticsList(resDiag);
-      let found = list.find(r => r?.diagnostic_run_id === runId);
-
-      // Si non trouvé sur la page 1 et que d'autres pages existent
-      if (!found && resDiag?.data?.pagination?.total_pages > 1) {
-        const resDiagP2 = await apiFetch(`/admin/dashboard/diagnostics?page=2&per_page=100`).catch(() => null);
-        const listP2 = extractDiagnosticsList(resDiagP2);
-        found = listP2.find(r => r?.diagnostic_run_id === runId);
+      // 1. Appel direct du diagnostic avec ses relations (questionResponses, user, business, etc.)
+      const resDirect = await apiFetch(`/diagnostics/${runId}/details`).catch(() => null);
+      const directData = resDirect?.data || resDirect;
+      if (directData && typeof directData === 'object' && directData.diagnostic_run_id) {
+        matched = mergeDetails(matched, directData);
       }
 
-      if (found) {
-        matched = mergeDetails(matched, found);
-      }
+      // 2. Recherche complémentaire dans la liste paginée des diagnostics admin
+      if (!matched?.user?.full_name || !matched?.business?.business_name) {
+        const resDiag = await apiFetch(`/admin/dashboard/diagnostics?per_page=100`).catch(() => null);
+        const list = extractDiagnosticsList(resDiag);
+        let found = list.find(r => r?.diagnostic_run_id === runId);
 
-      // 2. Déterminer l'ID utilisateur cible pour récupérer l'historique complet des réponses
-      const targetUserId =
-        found?.user_id
-        ?? found?.user?.user_id
-        ?? found?.user?.id
-        ?? found?.business?.user_id
-        ?? passedUserId
-        ?? null;
-
-      if (targetUserId) {
-        const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
-        let histList = [];
-        if (Array.isArray(resHist)) {
-          histList = resHist;
-        } else if (Array.isArray(resHist?.data)) {
-          histList = resHist.data;
+        if (!found && resDiag?.data?.pagination?.total_pages > 1) {
+          const resDiagP2 = await apiFetch(`/admin/dashboard/diagnostics?page=2&per_page=100`).catch(() => null);
+          const listP2 = extractDiagnosticsList(resDiagP2);
+          found = listP2.find(r => r?.diagnostic_run_id === runId);
         }
 
-        const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
-        if (histMatched) {
-          matched = mergeDetails(matched, histMatched, found?.user || null);
+        if (found) {
+          matched = mergeDetails(matched, found);
         }
       }
 
-      // 3. Fallback direct si réponses toujours absentes
-      if (!matched || !matched.question_responses || matched.question_responses.length === 0) {
-        const resDirect = await apiFetch(`/diagnostics/${runId}/details`).catch(() => null);
-        const directData = resDirect?.data || resDirect;
-        if (directData && typeof directData === 'object' && !directData.message) {
-          matched = mergeDetails(matched, directData);
+      // 3. Fallback d'enrichissement historique par utilisateur si les réponses ne sont pas encore chargées
+      const currentResponses = matched?.question_responses || matched?.questionResponses || [];
+      if (!currentResponses || currentResponses.length === 0) {
+        const targetUserId =
+          matched?.user_id
+          ?? matched?.user?.user_id
+          ?? matched?.user?.id
+          ?? matched?.business?.user_id
+          ?? passedUserId
+          ?? null;
+
+        if (targetUserId) {
+          const resHist = await apiFetch(`/admin/dashboard/${targetUserId}/historical`).catch(() => null);
+          let histList = [];
+          if (Array.isArray(resHist)) {
+            histList = resHist;
+          } else if (Array.isArray(resHist?.data)) {
+            histList = resHist.data;
+          }
+
+          const histMatched = histList.find(r => r?.diagnostic_run_id === runId);
+          if (histMatched) {
+            matched = mergeDetails(matched, histMatched, matched?.user || null);
+          }
         }
       }
 
@@ -250,7 +254,10 @@ export const DiagnosticRunDetailScreen = () => {
   const userPhone = (rawUserPhone && !rawUserPhone.includes('[') && rawUserPhone.trim() !== '') ? rawUserPhone : null;
 
   // Questions & Réponses Normalization
-  const rawResponses = detailData?.question_responses || detailData?.responses || [];
+  const rawResponses = detailData?.question_responses
+    || detailData?.questionResponses
+    || detailData?.responses
+    || [];
 
   const normalizedResponses = rawResponses.map((resp, idx) => {
     const questionText = resp?.question?.text
@@ -263,9 +270,24 @@ export const DiagnosticRunDetailScreen = () => {
 
     let displayAnswer = answerLabel || answerText;
     if (!displayAnswer && answerValue) {
-      displayAnswer = typeof answerValue === 'string'
-        ? answerValue.replace(/^"|"$/g, '')
-        : JSON.stringify(answerValue);
+      if (typeof answerValue === 'string') {
+        try {
+          const parsed = JSON.parse(answerValue);
+          if (Array.isArray(parsed)) {
+            displayAnswer = parsed.join(', ');
+          } else if (typeof parsed === 'string') {
+            displayAnswer = parsed;
+          } else {
+            displayAnswer = String(parsed);
+          }
+        } catch {
+          displayAnswer = answerValue.replace(/^"|"$/g, '').replace(/\\"/g, '"');
+        }
+      } else if (Array.isArray(answerValue)) {
+        displayAnswer = answerValue.join(', ');
+      } else {
+        displayAnswer = JSON.stringify(answerValue);
+      }
     }
     if (!displayAnswer) displayAnswer = 'Non renseigné';
 
@@ -287,6 +309,10 @@ export const DiagnosticRunDetailScreen = () => {
 
   const hasResponses = normalizedResponses.length > 0;
   const redFlagCount = normalizedResponses.filter(r => r.redFlagTriggered).length;
+
+  // Contrôle rigoureux de l'état réel du diagnostic
+  const hasAnsweredQuestions = (questionCountAnswered > 0) || hasResponses;
+  const canViewReport = hasAnsweredQuestions && isCompleted;
 
   // Filtrage par dimension
   const availableDimensions = ['all', ...new Set(normalizedResponses.map(r => r.dimension))];
@@ -351,9 +377,6 @@ export const DiagnosticRunDetailScreen = () => {
                 {moduleCode}
               </span>
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '3px' }}>
-              Réf. technique : <span style={{ fontFamily: 'monospace', color: '#17212D' }}>{runIdDisplay}</span>
-            </div>
           </div>
         </div>
 
@@ -380,44 +403,66 @@ export const DiagnosticRunDetailScreen = () => {
             {isEnriching ? 'Actualisation...' : 'Actualiser'}
           </button>
 
-          <button
-            onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
-              state: {
-                run,
-                userId: passedUserId,
-                userName: userName || 'Déclarant non renseigné',
-                userEmail: userEmail || '',
-                userPhone: userPhone || '',
-                businessName: businessName || 'PME',
-                sector: businessSector,
-              }
-            })}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              borderRadius: '6px',
-              background: '#17212D',
-              border: '1px solid #17212D',
-              color: '#FFFFFF',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              padding: '8px 18px',
-              cursor: 'pointer',
-              transition: 'background 0.2s ease, border-color 0.2s ease',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#34BED5';
-              e.currentTarget.style.borderColor = '#34BED5';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#17212D';
-              e.currentTarget.style.borderColor = '#17212D';
-            }}
-          >
-            <FileText size={16} />
-            Consulter le rapport stratégique
-          </button>
+          {/* Bouton Voir le rapport - Seulement si le diagnostic a des réponses et est complété ! */}
+          {canViewReport ? (
+            <button
+              onClick={() => navigate(`/admin/diagnostics/${runId}/report`, {
+                state: {
+                  run,
+                  userId: passedUserId,
+                  userName: userName || 'Déclarant non renseigné',
+                  userEmail: userEmail || '',
+                  userPhone: userPhone || '',
+                  businessName: businessName || 'PME',
+                  sector: businessSector,
+                }
+              })}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                borderRadius: '6px',
+                background: '#17212D',
+                border: '1px solid #17212D',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                padding: '8px 18px',
+                cursor: 'pointer',
+                transition: 'background 0.2s ease, border-color 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = '#34BED5';
+                e.currentTarget.style.borderColor = '#34BED5';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = '#17212D';
+                e.currentTarget.style.borderColor = '#17212D';
+              }}
+            >
+              <FileText size={16} />
+              Consulter le rapport stratégique
+            </button>
+          ) : (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#F1F5F9',
+                border: '1px solid #E2E8F0',
+                color: '#64748B',
+                borderRadius: '6px',
+                padding: '8px 14px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+              }}
+              title="Le diagnostic n'a pas été renseigné. Aucun rapport n'est disponible."
+            >
+              <AlertCircle size={15} />
+              Rapport indisponible (0 réponse)
+            </div>
+          )}
         </div>
       </div>
 
@@ -598,37 +643,54 @@ export const DiagnosticRunDetailScreen = () => {
         <div style={{
           background: '#FFFFFF',
           border: '1px solid #E2E8F0',
-          borderLeft: `3px solid ${isCompleted ? '#10B981' : '#D97706'}`,
+          borderLeft: `3px solid ${hasAnsweredQuestions ? (isCompleted ? '#10B981' : '#D97706') : '#94A3B8'}`,
           borderRadius: '6px',
           padding: '18px 20px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Calendar size={16} color={isCompleted ? '#10B981' : '#D97706'} />
+            <Calendar size={16} color={hasAnsweredQuestions ? (isCompleted ? '#10B981' : '#D97706') : '#94A3B8'} />
             <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>
               Statut du parcours
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontWeight: 800,
-              fontSize: '0.82rem',
-              color: isCompleted ? '#065F46' : '#92400E',
-              background: isCompleted ? '#ECFDF5' : '#FEF3C7',
-              padding: '3px 8px',
-              borderRadius: '4px',
-            }}>
-              {isCompleted ? <CheckCircle2 size={13} /> : <Clock size={13} />}
-              {isCompleted ? 'Finalisé' : 'En cours'}
-            </span>
+            {hasAnsweredQuestions ? (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontWeight: 800,
+                fontSize: '0.82rem',
+                color: isCompleted ? '#065F46' : '#92400E',
+                background: isCompleted ? '#ECFDF5' : '#FEF3C7',
+                padding: '3px 8px',
+                borderRadius: '4px',
+              }}>
+                {isCompleted ? <CheckCircle2 size={13} /> : <Clock size={13} />}
+                {isCompleted ? 'Finalisé' : 'En cours'}
+              </span>
+            ) : (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontWeight: 800,
+                fontSize: '0.82rem',
+                color: '#475569',
+                background: '#F1F5F9',
+                padding: '3px 8px',
+                borderRadius: '4px',
+              }}>
+                <XCircle size={13} color="#94A3B8" />
+                Non débuté / Abandonné
+              </span>
+            )}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            Débuté : {startedAt}
+            {hasAnsweredQuestions ? `Débuté : ${startedAt}` : 'Aucune question répondue'}
           </div>
-          {completedAt && (
+          {completedAt && hasAnsweredQuestions && (
             <div style={{ fontSize: '0.73rem', color: '#065F46', marginTop: '2px', fontWeight: 600 }}>
               Terminé : {completedAt}
             </div>
@@ -700,7 +762,10 @@ export const DiagnosticRunDetailScreen = () => {
               padding: '2px 8px',
               borderRadius: '4px',
             }}>
-              {hasResponses ? `${normalizedResponses.length} question(s)` : 'Synthèse globale'}
+              {hasResponses
+                ? `${normalizedResponses.length} question(s)`
+                : (hasAnsweredQuestions ? 'Synthèse consolidée' : 'Non débuté (0 réponse)')
+              }
             </span>
           </div>
 
@@ -736,8 +801,142 @@ export const DiagnosticRunDetailScreen = () => {
         </div>
 
         {/* ── Conditional Body ── */}
-        {!hasResponses ? (
-          /* CASE: No detailed raw responses recorded -> Institutional Executive True North Card */
+        {!hasAnsweredQuestions ? (
+          /* CAS 1 : AUCUN DIAGNOSTIC EFFECTUÉ (0 réponse) -> Message clair et honnête */
+          <div style={{ padding: '36px 28px' }}>
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderLeft: '4px solid #64748B',
+              borderRadius: '6px',
+              padding: '28px 24px',
+              maxWidth: '850px',
+              margin: '0 auto',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '6px',
+                  background: '#F1F5F9',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <AlertCircle size={22} color="#64748B" />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    margin: '0 0 6px 0',
+                    fontSize: '1.08rem',
+                    fontWeight: 800,
+                    color: '#17212D',
+                  }}>
+                    Aucun diagnostic effectué — Aucune réponse enregistrée
+                  </h3>
+
+                  <p style={{
+                    margin: '0 0 16px 0',
+                    fontSize: '0.86rem',
+                    color: '#475569',
+                    lineHeight: 1.5,
+                  }}>
+                    Ce diagnostic a été créé dans le système (lors de l'étape de triage ou par sélection du module), mais l'entreprise n'a répondu à aucune question. En l'absence de saisie, aucun rapport d'analyse, scoring ou recommandation ne peut être généré.
+                  </p>
+
+                  {/* État récapitulatif */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: '12px',
+                    padding: '14px',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '6px',
+                    marginBottom: '20px',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Progression
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#64748B', marginTop: '2px' }}>
+                        0 question répondue
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Volume attendu
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#17212D', marginTop: '2px' }}>
+                        {questionCountExpected > 0 ? `${questionCountExpected} questions prévues` : 'Module standard'}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                        Livrable / Rapport
+                      </div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#94A3B8', marginTop: '2px' }}>
+                        Indisponible (non renseigné)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions sans lien trompeur vers un rapport inexistant */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => navigate('/admin/diagnostics')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: '#17212D',
+                        border: '1px solid #17212D',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: '0.84rem',
+                        padding: '9px 18px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#34BED5'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#17212D'}
+                    >
+                      <ArrowLeft size={15} />
+                      Retourner à la liste des diagnostics
+                    </button>
+
+                    <button
+                      onClick={tryEnrichDetail}
+                      disabled={isEnriching}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        color: '#475569',
+                        fontWeight: 600,
+                        fontSize: '0.82rem',
+                        padding: '9px 14px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <RotateCcw size={14} style={{ animation: isEnriching ? 'spin 1s linear infinite' : 'none' }} />
+                      Vérifier si des réponses ont été soumises
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : !hasResponses ? (
+          /* CAS 2 : DIAGNOSTIC EFFECTUÉ MAIS RÉPONSES CONSOLIDÉES */
           <div style={{ padding: '36px 28px' }}>
             <div style={{
               background: '#F8FAFC',
@@ -778,53 +977,8 @@ export const DiagnosticRunDetailScreen = () => {
                     color: '#475569',
                     lineHeight: 1.5,
                   }}>
-                    {isCompleted
-                      ? "Ce diagnostic a été mené à son terme. Les réponses saisies ont été directement compilées et pondérées par le moteur algorithmique pour générer la notation par axe, les constats clés et la feuille de route d'accompagnement."
-                      : "Ce diagnostic est actuellement en cours de renseignement. L'historique pas-à-pas des réponses détaillées sera consolidé dès la clôture définitive du parcours."
-                    }
+                    Ce diagnostic a été finalisé avec succès. Les réponses fournies ont été directement compilées et pondérées par le moteur algorithmique pour générer la notation par dimension, les constats clés et la feuille de route d'accompagnement.
                   </p>
-
-                  {/* Operational metrics */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                    gap: '12px',
-                    padding: '14px',
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '6px',
-                    marginBottom: '20px',
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Progression enregistrée
-                      </div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#17212D', marginTop: '2px' }}>
-                        {questionCountAnswered > 0
-                          ? `${questionCountAnswered} question(s) validée(s)`
-                          : (isCompleted ? 'Parcours intégral validé' : 'En phase d\'amorce')
-                        }
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Volume attendu
-                      </div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#17212D', marginTop: '2px' }}>
-                        {questionCountExpected > 0 ? `${questionCountExpected} questions prévues` : 'Module standard'}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                        Livrable disponible
-                      </div>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#059669', marginTop: '2px' }}>
-                        Rapport stratégique &amp; PDF
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Actions */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -860,34 +1014,13 @@ export const DiagnosticRunDetailScreen = () => {
                       <FileText size={15} />
                       Accéder au rapport complet &amp; scores
                     </button>
-
-                    <button
-                      onClick={tryEnrichDetail}
-                      disabled={isEnriching}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        color: '#475569',
-                        fontWeight: 600,
-                        fontSize: '0.82rem',
-                        padding: '9px 14px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <RotateCcw size={14} style={{ animation: isEnriching ? 'spin 1s linear infinite' : 'none' }} />
-                      Vérifier la synchronisation des réponses
-                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          /* CASE: Detailed raw responses recorded -> High-density executive table */
+          /* CAS 3 : QUESTIONS & RÉPONSES DÉTAILLÉES PRÉSENTES */
           <div className="admin-table-wrap">
             <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>

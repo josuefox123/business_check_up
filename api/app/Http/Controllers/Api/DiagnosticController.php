@@ -649,37 +649,32 @@ class DiagnosticController extends BaseController
             'evidenceRecords',
         ]);
 
-        // return response()->json($diagnostic);
+        // Envoi tolérant vers n8n pour la génération du rapport sans bloquer la consultation des détails
+        try {
+            $response = Http::timeout(5)
+                ->acceptJson()
+                ->post(
+                    'https://n8n.sylfleur.com/webhook/bcu-report-v1',
+                    $diagnostic->toArray()
+                );
 
-        $response = Http::timeout(30)
-            ->acceptJson()
-            ->post(
-                'https://n8n.sylfleur.com/webhook/bcu-report-v1',
-                $diagnostic->toArray()
-            );
-
-        if ($response->failed()) {
-            
+            if ($response->successful()) {
+                $diagnostic->update([
+                    'report_status' => ReportStatus::PENDING,
+                ]);
+            } else {
+                $diagnostic->update([
+                    'report_status' => ReportStatus::FAILED,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[DiagnosticController@show] Webhook n8n inaccessible: ' . $e->getMessage());
             $diagnostic->update([
                 'report_status' => ReportStatus::FAILED,
             ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de l\'envoi vers n8n.',
-                'n8n' => $response->body(),
-            ], 500);
         }
-        
-        $diagnostic->update([
-            'report_status' => ReportStatus::PENDING,
-        ]);
 
-
-        return response()->json([
-            'success' => true,
-            'n8n_response' => $response->json(),
-        ]);
+        return $this->respondSuccess($diagnostic);
         
 
     }

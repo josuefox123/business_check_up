@@ -19,18 +19,25 @@ import {
   Filter,
   PieChart,
   UserX,
-  CheckCheck
+  CheckCheck,
+  XCircle,
+  X,
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
-import { statistiquesApi } from '../../../api/statistiquesApi.js';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Constants & Helpers ──────────────────────────────────────────────────────
 
-const MODULE_FAMILY_LABELS = {
-  situational: 'Situationnel',
-  transversal: 'Transversal',
-  functional: 'Fonctionnel',
-};
+const ALL_MODULES = [
+  { code: 'FLH-01', label: 'FLH-01 — Flash Diagnostic' },
+  { code: 'PRJ-02', label: 'PRJ-02 — Diagnostic Projet' },
+  { code: 'DIF-03', label: 'DIF-03 — Difficultés & Restructuration' },
+  { code: 'OPP-04', label: 'OPP-04 — Opportunités & Croissance' },
+  { code: 'PRO-05', label: 'PRO-05 — Produits & Offre' },
+  { code: 'COM-06', label: 'COM-06 — Commercial & Marché' },
+  { code: 'FIN-07', label: 'FIN-07 — Finance & Stratégie' },
+  { code: 'GOV-08', label: 'GOV-08 — Gouvernance & Organisation' },
+  { code: '360-09', label: '360-09 — Diagnostic Global 360°' },
+];
 
 const formatDate = (iso) => {
   if (!iso) return '—';
@@ -47,7 +54,6 @@ const formatDate = (iso) => {
 
 export const DiagnosticHistoryScreen = () => {
   const navigate = useNavigate();
-
   const location = useLocation();
   const passedState = location.state || {};
   const initialSearch = passedState.searchTerm || '';
@@ -55,149 +61,105 @@ export const DiagnosticHistoryScreen = () => {
   // ── State ──
   const [currentPage, setCurrentPage] = useState(1);
   const [historyData, setHistoryData] = useState(null);
-  const [globalStats, setGlobalStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Filters
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [moduleFilter, setModuleFilter] = useState('');
-  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'completed' | 'started'
-  const [downloadingRunId, setDownloadingRunId] = useState(null);
-  const [trueCompletedCount, setTrueCompletedCount] = useState(null);
-  const [trueStartedCount, setTrueStartedCount] = useState(null);
-  const [trueTotalCount, setTrueTotalCount] = useState(null);
+  const [statusTab, setStatusTab] = useState('all'); // 'all' | 'completed' | 'in_progress'
 
-  const handleDownloadPDF = async (item) => {
-    if (downloadingRunId) return;
-    setDownloadingRunId(item.diagnosticRunId);
-    try {
-      const res = await apiFetch(`/admin/dashboard/${item.userId}/historical`);
-      const list = Array.isArray(res) ? res : (res?.data ?? []);
-      const matched = list.find(r => r?.diagnostic_run_id === item.diagnosticRunId) ?? list[0] ?? null;
-      
-      if (!matched) {
-        throw new Error('Impossible de trouver les détails de ce diagnostic.');
-      }
-      
-      const { generateQAOnlyPDF } = await import('../../../utils/generateQAOnlyPDF.js');
-      generateQAOnlyPDF({
-        businessName: item.businessName,
-        userName: item.userName,
-        userEmail: item.userEmail,
-        userPhone: item.userPhone,
-        moduleCode: item.moduleCode,
-        startedAt: item.startedAt,
-        completedAt: item.completedAt,
-        questionResponses: matched.question_responses || [],
-      });
-    } catch (err) {
-      console.error('[DiagnosticHistoryScreen] PDF generation failed:', err);
-      alert(err?.message ?? 'Échec du téléchargement du PDF. Veuillez ré-essayer.');
-    } finally {
-      setDownloadingRunId(null);
-    }
-  };
+  // Debounce search input (350ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  // ── Fetch global overview stats (matching Dashboard) ──
-  const fetchGlobalStats = async () => {
-    try {
-      const overview = await statistiquesApi.getOverview();
-      setGlobalStats(overview || null);
-    } catch (err) {
-      console.error('[DiagnosticHistoryScreen] fetch global stats error:', err);
-    }
-  };
-
-  const fetchTrueGlobalStats = async () => {
-    try {
-      let allItems = [];
-      let page = 1;
-      let lastPage = 1;
-
-      const res = await apiFetch(`/admin/dashboard/diagnostics?page=1&per_page=100`).catch(() => null);
-      if (res) {
-        const list = res.data || [];
-        allItems = [...list];
-        lastPage = res.last_page ?? 1;
-
-        while (page < lastPage && page < 10) {
-          page++;
-          const nextRes = await apiFetch(`/admin/dashboard/diagnostics?page=${page}&per_page=100`).catch(() => null);
-          if (nextRes && Array.isArray(nextRes.data)) {
-            allItems = [...allItems, ...nextRes.data];
-          } else {
-            break;
-          }
-        }
-      }
-
-      if (allItems.length > 0) {
-        let completed = 0;
-        let started = 0;
-
-        allItems.forEach((item) => {
-          const userName = item?.user?.full_name ?? null;
-          const rawStatus = item?.completion_status ?? '';
-          const isCompleted = rawStatus === 'completed' && Boolean(userName);
-
-          if (isCompleted) {
-            completed++;
-          } else {
-            started++;
-          }
-        });
-
-        setTrueCompletedCount(completed);
-        setTrueStartedCount(started);
-        setTrueTotalCount(allItems.length);
-      }
-    } catch (err) {
-      console.error('[DiagnosticHistoryScreen] fetch true global stats error:', err);
-    }
-  };
-
-  // ── Fetch paginated list ──
+  // Fetch diagnostics with backend filtering & pagination
   const fetchDiagnostics = async (page = 1) => {
     setIsLoading(true);
     setIsError(false);
     setErrorMessage('');
     try {
-      const res = await apiFetch(`/admin/dashboard/diagnostics?page=${page}&per_page=30`);
+      const params = new URLSearchParams();
+      params.set('page', page);
+      params.set('per_page', 30);
+
+      if (statusTab !== 'all') {
+        params.set('completion_status', statusTab);
+      }
+      if (moduleFilter) {
+        params.set('module_code', moduleFilter);
+      }
+      if (debouncedSearch.trim()) {
+        params.set('search', debouncedSearch.trim());
+      }
+
+      const res = await apiFetch(`/admin/dashboard/diagnostics?${params.toString()}`);
       setHistoryData(res || null);
       setCurrentPage(page);
     } catch (err) {
       console.error('[DiagnosticHistoryScreen] fetch error:', err);
       setIsError(true);
-      setErrorMessage(err?.message ?? '[fetch_diagnostics_error] Impossible de charger les diagnostics.');
+      setErrorMessage(err?.message ?? 'Impossible de charger la liste des diagnostics.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Re-fetch when page or any filter changes
   useEffect(() => {
     fetchDiagnostics(currentPage);
-  }, [currentPage]);
+  }, [currentPage, statusTab, moduleFilter, debouncedSearch]);
 
-  useEffect(() => {
-    fetchGlobalStats();
-    fetchTrueGlobalStats();
-  }, []);
+  // Reset to page 1 whenever filters change
+  const handleStatusTabChange = (newTab) => {
+    if (newTab !== statusTab) {
+      setStatusTab(newTab);
+      setCurrentPage(1);
+    }
+  };
 
-  // ─── Normalization (Rule 9) ────────────────────────────────────────────────
+  const handleModuleChange = (newModule) => {
+    setModuleFilter(newModule);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setModuleFilter('');
+    setStatusTab('all');
+    setCurrentPage(1);
+  };
+
+  // ─── Normalization (Rule 9) ─────────────────────────────────────────────────
+
   const rawItems = historyData?.data ?? [];
 
+  const paginationInfo = {
+    currentPage: historyData?.current_page ?? 1,
+    lastPage: historyData?.last_page ?? 1,
+    total: historyData?.total ?? 0,
+    perPage: historyData?.per_page ?? 30,
+  };
+
   const normalizedItems = rawItems.map((item, idx) => {
-    // Extraction utilisateur
     const user = item?.user ?? null;
     const userName = user?.full_name ?? null;
     const userEmail = user?.email ?? null;
     const userPhone = user?.phone_number ?? null;
 
-    const rawStatus = item?.completion_status ?? '[completion_status non disponible]';
-    // Rule: if the name of the person who filled out does not exist, it is considered in progress (en cours)
-    const isCompleted = rawStatus === 'completed' && Boolean(userName);
+    const rawStatus = item?.completion_status ?? 'in_progress';
+    const isCompleted = rawStatus === 'completed';
+    const questionCountExpected = item?.question_count_expected ?? 0;
+    const questionCountAnswered = item?.question_count_answered ?? 0;
+    const hasAnswers = questionCountAnswered > 0;
 
-    // Extraction entreprise
     const business = item?.business ?? null;
     const businessName = business?.business_name ?? null;
     const sector = business?.sector ?? null;
@@ -206,76 +168,28 @@ export const DiagnosticHistoryScreen = () => {
     return {
       diagnosticRunId: item?.diagnostic_run_id ?? `RUN-${idx}`,
       userId: item?.user_id ?? item?.user?.id ?? item?.user?.user_id ?? null,
-      businessId: item?.business_id ?? item?.business?.id ?? item?.business?.business_id ?? null,
+      businessId: item?.business_id ?? item?.business?.id ?? null,
       businessName,
       sector,
       subSector,
       userName,
       userEmail,
       userPhone,
-      moduleCode: item?.module_code ?? '[module_code non disponible]',
-      moduleFamily: item?.module_family ?? '[module_family non disponible]',
-      moduleFamilyLabel: MODULE_FAMILY_LABELS[item?.module_family] ?? item?.module_family ?? '—',
+      moduleCode: item?.module_code ?? 'Module',
+      moduleFamily: item?.module_family ?? 'Diagnostic',
       completionStatus: rawStatus,
-      statusLabel: isCompleted ? 'Terminé' : 'En cours',
       isCompleted,
+      hasAnswers,
       startedAt: formatDate(item?.started_at),
       completedAt: item?.completed_at ? formatDate(item.completed_at) : null,
-      questionCountExpected: item?.question_count_expected ?? 0,
-      questionCountAnswered: item?.question_count_answered ?? 0,
-      isRecommended: Boolean(item?.is_recommended_module),
-      isOverride: Boolean(item?.is_user_override),
+      questionCountExpected,
+      questionCountAnswered,
       originalItem: item,
     };
   });
 
-  // ── Stats sur la page courante (pour les onglets de filtres de la liste) ──
-  const totalOnPage = normalizedItems.length;
-  const completedOnPage = normalizedItems.filter(i => i.isCompleted).length;
-  const startedOnPage = totalOnPage - completedOnPage;
-
-  // ── Stats globales de l'application (repli sur calcul de la page si non disponible) ──
-  const globalDiags = globalStats?.diagnostics;
-  const hasGlobalDiags = Boolean(globalDiags && typeof globalDiags.started === 'number');
-
-  const totalDiagsCount = trueTotalCount !== null ? trueTotalCount : (hasGlobalDiags ? globalDiags.started : (historyData?.total ?? normalizedItems.length));
-  const completedCount = trueCompletedCount !== null ? trueCompletedCount : (hasGlobalDiags ? globalDiags.completed : completedOnPage);
-  const startedCount = trueStartedCount !== null ? trueStartedCount : (hasGlobalDiags
-    ? (globalDiags.abandoned ?? Math.max(0, totalDiagsCount - completedCount))
-    : startedOnPage);
-  const completionRate = totalDiagsCount > 0 ? Math.round((completedCount / totalDiagsCount) * 100) : 0;
-
-  // ── Client-side filters ──
-  const filteredItems = normalizedItems.filter(item => {
-    const term = searchTerm.toLowerCase();
-    const matchSearch = !term || (
-      item.moduleCode.toLowerCase().includes(term) ||
-      (item.businessName && item.businessName.toLowerCase().includes(term)) ||
-      (item.userName && item.userName.toLowerCase().includes(term)) ||
-      (item.userEmail && item.userEmail.toLowerCase().includes(term)) ||
-      (item.userPhone && item.userPhone.toLowerCase().includes(term)) ||
-      (item.businessId && item.businessId.toLowerCase().includes(term)) ||
-      (item.userId && item.userId.toLowerCase().includes(term))
-    );
-    const matchModule = !moduleFilter || item.moduleCode === moduleFilter;
-
-    let matchTab = true;
-    if (statusTab === 'completed') matchTab = item.isCompleted;
-    if (statusTab === 'started') matchTab = !item.isCompleted;
-
-    return matchSearch && matchModule && matchTab;
-  });
-
-  const paginationInfo = {
-    currentPage: historyData?.current_page ?? 1,
-    lastPage: historyData?.last_page ?? 1,
-    total: historyData?.total ?? 0,
-  };
-
   const hasItems = !isLoading && !isError && normalizedItems.length > 0;
   const showEmpty = !isLoading && !isError && normalizedItems.length === 0;
-
-  const uniqueModules = [...new Set(rawItems.map(i => i?.module_code).filter(Boolean))].sort();
 
   // ── Navigate to detail page ──
   const handleRowClick = (item) => {
@@ -286,305 +200,557 @@ export const DiagnosticHistoryScreen = () => {
         businessName: item.businessName,
         userName: item.userName,
         userEmail: item.userEmail,
+        userPhone: item.userPhone,
+        sector: item.sector,
+        moduleCode: item.moduleCode,
       },
     });
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    <div className="admin-page animate-fade-up">
-      {/* Header */}
-      <div className="admin-page-header">
+    <div className="admin-page animate-fade-up" style={{ fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+
+      {/* ── Page Header ── */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+        gap: '16px',
+        marginBottom: '20px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #E2E8F0',
+      }}>
         <div>
-          <h1 className="admin-page-title">Historique des Diagnostics</h1>
-          <p className="admin-page-sub">
-            Suivi des diagnostics PME — bilans finalisés et parcours d'évaluation.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1 style={{
+              margin: 0,
+              fontSize: '1.65rem',
+              fontWeight: 900,
+              color: '#17212D',
+              letterSpacing: '-0.02em',
+            }}>
+              Historique des Diagnostics
+            </h1>
+            <span style={{
+              background: '#17212D',
+              color: '#FFFFFF',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              padding: '4px 10px',
+              borderRadius: '6px',
+            }}>
+              {paginationInfo.total} diagnostics
+            </span>
+          </div>
+          <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '0.88rem' }}>
+            Suivi consolidé des diagnostics d'entreprises — bilans finalisés, progressions et rapports stratégiques.
           </p>
         </div>
-        {!isLoading && paginationInfo.total > 0 && (
-          <span style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--brand-blue, #1A9DB8)', background: 'rgba(26,157,184,0.08)', padding: '6px 14px', borderRadius: '8px' }}>
-            {paginationInfo.total} au total
-          </span>
-        )}
+
+        <button
+          onClick={() => fetchDiagnostics(currentPage)}
+          disabled={isLoading}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            borderRadius: '6px',
+            border: '1px solid #CBD5E1',
+            background: '#FFFFFF',
+            color: '#17212D',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            padding: '8px 14px',
+            cursor: 'pointer',
+          }}
+        >
+          <RotateCcw size={15} style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
+          Actualiser
+        </button>
       </div>
 
-      {/* KPI Cards */}
-      {!isLoading && !isError && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          {/* Card 1: Complétés */}
-          <div className="admin-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#DCFCE7', color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <CheckCheck size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase' }}>Complétés</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#166534', lineHeight: 1.2 }}>{completedCount}</div>
-            </div>
-          </div>
+      {/* ── Filter Bar (Segmented Tabs + Search + Module Dropdown) ── */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        marginBottom: '16px',
+      }}>
 
-          {/* Card 2: En cours / Non finalisés */}
-          <div className="admin-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#FEF3C7', color: '#92400E', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Clock size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase' }}>En cours / Non finalisés</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#92400E', lineHeight: 1.2 }}>{startedCount}</div>
-            </div>
-          </div>
-
-          {/* Card 3: Taux de finalisation */}
-          <div className="admin-card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <PieChart size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-400)', textTransform: 'uppercase' }}>Taux de complétion</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2563EB', lineHeight: 1.2 }}>{completionRate}%</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Segmented Status Tabs */}
-      {!isError && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', background: 'var(--slate-100, #F1F5F9)', padding: '4px', borderRadius: '12px', gap: '4px' }}>
-            <button
-              type="button"
-              onClick={() => setStatusTab('all')}
-              style={{
-                border: 'none',
-                background: statusTab === 'all' ? '#FFFFFF' : 'transparent',
-                color: statusTab === 'all' ? '#0F172A' : '#64748B',
-                fontWeight: statusTab === 'all' ? 700 : 500,
-                fontSize: '0.85rem',
-                padding: '6px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: statusTab === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Tous ({totalOnPage})
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusTab('completed')}
-              style={{
-                border: 'none',
-                background: statusTab === 'completed' ? '#FFFFFF' : 'transparent',
-                color: statusTab === 'completed' ? '#0F172A' : '#64748B',
-                fontWeight: statusTab === 'completed' ? 700 : 500,
-                fontSize: '0.85rem',
-                padding: '6px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: statusTab === 'completed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Diagnostics finalisés ({completedOnPage})
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusTab('started')}
-              style={{
-                border: 'none',
-                background: statusTab === 'started' ? '#FFFFFF' : 'transparent',
-                color: statusTab === 'started' ? '#0F172A' : '#64748B',
-                fontWeight: statusTab === 'started' ? 700 : 500,
-                fontSize: '0.85rem',
-                padding: '6px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                boxShadow: statusTab === 'started' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              En cours / Non finalisés ({startedOnPage})
-            </button>
-          </div>
-
-          {/* Search & Module filter */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', minWidth: '220px', maxWidth: '300px' }}>
-              <Search size={15} color="var(--slate-400)" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Rechercher entreprise, déclarant, email..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                style={{ width: '100%', paddingLeft: '34px', height: '38px', borderRadius: '10px', border: '1px solid var(--adm-border)', outline: 'none', fontSize: '0.85rem', background: 'var(--adm-bg)', color: 'var(--adm-text)', boxSizing: 'border-box' }}
-              />
-            </div>
-
-            <select
-              value={moduleFilter}
-              onChange={e => setModuleFilter(e.target.value)}
-              style={{ height: '38px', borderRadius: '10px', border: '1px solid var(--adm-border)', background: 'var(--adm-bg)', color: 'var(--adm-text)', fontSize: '0.85rem', padding: '0 10px', cursor: 'pointer' }}
-            >
-              <option value="">Tous les modules</option>
-              {uniqueModules.map(code => (
-                <option key={code} value={code}>{code}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* Error state */}
-      {isError && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600, marginBottom: '20px' }}>
-          <span>
-            <AlertOctagon size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-            {errorMessage}
-          </span>
+        {/* Tabs de Statut sans compteurs factices */}
+        <div style={{
+          display: 'inline-flex',
+          background: '#F1F5F9',
+          padding: '3px',
+          borderRadius: '6px',
+          gap: '2px',
+        }}>
           <button
-            onClick={() => fetchDiagnostics(currentPage)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid #FCA5A5', borderRadius: '8px', padding: '6px 12px', color: '#991B1B', cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem' }}
+            type="button"
+            onClick={() => handleStatusTabChange('all')}
+            style={{
+              border: 'none',
+              background: statusTab === 'all' ? '#17212D' : 'transparent',
+              color: statusTab === 'all' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'all' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
           >
-            <RotateCcw size={14} /> Réessayer
+            Tous
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleStatusTabChange('completed')}
+            style={{
+              border: 'none',
+              background: statusTab === 'completed' ? '#17212D' : 'transparent',
+              color: statusTab === 'completed' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'completed' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Finalisés
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleStatusTabChange('in_progress')}
+            style={{
+              border: 'none',
+              background: statusTab === 'in_progress' ? '#17212D' : 'transparent',
+              color: statusTab === 'in_progress' ? '#FFFFFF' : '#475569',
+              fontWeight: statusTab === 'in_progress' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            En cours / Non débutés
           </button>
         </div>
-      )}
 
-      {/* Table */}
-      <div className="admin-card">
-        {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '48px', color: 'var(--slate-400)' }}>
-            <div style={{ display: 'inline-block', width: '28px', height: '28px', border: '3px solid #E2E8F0', borderTopColor: '#1A9DB8', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '10px' }} />
-            <p style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0 }}>Chargement des diagnostics…</p>
+        {/* Search input + Module dropdown */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+
+          {/* Champ de recherche */}
+          <div style={{ position: 'relative', width: '280px' }}>
+            <Search size={15} color="#94A3B8" style={{ position: 'absolute', left: '11px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input
+              type="text"
+              placeholder="Rechercher entreprise, déclarant..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '34px',
+                paddingRight: searchTerm ? '30px' : '12px',
+                height: '36px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                outline: 'none',
+                fontSize: '0.82rem',
+                background: '#FFFFFF',
+                color: '#17212D',
+                boxSizing: 'border-box',
+              }}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: '#94A3B8',
+                  cursor: 'pointer',
+                  padding: '2px',
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
-        ) : showEmpty ? (
-          <div style={{ textAlign: 'center', padding: '48px', color: 'var(--slate-400)' }}>
-            <FileText size={40} style={{ marginBottom: '12px', opacity: 0.4 }} />
-            <p style={{ fontWeight: 600 }}>Aucun diagnostic enregistré</p>
+
+          {/* Sélecteur de module */}
+          <select
+            value={moduleFilter}
+            onChange={e => handleModuleChange(e.target.value)}
+            style={{
+              height: '36px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#17212D',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              padding: '0 12px',
+              cursor: 'pointer',
+              outline: 'none',
+            }}
+          >
+            <option value="">Tous les modules</option>
+            {ALL_MODULES.map(mod => (
+              <option key={mod.code} value={mod.code}>{mod.label}</option>
+            ))}
+          </select>
+
+          {/* Reset Filters button if active */}
+          {(searchTerm || moduleFilter || statusTab !== 'all') && (
+            <button
+              onClick={handleClearFilters}
+              style={{
+                height: '36px',
+                borderRadius: '6px',
+                border: '1px solid #CBD5E1',
+                background: '#F8FAFC',
+                color: '#64748B',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '0 10px',
+                cursor: 'pointer',
+              }}
+              title="Réinitialiser tous les filtres"
+            >
+              Effacer
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Table Card ── */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderRadius: '6px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        overflow: 'hidden',
+      }}>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#64748B' }}>
+            <RotateCcw size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: '10px', color: '#34BED5' }} />
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#17212D' }}>Chargement des diagnostics...</div>
           </div>
-        ) : filteredItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '36px', color: 'var(--slate-400)' }}>
-            <Search size={32} style={{ marginBottom: '10px', opacity: 0.4 }} />
-            <p style={{ fontWeight: 600 }}>Aucun résultat pour ce filtre</p>
+        )}
+
+        {/* Error State */}
+        {!isLoading && isError && (
+          <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+            <AlertOctagon size={32} color="#DC2626" style={{ marginBottom: '10px' }} />
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#991B1B', marginBottom: '6px' }}>Erreur de chargement</div>
+            <p style={{ color: '#B91C1C', fontSize: '0.85rem', margin: '0 0 16px' }}>{errorMessage}</p>
+            <button
+              onClick={() => fetchDiagnostics(currentPage)}
+              style={{
+                borderRadius: '6px',
+                background: '#17212D',
+                border: 'none',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                padding: '8px 16px',
+                cursor: 'pointer',
+              }}
+            >
+              Réessayer
+            </button>
           </div>
-        ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
+        )}
+
+        {/* Empty State */}
+        {showEmpty && (
+          <div style={{ textAlign: 'center', padding: '56px 20px' }}>
+            <Search size={32} color="#94A3B8" style={{ marginBottom: '10px' }} />
+            <div style={{ fontWeight: 800, fontSize: '1rem', color: '#17212D', marginBottom: '6px' }}>
+              Aucun diagnostic ne correspond à vos critères
+            </div>
+            <p style={{ color: '#64748B', fontSize: '0.85rem', margin: '0 0 16px' }}>
+              Essayez de modifier votre recherche ou de réinitialiser les filtres appliqués.
+            </p>
+            <button
+              onClick={handleClearFilters}
+              style={{
+                borderRadius: '6px',
+                background: '#17212D',
+                border: 'none',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                padding: '8px 16px',
+                cursor: 'pointer',
+              }}
+            >
+              Réinitialiser les filtres
+            </button>
+          </div>
+        )}
+
+        {/* Table View */}
+        {hasItems && (
+          <div className="admin-table-wrap" style={{ overflowX: 'auto' }}>
+            <table className="admin-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th><Building2 size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Entreprise</th>
-                  <th><User size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Renseigné par</th>
-                  <th><Mail size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Email / Téléphone</th>
-                  <th><Calendar size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Date</th>
-                  <th><ClipboardList size={13} style={{ marginRight: '5px', verticalAlign: 'middle' }} />Module</th>
-                  <th style={{ textAlign: 'right' }}>Action</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <th style={{ padding: '12px 16px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Entreprise &amp; Déclarant
+                  </th>
+                  <th style={{ padding: '12px 14px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Module
+                  </th>
+                  <th style={{ padding: '12px 14px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Statut &amp; Réponses
+                  </th>
+                  <th style={{ padding: '12px 14px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Date
+                  </th>
+                  <th style={{ padding: '12px 16px', fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredItems.map((item) => (
+                {normalizedItems.map((item) => (
                   <tr
                     key={item.diagnosticRunId}
                     onClick={() => handleRowClick(item)}
-                    style={{ cursor: 'pointer' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,157,184,0.04)'}
-                    onMouseLeave={e => e.currentTarget.style.background = ''}
+                    style={{
+                      borderBottom: '1px solid #F1F5F9',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#F8FAFC'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#FFFFFF'}
                   >
-                    {/* Entreprise */}
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {/* Colonne 1 : Entreprise & Déclarant */}
+                    <td style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{
-                          width: '32px', height: '32px', borderRadius: '8px',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '6px',
                           background: item.businessName ? '#EFF6FF' : '#F1F5F9',
-                          color: item.businessName ? '#2563EB' : '#94A3B8',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                          color: item.businessName ? '#34BED5' : '#94A3B8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
                         }}>
-                          <Building2 size={15} />
+                          <Building2 size={16} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: item.businessName ? 'var(--adm-text)' : 'var(--slate-400)' }}>
-                            {item.businessName || 'PME non renseignée'}
+                          <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#17212D' }}>
+                            {item.businessName || 'PME non enregistrée'}
                           </div>
-                          {item.sector ? (
-                            <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)' }}>
-                              {item.sector}{item.subSector ? ` · ${item.subSector}` : ''}
-                            </div>
+                          <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span>{item.sector ? item.sector : 'Secteur non spécifié'}</span>
+                            {item.userName && (
+                              <>
+                                <span style={{ color: '#CBD5E1' }}>•</span>
+                                <span style={{ color: '#0284C7', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                  <User size={11} />
+                                  {item.userName}
+                                  {item.userEmail ? ` (${item.userEmail})` : ''}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Colonne 2 : Module */}
+                    <td style={{ padding: '14px 14px' }}>
+                      <div>
+                        <span style={{
+                          display: 'inline-block',
+                          fontWeight: 800,
+                          fontSize: '0.78rem',
+                          background: '#17212D',
+                          color: '#FFFFFF',
+                          padding: '2px 7px',
+                          borderRadius: '4px',
+                          letterSpacing: '0.02em',
+                        }}>
+                          {item.moduleCode}
+                        </span>
+                        <div style={{ fontSize: '0.73rem', color: '#64748B', marginTop: '3px' }}>
+                          {item.moduleFamilyLabel}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Colonne 3 : Statut & Réponses */}
+                    <td style={{ padding: '14px 14px' }}>
+                      <div>
+                        {item.isCompleted ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: 800,
+                            fontSize: '0.76rem',
+                            color: '#065F46',
+                            background: '#ECFDF5',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                          }}>
+                            <CheckCircle2 size={12} /> Finalisé
+                          </span>
+                        ) : item.hasAnswers ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: 800,
+                            fontSize: '0.76rem',
+                            color: '#92400E',
+                            background: '#FEF3C7',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                          }}>
+                            <Clock size={12} /> En cours
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: 700,
+                            fontSize: '0.74rem',
+                            color: '#64748B',
+                            background: '#F1F5F9',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                          }}>
+                            <XCircle size={12} color="#94A3B8" /> Non débuté
+                          </span>
+                        )}
+
+                        <div style={{ fontSize: '0.73rem', color: '#64748B', marginTop: '3px', fontWeight: 600 }}>
+                          {item.questionCountAnswered > 0 ? (
+                            item.questionCountExpected > 0 && item.questionCountAnswered > item.questionCountExpected ? (
+                              <span>
+                                {item.questionCountAnswered} / {item.questionCountExpected} questions{' '}
+                                <span style={{ color: '#0284C7', fontWeight: 700 }} title="Questions de base + enrichissement complétées">
+                                  (+{item.questionCountAnswered - item.questionCountExpected} enrichies)
+                                </span>
+                              </span>
+                            ) : (
+                              `${item.questionCountAnswered} / ${item.questionCountExpected || '14'} questions`
+                            )
                           ) : (
-                            <div style={{ fontSize: '0.71rem', color: '#94A3B8', fontStyle: 'italic' }}>Parcours non finalisé</div>
+                            '0 question répondue'
                           )}
                         </div>
                       </div>
                     </td>
 
-                    {/* Renseigné par */}
-                    <td>
-                      {item.userName ? (
-                        <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--adm-text)' }}>
-                          {item.userName}
-                        </div>
-                      ) : (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.76rem', color: '#64748B', background: '#F1F5F9', padding: '2px 8px', borderRadius: '6px' }}>
-                          <UserX size={12} /> Diagnostic en cours
+                    {/* Colonne 5 : Date */}
+                    <td style={{ padding: '14px 14px', fontSize: '0.8rem', color: '#475569', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontWeight: 600 }}>{item.startedAt}</div>
+                      {item.completedAt && (
+                        <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '2px' }}>
+                          Fini : {item.completedAt}
                         </div>
                       )}
                     </td>
 
-                    {/* Email / Téléphone */}
-                    <td>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        {item.userEmail ? (
-                          <a href={`mailto:${item.userEmail}`} onClick={e => e.stopPropagation()} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <Mail size={12} color="var(--slate-400)" /> {item.userEmail}
-                          </a>
-                        ) : null}
-                        {item.userPhone ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--slate-400)' }}>
-                            <Phone size={12} color="var(--slate-400)" /> {item.userPhone}
-                          </span>
-                        ) : null}
-                        {!item.userEmail && !item.userPhone && (
-                          <span style={{ fontSize: '0.76rem', color: '#94A3B8', fontStyle: 'italic' }}>Non renseigné</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Date */}
-                    <td style={{ fontSize: '0.82rem', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>
-                      {item.startedAt}
-                    </td>
-
-                    {/* Module */}
-                    <td>
-                      <div>
-                        <span style={{ display: 'inline-block', fontWeight: 700, fontSize: '0.82rem', background: 'rgba(26,157,184,0.1)', color: '#1A9DB8', padding: '2px 8px', borderRadius: '6px' }}>
-                          {item.moduleCode}
-                        </span>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginTop: '2px' }}>{item.moduleFamilyLabel}</div>
-                      </div>
-                    </td>
-
-                    {/* Action */}
-                    <td style={{ textAlign: 'right' }}>
+                    {/* Colonne 6 : Actions */}
+                    <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }} onClick={e => e.stopPropagation()}>
+
+                        {/* Bouton Voir */}
                         <a
                           href={`/admin/diagnostics/${item.diagnosticRunId}?userId=${item.userId || ''}&businessName=${encodeURIComponent(item.businessName || '')}&userName=${encodeURIComponent(item.userName || '')}&userEmail=${encodeURIComponent(item.userEmail || '')}&userPhone=${encodeURIComponent(item.userPhone || '')}&sector=${encodeURIComponent(item.sector || '')}&moduleCode=${encodeURIComponent(item.moduleCode || '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn btn-ghost btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--brand-blue, #1A9DB8)', textDecoration: 'none' }}
-                          title="Voir les réponses (nouvel onglet)"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            borderRadius: '6px',
+                            border: '1px solid #CBD5E1',
+                            background: '#FFFFFF',
+                            color: '#17212D',
+                            padding: '5px 10px',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            transition: 'all 0.15s ease',
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderColor = '#34BED5';
+                            e.currentTarget.style.color = '#34BED5';
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderColor = '#CBD5E1';
+                            e.currentTarget.style.color = '#17212D';
+                          }}
+                          title="Consulter les détails du diagnostic (nouvel onglet)"
                         >
-                          <ExternalLink size={14} /> Voir
+                          <ExternalLink size={13} /> Voir
                         </a>
-                        <a
-                          href={`/admin/diagnostics/${item.diagnosticRunId}/report?userId=${item.userId || ''}&businessName=${encodeURIComponent(item.businessName || '')}&userName=${encodeURIComponent(item.userName || '')}&userEmail=${encodeURIComponent(item.userEmail || '')}&userPhone=${encodeURIComponent(item.userPhone || '')}&sector=${encodeURIComponent(item.sector || '')}&moduleCode=${encodeURIComponent(item.moduleCode || '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-ghost btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#10B981', textDecoration: 'none' }}
-                          title="Voir le rapport et télécharger en PDF (nouvel onglet)"
-                        >
-                          <FileText size={14} />
-                          PDF
-                        </a>
+
+                        {/* Bouton Rapport PDF */}
+                        {item.isCompleted || item.questionCountAnswered > 0 ? (
+                          <a
+                            href={`/admin/diagnostics/${item.diagnosticRunId}/report?userId=${item.userId || ''}&businessName=${encodeURIComponent(item.businessName || '')}&userName=${encodeURIComponent(item.userName || '')}&userEmail=${encodeURIComponent(item.userEmail || '')}&userPhone=${encodeURIComponent(item.userPhone || '')}&sector=${encodeURIComponent(item.sector || '')}&moduleCode=${encodeURIComponent(item.moduleCode || '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              borderRadius: '6px',
+                              border: '1px solid #059669',
+                              background: '#ECFDF5',
+                              color: '#065F46',
+                              padding: '5px 10px',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              transition: 'all 0.15s ease',
+                            }}
+                            title="Consulter le rapport stratégique & PDF (nouvel onglet)"
+                          >
+                            <FileText size={13} /> PDF
+                          </a>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              color: '#94A3B8',
+                              background: '#F1F5F9',
+                              padding: '5px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 600,
+                            }}
+                            title="Ce diagnostic n'a pas été complété. Aucun rapport disponible."
+                          >
+                            Non débuté
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -593,34 +759,67 @@ export const DiagnosticHistoryScreen = () => {
             </table>
           </div>
         )}
-      </div>
 
-      {/* Pagination */}
-      {hasItems && paginationInfo.lastPage > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', padding: '0 4px' }}>
-          <span style={{ fontSize: '0.84rem', color: 'var(--slate-500)', fontWeight: 600 }}>
-            Page {paginationInfo.currentPage} / {paginationInfo.lastPage} · {paginationInfo.total} diagnostics
-          </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={currentPage <= 1 || isLoading}
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-            >
-              <ChevronLeft size={15} /> Précédent
-            </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              disabled={currentPage >= paginationInfo.lastPage || isLoading}
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, paginationInfo.lastPage))}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-            >
-              Suivant <ChevronRight size={15} />
-            </button>
+        {/* ── Pagination Footer ── */}
+        {hasItems && paginationInfo.lastPage > 1 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '14px 18px',
+            borderTop: '1px solid #E2E8F0',
+            background: '#F8FAFC',
+            flexWrap: 'wrap',
+            gap: '10px',
+          }}>
+            <span style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: 600 }}>
+              Page {paginationInfo.currentPage} sur {paginationInfo.lastPage} · {paginationInfo.total} diagnostics
+            </span>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => fetchDiagnostics(currentPage - 1)}
+                disabled={currentPage <= 1 || isLoading}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: currentPage <= 1 ? '#94A3B8' : '#17212D',
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: currentPage <= 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <ChevronLeft size={14} /> Précédent
+              </button>
+
+              <button
+                onClick={() => fetchDiagnostics(currentPage + 1)}
+                disabled={currentPage >= paginationInfo.lastPage || isLoading}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  color: currentPage >= paginationInfo.lastPage ? '#94A3B8' : '#17212D',
+                  padding: '6px 12px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: currentPage >= paginationInfo.lastPage ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Suivant <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -628,3 +827,5 @@ export const DiagnosticHistoryScreen = () => {
     </div>
   );
 };
+
+export default DiagnosticHistoryScreen;

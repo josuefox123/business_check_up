@@ -138,14 +138,7 @@ export const DiagnosticReportPreviewScreen = () => {
         }
       }
 
-      // Method C: Direct single admin diagnostic detail fetch
-      if (!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) {
-        const resAdminDetail = await apiFetch(`/admin/dashboard/diagnostics/${runId}`).catch(() => null);
-        const adminData = resAdminDetail?.data || resAdminDetail;
-        if (adminData) {
-          fetchedDetail = mergeDetails(fetchedDetail, adminData);
-        }
-      }
+
 
       // Method B: Search fallback in global diagnostics list (useful on refresh or direct URL access)
       if (!fetchedDetail?.business || !fetchedDetail?.user || !fetchedDetail?.user?.full_name) {
@@ -178,8 +171,13 @@ export const DiagnosticReportPreviewScreen = () => {
         setDetailData(fetchedDetail);
       }
 
-      if (!resResult && !fetchedDetail && !detailData) {
-        throw new Error("Impossible de charger les données du diagnostic.");
+      const activeRecord = fetchedDetail || detailData;
+      const hasAnyAnswers = Boolean(resResult)
+        || ((activeRecord?.question_count_answered ?? 0) > 0)
+        || ((activeRecord?.question_responses?.length ?? 0) > 0);
+
+      if (!hasAnyAnswers) {
+        throw new Error("Ce diagnostic n'a pas été complété par l'entreprise. Aucune question n'ayant été répondue, aucun rapport stratégique ni score ne peut être généré.");
       }
     } catch (err) {
       console.error('[DiagnosticReportPreviewScreen] Error loading data:', err);

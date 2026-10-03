@@ -99,34 +99,72 @@ class DashboardController extends BaseController
     }
 
     /**
-     * Les diagnostics paginés par 30
+     * Les diagnostics paginés avec filtres, recherche et synthèse globale
      */
     public function diagnostics(Request $request): JsonResponse
     {
         $query = DiagnosticRun::query();
 
-        // Filtres optionnels
+        // Filtre par module
         if ($request->filled('module_code')) {
             $query->where('module_code', $request->input('module_code'));
         }
 
+        // Filtre par statut d'achèvement
         if ($request->filled('completion_status')) {
-            $query->where('completion_status', $request->input('completion_status'));
+            $status = $request->input('completion_status');
+            if ($status === 'completed') {
+                $query->where('completion_status', 'completed');
+            } elseif ($status === 'in_progress') {
+                $query->where('completion_status', '!=', 'completed');
+            } else {
+                $query->where('completion_status', $status);
+            }
         }
 
         if ($request->filled('user_id')) {
             $query->where('user_id', $request->input('user_id'));
         }
 
+        // Recherche par mot-clé (PME, déclarant, code module, ID diagnostic)
+        if ($request->filled('search')) {
+            $search = '%' . trim($request->input('search')) . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('module_code', 'like', $search)
+                  ->orWhere('diagnostic_run_id', 'like', $search)
+                  ->orWhereHas('business', function ($bq) use ($search) {
+                      $bq->where('business_name', 'like', $search)
+                         ->orWhere('sector', 'like', $search);
+                  })
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('full_name', 'like', $search)
+                         ->orWhere('email', 'like', $search)
+                         ->orWhere('phone_number', 'like', $search);
+                  });
+            });
+        }
+
         // Tri par date de début décroissante par défaut
         $query->orderBy('started_at', 'desc');
 
-        // Pagination : 30 par page
-        $query->with(['business:business_id,business_name,sector,sub_sector,description', 'user:user_id,full_name,phone_number,whatsapp_number,email'])->orderBy('started_at', 'desc');
-        
-        $diagnostics = $query->paginate(30);
+        // Pagination
+        $perPage = (int) $request->input('per_page', 30);
+        $diagnostics = $query->with([
+            'business:business_id,business_name,sector,sub_sector,description',
+            'user:user_id,full_name,phone_number,whatsapp_number,email'
+        ])->paginate($perPage);
 
-        return response()->json($diagnostics);
+        // Synthèse globale rapide en direct de la base
+        $summary = [
+            'total' => DiagnosticRun::count(),
+            'completed' => DiagnosticRun::where('completion_status', 'completed')->count(),
+            'in_progress' => DiagnosticRun::where('completion_status', '!=', 'completed')->count(),
+        ];
+
+        $responseArray = $diagnostics->toArray();
+        $responseArray['summary'] = $summary;
+
+        return response()->json($responseArray);
     }
 
 
@@ -201,16 +239,23 @@ class DashboardController extends BaseController
     }
 
     /**
-     * Historique d'une utilisateur
+     * Historique d'un utilisateur (profil inscrit ou session libre)
      */
-    public function historical(UserProfile $userProfile): JsonResponse
+    public function historical(string $userProfile): JsonResponse
     {
-        $h = $userProfile->diagnosticRuns()
-            ->with([
-                'business',
-                'questionResponses.question:question_id,text'
-            ])
-            ->get();
+        $profile = UserProfile::where('user_id', $userProfile)->orWhere('id', $userProfile)->first();
+
+        $query = DiagnosticRun::query();
+        if ($profile) {
+            $query->where('user_id', $profile->user_id);
+        } else {
+            $query->where('user_id', $userProfile);
+        }
+
+        $h = $query->with([
+            'business',
+            'questionResponses.question:question_id,text'
+        ])->get();
 
         return response()->json($h);
     }
