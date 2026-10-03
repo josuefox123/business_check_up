@@ -22,6 +22,7 @@ import {
   CheckCheck,
   XCircle,
   X,
+  Info,
 } from 'lucide-react';
 import { apiFetch } from '../../../api/config.js';
 
@@ -270,6 +271,63 @@ export const DiagnosticHistoryScreen = () => {
           <RotateCcw size={15} style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
           Actualiser
         </button>
+      </div>
+
+      {/* ── Cadrage méthodologique & Guide de lecture ── */}
+      <div
+        style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #0F7F90',
+          borderRadius: '6px',
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '6px',
+            background: '#E0F2FE',
+            color: '#0F7F90',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: '2px',
+          }}
+        >
+          <Info size={16} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17212D' }}>
+              Guide de lecture du registre
+            </span>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                background: '#E2E8F0',
+                color: '#475569',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+              }}
+            >
+              Précision de suivi
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+            Ce registre recense l'intégralité des parcours thématiques enregistrés sur la plateforme. Utilisez les filtres ci-dessous pour distinguer les <strong>bilans finalisés</strong> (disposant d'un calcul de score et d'un rapport de restitution) des <strong>parcours en cours ou non débutés</strong>.
+            Pour certains dossiers complétés, le total de questions répondues peut être supérieur au format standard (ex. 19/14) lorsque le déclarant a répondu aux questions d'enrichissement supplémentaires.
+          </p>
+        </div>
       </div>
 
       {/* ── Filter Bar (Segmented Tabs + Search + Module Dropdown) ── */}

@@ -9,11 +9,7 @@ import {
   ArrowUpRight,
   TrendingUp,
   ChevronRight,
-  HelpCircle,
-  X,
-  CheckCircle2,
-  Clock,
-  XCircle,
+  Info,
 } from 'lucide-react';
 
 // Bandes officielles de maturité (Enum ScoreBand du backend)
@@ -81,7 +77,6 @@ export const Dashboard = ({
   onRefresh,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showTraceModal, setShowTraceModal] = useState(false);
 
   // ─── Normalisation des données (Rule 9 & Rule 7) ───────────────────────────
   const safeStats = stats || {};
@@ -302,6 +297,67 @@ export const Dashboard = ({
         </button>
       </div>
 
+      {/* ── Cadrage méthodologique & Guide de lecture des indicateurs ── */}
+      <div
+        style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #0F7F90',
+          borderRadius: '6px',
+          padding: '14px 18px',
+          marginBottom: '22px',
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '6px',
+            background: '#E0F2FE',
+            color: '#0F7F90',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: '2px',
+          }}
+        >
+          <Info size={16} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17212D' }}>
+              Guide de lecture des indicateurs
+            </span>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                background: '#E2E8F0',
+                color: '#475569',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+              }}
+            >
+              Cadrage opérationnel
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+            Ce tableau de bord consolide l'ensemble des parcours thématiques initiés sur la plateforme (hors module de pré-qualification <strong>TRI-00</strong>).
+            Les <strong>{diagsStarted} diagnostics</strong> enregistrés se décomposent en :{' '}
+            <strong style={{ color: '#059669' }}>{diagsCompleted} bilans finalisés</strong> (questionnaires complétés ayant généré un scoring algorithmique et un rapport de restitution),{' '}
+            <strong style={{ color: '#D97706' }}>{diagsInProgress} parcours en cours</strong> (engagés avec au moins 1 réponse enregistrée, directement exploitables par les conseillers) et{' '}
+            <strong style={{ color: '#64748B' }}>{diagsNotStarted} sessions ouvertes</strong> sans réponse (orientations initialisées après le tri).
+            Les analyses de maturité stratégique, d'implantation territoriale et de performance par module ci-dessous se concentrent sur la matière qualifiée issue des parcours actifs.
+          </p>
+        </div>
+      </div>
+
       {/* ── 1. KPI Cards (3 piliers statutaires sans redondance) ── */}
       <div className="dash-kpis-grid">
         {loading ? (
@@ -323,34 +379,9 @@ export const Dashboard = ({
             <Link to="/admin/diagnostics" className="dash-kpi-card">
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Diagnostics initiés
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowTraceModal(true);
-                      }}
-                      style={{
-                        background: '#F1F5F9',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: '3px',
-                        borderRadius: '50%',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#0F7F90',
-                        transition: 'background 0.15s ease',
-                      }}
-                      title="Comprendre le détail de la traçabilité"
-                    >
-                      <HelpCircle size={13} />
-                    </button>
-                  </div>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Diagnostics initiés
+                  </span>
                   <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#F0FCFF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F7F90' }}>
                     <BarChart2 size={16} />
                   </div>
@@ -756,141 +787,6 @@ export const Dashboard = ({
           </div>
         </div>
       </div>
-
-      {/* ── Modal de Traçabilité des Diagnostics ── */}
-      {showTraceModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-            background: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-          }}
-          onClick={() => setShowTraceModal(false)}
-        >
-          <div
-            style={{
-              background: '#FFFFFF',
-              borderRadius: '8px',
-              borderTop: '4px solid #34BED5',
-              maxWidth: '540px',
-              width: '100%',
-              boxShadow: '0 20px 40px rgba(15, 23, 42, 0.22)',
-              padding: '24px 28px',
-              boxSizing: 'border-box',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#17212D' }}>
-                  Traçabilité des {diagsStarted} diagnostics
-                </h3>
-                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748B' }}>
-                  Décomposition exacte des parcours thématiques enregistrés sur la plateforme.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowTraceModal(false)}
-                style={{
-                  background: '#F1F5F9',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '6px',
-                  cursor: 'pointer',
-                  color: '#64748B',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-              {/* Palier 1 : Finalisés */}
-              <div style={{ padding: '12px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <CheckCircle2 size={15} color="#059669" />
-                    <span style={{ fontWeight: 800, color: '#065F46', fontSize: '0.85rem' }}>
-                      Bilans finalisés
-                    </span>
-                  </div>
-                  <span style={{ fontWeight: 900, color: '#059669', fontSize: '0.95rem' }}>
-                    {diagsCompleted}
-                  </span>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#047857', lineHeight: 1.45 }}>
-                  L'entreprise a complété l'ensemble des questions obligatoires du module (et d'éventuelles questions d'enrichissement supplémentaires). Un bilan chiffré et une note algorithmique ont été attribués.
-                </p>
-              </div>
-
-              {/* Palier 2 : En cours */}
-              <div style={{ padding: '12px 14px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Clock size={15} color="#D97706" />
-                    <span style={{ fontWeight: 800, color: '#92400E', fontSize: '0.85rem' }}>
-                      Parcours en cours (≥ 1 réponse)
-                    </span>
-                  </div>
-                  <span style={{ fontWeight: 900, color: '#D97706', fontSize: '0.95rem' }}>
-                    {diagsInProgress}
-                  </span>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#B45309', lineHeight: 1.45 }}>
-                  Le dirigeant s'est engagé dans le questionnaire et a validé au moins une réponse avant d'interrompre sa progression. Ces réponses partielles constituent déjà une matière exploitable par les conseillers CCIB.
-                </p>
-              </div>
-
-              {/* Palier 3 : Non débutés */}
-              <div style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <XCircle size={15} color="#64748B" />
-                    <span style={{ fontWeight: 800, color: '#334155', fontSize: '0.85rem' }}>
-                      Sessions ouvertes sans réponse (0 réponse)
-                    </span>
-                  </div>
-                  <span style={{ fontWeight: 900, color: '#475569', fontSize: '0.95rem' }}>
-                    {diagsNotStarted}
-                  </span>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748B', lineHeight: 1.45 }}>
-                  L'utilisateur a cliqué sur « Commencer le diagnostic » à la fin de son orientation de triage, ce qui a initialisé une session technique, mais il a quitté avant de valider la première question.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowTraceModal(false)}
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: '#17212D',
-                color: '#FFFFFF',
-                borderRadius: '6px',
-                border: 'none',
-                fontWeight: 800,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-              }}
-            >
-              Compris, fermer
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -113,7 +113,7 @@ class DashboardController extends BaseController
      */
     public function diagnostics(Request $request): JsonResponse
     {
-        $query = DiagnosticRun::query();
+        $query = DiagnosticRun::where('module_code', '!=', 'TRI-00');
 
         // Filtre par module
         if ($request->filled('module_code')) {
