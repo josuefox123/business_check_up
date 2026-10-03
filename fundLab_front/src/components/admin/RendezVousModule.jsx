@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, Phone, Mail, Briefcase, Check, XCircle, ExternalLink, MapPin, RotateCcw, AlertCircle, Download } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import {
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  Briefcase,
+  Check,
+  XCircle,
+  ExternalLink,
+  MapPin,
+  RotateCcw,
+  AlertCircle,
+  Download,
+  Info,
+  Search,
+  Clock,
+  Video,
+  X,
+  Building2,
+} from 'lucide-react';
 import { AdministrationService } from '../../services/AdministrationService.js';
 import { exportToExcel } from '../../utils/exportToExcel.js';
 
@@ -7,11 +27,11 @@ import { exportToExcel } from '../../utils/exportToExcel.js';
 const RDV_TYPE_LABELS = {
   'urgent_stabilization': 'Stabilisation urgente',
   'pwin_opportunity': 'Opportunité pWIN',
-  'orientation': 'Orientation',
-  'project_framing': 'Cadrage projet',
+  'orientation': 'Orientation stratégique',
+  'project_framing': 'Cadrage de projet',
   'opportunity_study': 'Étude d\'opportunité',
   'general_support': 'Accompagnement général',
-  'financing_prep': 'Préparation financement',
+  'financing_prep': 'Préparation au financement',
 };
 
 const PRIORITY_LABELS = {
@@ -21,7 +41,7 @@ const PRIORITY_LABELS = {
 };
 
 const USER_PROFILE_LABELS = {
-  'structured_sme': 'PME structuré',
+  'structured_sme': 'PME structurée',
   'active_entrepreneur': 'Entrepreneur actif',
   'informal_sme': 'PME / Indépendant',
   'project_holder': 'Porteur de projet',
@@ -30,14 +50,227 @@ const USER_PROFILE_LABELS = {
   'distressed_business': 'Entreprise en difficulté',
 };
 
+// Modal de confirmation de rendez-vous avec createPortal pour centrage parfait
+const ConfirmAppointmentModal = ({
+  appt,
+  confirmedDate,
+  setConfirmedDate,
+  meetingLink,
+  setMeetingLink,
+  meetingLocation,
+  setMeetingLocation,
+  isSubmittingAction,
+  actionErrorMsg,
+  onSubmit,
+  onClose,
+}) => {
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, []);
+
+  return createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 999999,
+        background: 'rgba(15, 23, 42, 0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#FFFFFF',
+          borderRadius: '6px',
+          borderTop: '4px solid #34BED5',
+          maxWidth: '540px',
+          width: '100%',
+          boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.35)',
+          padding: '24px 28px',
+          boxSizing: 'border-box',
+          fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div>
+            <div style={{ fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 800, color: '#64748B' }}>
+              Planification & Validation
+            </div>
+            <h3 style={{ margin: '4px 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#17212D' }}>
+              Confirmer le rendez-vous
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: '#F1F5F9',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '6px',
+              cursor: 'pointer',
+              color: '#64748B',
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {actionErrorMsg && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              padding: '10px 14px',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              marginBottom: '16px',
+            }}
+          >
+            <AlertCircle size={15} />
+            <span>{actionErrorMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#17212D', marginBottom: '5px' }}>
+                Date &amp; Heure de l'entretien *
+              </label>
+              <input
+                type="datetime-local"
+                value={confirmedDate}
+                onChange={(e) => setConfirmedDate(e.target.value)}
+                required
+                disabled={isSubmittingAction}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#17212D', marginBottom: '5px' }}>
+                Lien de visioconférence (facultatif — Google Meet, Zoom...)
+              </label>
+              <input
+                type="url"
+                placeholder="https://meet.google.com/..."
+                value={meetingLink}
+                onChange={(e) => setMeetingLink(e.target.value)}
+                disabled={isSubmittingAction}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#17212D', marginBottom: '5px' }}>
+                Lieu physique de rencontre (facultatif — au sein du cabinet)
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Siège du cabinet / Salle de conseil"
+                value={meetingLocation}
+                onChange={(e) => setMeetingLocation(e.target.value)}
+                disabled={isSubmittingAction}
+                style={{
+                  width: '100%',
+                  padding: '9px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmittingAction}
+              style={{
+                background: '#F1F5F9',
+                color: '#475569',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '9px 16px',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+              }}
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmittingAction}
+              style={{
+                background: '#0F7F90',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '9px 18px',
+                fontWeight: 800,
+                fontSize: '0.82rem',
+                cursor: isSubmittingAction ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {isSubmittingAction ? 'Validation en cours...' : 'Valider et Confirmer le créneau'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 export const RendezVousModule = ({ users }) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'requested' | 'confirmed' | 'completed' | 'cancelled'
+  const [searchTerm, setSearchTerm] = useState('');
   const [actionErrorMsg, setActionErrorMsg] = useState('');
 
-  // Modal states for confirmation
+  // Modal confirmation states
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedAppt, setSelectedAppt] = useState(null);
   const [confirmedDate, setConfirmedDate] = useState('');
@@ -49,13 +282,13 @@ export const RendezVousModule = ({ users }) => {
     setLoading(true);
     setErrorMsg('');
     AdministrationService.appointments.getAppointments()
-      .then(data => {
+      .then((data) => {
         setAppointments(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('[RendezVousModule] loadAppointments error:', err);
-        setErrorMsg(err?.message ?? '[appointments_fetch_error] Impossible de charger les rendez-vous. Veuillez ré-essayer.');
+        setErrorMsg(err?.message ?? 'Impossible de charger la liste des rendez-vous. Veuillez ré-essayer.');
         setLoading(false);
       });
   };
@@ -70,7 +303,7 @@ export const RendezVousModule = ({ users }) => {
     const dt = appt.requested_starts_at ? new Date(appt.requested_starts_at) : new Date();
     try {
       const offset = dt.getTimezoneOffset();
-      const localDt = new Date(dt.getTime() - (offset * 60 * 1000));
+      const localDt = new Date(dt.getTime() - offset * 60 * 1000);
       setConfirmedDate(localDt.toISOString().slice(0, 16));
     } catch {
       setConfirmedDate('');
@@ -104,14 +337,13 @@ export const RendezVousModule = ({ users }) => {
     } catch (err) {
       const isAlreadyProcessed = err?.message?.includes('déjà traité');
       if (isAlreadyProcessed) {
-        console.warn('[RendezVousModule] Appointment already processed:', err.message);
         setShowConfirmModal(false);
         setSelectedAppt(null);
         loadAppointments();
       } else {
         console.error('[RendezVousModule] confirmAppointment error:', err);
       }
-      setActionErrorMsg(err?.message ?? '[confirm_appointment_error] Échec de la confirmation du rendez-vous. Veuillez ré-essayer.');
+      setActionErrorMsg(err?.message ?? 'Échec de la confirmation du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
     }
@@ -127,12 +359,11 @@ export const RendezVousModule = ({ users }) => {
     } catch (err) {
       const isAlreadyProcessed = err?.message?.includes('déjà traité');
       if (isAlreadyProcessed) {
-        console.warn('[RendezVousModule] Appointment already processed:', err.message);
         loadAppointments();
       } else {
         console.error('[RendezVousModule] cancelAppointment error:', err);
       }
-      setActionErrorMsg(err?.message ?? '[cancel_appointment_error] Échec de l\'annulation du rendez-vous. Veuillez ré-essayer.');
+      setActionErrorMsg(err?.message ?? 'Échec de l\'annulation du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
     }
@@ -147,97 +378,138 @@ export const RendezVousModule = ({ users }) => {
     } catch (err) {
       const isAlreadyProcessed = err?.message?.includes('déjà traité');
       if (isAlreadyProcessed) {
-        console.warn('[RendezVousModule] Appointment already processed:', err.message);
         loadAppointments();
       } else {
         console.error('[RendezVousModule] completeAppointment error:', err);
       }
-      setActionErrorMsg(err?.message ?? '[complete_appointment_error] Échec de la clôture du rendez-vous. Veuillez ré-essayer.');
+      setActionErrorMsg(err?.message ?? 'Échec de la clôture du rendez-vous. Veuillez ré-essayer.');
     } finally {
       setIsSubmittingAction(false);
     }
   };
 
-  // Rule 9: Normalisation des données avant le rendu
-  // getUserInfo cherche d'abord dans appt.user (retourné par l'API backend) puis fallback sur la liste users en prop
-  // N'affiche aucun champ null/incomplet
-  const getUserInfo = (appt) => {
+  // ─── Normalisation des données (Rule 9 & Rule 7) ───────────────────────────
+  const normalizedAppointments = appointments.map((appt) => {
     const apiUser = appt.user ?? null;
+    let name = '[Nom non renseigné]';
+    let email = null;
+    let phone = null;
+    let whatsapp = null;
+    let companyName = null;
+    let profileType = null;
+    let channel = null;
+
     if (apiUser) {
-      const profileLabel = USER_PROFILE_LABELS[apiUser.user_profile_type] ?? apiUser.user_profile_type ?? null;
-      return {
-        name: apiUser.full_name ?? apiUser.name ?? '[full_name non disponible]',
-        email: apiUser.email ?? null,
-        phone: apiUser.phone_number ?? apiUser.phone ?? null,
-        whatsapp: apiUser.whatsapp_number ?? null,
-        companyName: apiUser.institution_name ?? apiUser.companyName ?? null,
-        profileType: profileLabel,
-        channel: apiUser.preferred_contact_channel ?? null,
-        role: apiUser.role_in_business ?? null,
-        gender: apiUser.gender_optional ?? null,
-        ageRange: apiUser.age_range_optional ?? null,
-      };
+      name = apiUser.full_name ?? apiUser.name ?? name;
+      email = apiUser.email ?? null;
+      phone = apiUser.phone_number ?? apiUser.phone ?? null;
+      whatsapp = apiUser.whatsapp_number ?? null;
+      companyName = apiUser.institution_name ?? apiUser.companyName ?? null;
+      profileType = USER_PROFILE_LABELS[apiUser.user_profile_type] ?? apiUser.user_profile_type ?? null;
+      channel = apiUser.preferred_contact_channel ?? null;
+    } else {
+      const u = users?.find((user) => user.id === appt.user_id || user.user_id === appt.user_id);
+      if (u) {
+        name = u.name ?? u.full_name ?? name;
+        email = u.email ?? null;
+        phone = u.phone ?? u.phone_number ?? null;
+        whatsapp = u.whatsapp_number ?? null;
+        companyName = u.companyName ?? u.business_name ?? null;
+        profileType = USER_PROFILE_LABELS[u.user_profile_type] ?? u.user_profile_type ?? null;
+        channel = u.preferred_contact_channel ?? null;
+      }
     }
 
-    const userId = appt.user_id ?? null;
-    const u = users?.find(user => user.id === userId || user.user_id === userId);
-    if (u) {
-      return {
-        name: u.name ?? u.full_name ?? '[name non disponible]',
-        email: u.email ?? null,
-        phone: u.phone ?? u.phone_number ?? null,
-        whatsapp: u.whatsapp_number ?? null,
-        companyName: u.companyName ?? u.business_name ?? null,
-        profileType: USER_PROFILE_LABELS[u.user_profile_type] ?? u.user_profile_type ?? null,
-        channel: u.preferred_contact_channel ?? null,
-        role: u.role_in_business ?? null,
-        gender: u.gender_optional ?? null,
-        ageRange: u.age_range_optional ?? null,
-      };
-    }
+    const rdvTypeLabel = RDV_TYPE_LABELS[appt.rdv_type] ?? appt.rdv_type ?? 'Entretien';
+    const priorityLabel = PRIORITY_LABELS[appt.priority] ?? appt.priority ?? 'Normal';
+    const isUrgent = appt.priority === 'urgent' || appt.priority === 'high';
 
-    return { name: '[user non disponible]', email: null, phone: null, whatsapp: null, companyName: null, profileType: null, channel: null, role: null, gender: null, ageRange: null };
-  };
+    const requestedDate = appt.requested_starts_at
+      ? new Date(appt.requested_starts_at).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+      : null;
 
-  const getRdvTypeLabel = (rdvType) =>
-    RDV_TYPE_LABELS[rdvType] ?? rdvType ?? '[rdv_type non disponible]';
+    const confirmedDateDisplay = appt.confirmed_starts_at
+      ? new Date(appt.confirmed_starts_at).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+      : null;
 
-  const getPriorityLabel = (priority) =>
-    PRIORITY_LABELS[priority] ?? priority ?? '[priority non disponible]';
-
-  const filtered = appointments.filter(appt => {
-    if (!filterStatus) return true;
-    return appt.status === filterStatus;
+    return {
+      ...appt,
+      name,
+      email,
+      phone,
+      whatsapp,
+      companyName,
+      profileType,
+      channel,
+      rdvTypeLabel,
+      priorityLabel,
+      isUrgent,
+      requestedDate,
+      confirmedDateDisplay,
+    };
   });
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'requested':
-        return <span className="admin-badge-severity critique" style={{ background: '#fef3c7', color: '#d97706' }}>Demandé</span>;
-      case 'confirmed':
-        return <span className="admin-badge-severity moyen" style={{ background: '#e0f2fe', color: '#0284c7' }}>Confirmé</span>;
-      case 'completed':
-        return <span className="admin-badge-severity faible" style={{ background: '#d1fae5', color: '#059669' }}>Réalisé</span>;
-      case 'cancelled':
-        return <span className="admin-badge-severity faible" style={{ background: '#fee2e2', color: '#dc2626' }}>Annulé</span>;
-      default:
-        return <span className="admin-badge-severity faible">{status ?? '[status non disponible]'}</span>;
-    }
-  };
+  // Compteurs par statut
+  const totalCount = normalizedAppointments.length;
+  const requestedCount = normalizedAppointments.filter((a) => a.status === 'requested').length;
+  const confirmedCount = normalizedAppointments.filter((a) => a.status === 'confirmed').length;
+  const completedCount = normalizedAppointments.filter((a) => a.status === 'completed').length;
+  const cancelledCount = normalizedAppointments.filter((a) => a.status === 'cancelled').length;
+
+  // Filtrage selon onglet et recherche
+  const filtered = normalizedAppointments.filter((appt) => {
+    if (statusFilter !== 'all' && appt.status !== statusFilter) return false;
+
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.trim().toLowerCase();
+    return (
+      appt.name.toLowerCase().includes(term) ||
+      (appt.companyName && appt.companyName.toLowerCase().includes(term)) ||
+      (appt.email && appt.email.toLowerCase().includes(term)) ||
+      (appt.phone && appt.phone.toLowerCase().includes(term)) ||
+      appt.rdvTypeLabel.toLowerCase().includes(term)
+    );
+  });
 
   const handleExport = () => {
-    const headers = ['Date demandée', 'Entrepreneur', 'Email', 'Téléphone', 'Type RDV', 'Priorité', 'Statut', 'Date confirmée', 'Lien réunion', 'Lieu'];
-    const rows = filtered.map(appt => {
-      const ui = getUserInfo(appt);
+    const headers = [
+      'Date demandée',
+      'Entrepreneur',
+      'Entreprise',
+      'Email',
+      'Téléphone',
+      'WhatsApp',
+      'Type RDV',
+      'Priorité',
+      'Statut',
+      'Date confirmée',
+      'Lien réunion',
+      'Lieu',
+    ];
+    const rows = filtered.map((appt) => {
       return [
-        appt.requested_starts_at ? new Date(appt.requested_starts_at).toLocaleDateString('fr-FR') : '',
-        ui.name ?? '',
-        ui.email ?? '',
-        ui.phone ?? '',
-        getRdvTypeLabel(appt.rdv_type),
-        getPriorityLabel(appt.priority),
+        appt.requestedDate ?? '',
+        appt.name,
+        appt.companyName ?? '',
+        appt.email ?? '',
+        appt.phone ?? '',
+        appt.whatsapp ?? '',
+        appt.rdvTypeLabel,
+        appt.priorityLabel,
         appt.status ?? '',
-        appt.confirmed_starts_at ? new Date(appt.confirmed_starts_at).toLocaleDateString('fr-FR') : '',
+        appt.confirmedDateDisplay ?? '',
         appt.meeting_link ?? '',
         appt.location ?? '',
       ];
@@ -246,194 +518,692 @@ export const RendezVousModule = ({ users }) => {
   };
 
   return (
-    <>
-      <div className="admin-page animate-fade-up">
-      <div className="admin-page-header">
+    <div
+      className="admin-page animate-fade-up"
+      style={{
+        fontFamily: 'Lato, -apple-system, BlinkMacSystemFont, sans-serif',
+        paddingBottom: '40px',
+      }}
+    >
+      {/* ── En-tête de page ── */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
+          gap: '16px',
+          marginBottom: '20px',
+          paddingBottom: '16px',
+          borderBottom: '1px solid #E2E8F0',
+        }}
+      >
         <div>
-          <h1 className="admin-page-title">Rendez-vous</h1>
-          <p className="admin-page-sub">Gérez et planifiez les rendez-vous d'accompagnement demandés par les entrepreneurs</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h1
+              style={{
+                margin: 0,
+                fontSize: '1.65rem',
+                fontWeight: 900,
+                color: '#17212D',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Rendez-vous &amp; Accompagnement
+            </h1>
+            <span
+              style={{
+                background: '#17212D',
+                color: '#FFFFFF',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                padding: '4px 10px',
+                borderRadius: '6px',
+              }}
+            >
+              {totalCount} rendez-vous
+            </span>
+          </div>
+          <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '0.88rem' }}>
+            Registre des demandes d'entretien et de cadrage prises par les dirigeants auprès du cabinet.
+          </p>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: '6px' }} title="Exporter en Excel">
-          <Download size={14} /> Exporter
-        </button>
+
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={loadAppointments}
+            disabled={loading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#17212D',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              padding: '8px 14px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <RotateCcw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            Actualiser
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExport}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: 'none',
+              background: '#0F7F90',
+              color: '#FFFFFF',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              padding: '8px 14px',
+              cursor: 'pointer',
+            }}
+            title="Exporter en Excel"
+          >
+            <Download size={14} /> Exporter Excel
+          </button>
+        </div>
       </div>
 
-      {/* Rule 4: Feedback contextuel d'erreur localisé */}
+      {/* ── Cadrage méthodologique & Guide de lecture ── */}
+      <div
+        style={{
+          background: '#F8FAFC',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #0F7F90',
+          borderRadius: '6px',
+          padding: '14px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '6px',
+            background: '#E0F2FE',
+            color: '#0F7F90',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            marginTop: '2px',
+          }}
+        >
+          <Info size={16} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '0.86rem', fontWeight: 800, color: '#17212D' }}>
+              Guide de suivi des rendez-vous
+            </span>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                background: '#E2E8F0',
+                color: '#475569',
+                padding: '1px 6px',
+                borderRadius: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.03em',
+              }}
+            >
+              Cadrage opérationnel
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
+            Cet espace centralise les demandes d'entretien et d'accompagnement direct formulées par les entreprises.
+            Chaque demande détaille le profil du dirigeant, l'objet de l'échange et son degré d'urgence.
+            Vous pouvez confirmer la date définitive (au cabinet ou en visioconférence) puis clôturer les entretiens une fois réalisés.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Alerte d'action localisée ── */}
       {actionErrorMsg && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '12px 16px', borderRadius: '10px', marginBottom: '16px', fontSize: '0.88rem', fontWeight: 600 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '10px',
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
+            color: '#991B1B',
+            padding: '12px 16px',
+            borderRadius: '6px',
+            marginBottom: '16px',
+            fontSize: '0.84rem',
+            fontWeight: 600,
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={16} />
             <span>{actionErrorMsg}</span>
           </div>
-          <button onClick={() => setActionErrorMsg('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991B1B', padding: '4px' }}>
-            <XCircle size={16} />
+          <button
+            type="button"
+            onClick={() => setActionErrorMsg('')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991B1B', padding: '4px' }}
+          >
+            <X size={15} />
           </button>
         </div>
       )}
 
-      <div className="admin-actions-bar">
-        <div className="admin-filters-group">
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="admin-filter-select"
+      {/* ── Filtres de segmentation & Recherche ── */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '16px',
+        }}
+      >
+        {/* Onglets de filtrage par statut */}
+        <div
+          style={{
+            display: 'inline-flex',
+            background: '#F1F5F9',
+            padding: '3px',
+            borderRadius: '6px',
+            gap: '2px',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setStatusFilter('all')}
+            style={{
+              border: 'none',
+              background: statusFilter === 'all' ? '#17212D' : 'transparent',
+              color: statusFilter === 'all' ? '#FFFFFF' : '#475569',
+              fontWeight: statusFilter === 'all' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
           >
-            <option value="">Tous les statuts</option>
-            <option value="requested">Demandés</option>
-            <option value="confirmed">Confirmés</option>
-            <option value="completed">Réalisés</option>
-            <option value="cancelled">Annulés</option>
-          </select>
+            <span>Tous</span>
+            <span style={{ fontSize: '0.72rem', background: statusFilter === 'all' ? 'rgba(255,255,255,0.2)' : '#E2E8F0', padding: '1px 6px', borderRadius: '4px' }}>
+              {totalCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('requested')}
+            style={{
+              border: 'none',
+              background: statusFilter === 'requested' ? '#17212D' : 'transparent',
+              color: statusFilter === 'requested' ? '#FFFFFF' : '#475569',
+              fontWeight: statusFilter === 'requested' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Demandés</span>
+            <span style={{ fontSize: '0.72rem', background: statusFilter === 'requested' ? '#D97706' : '#FEF3C7', color: statusFilter === 'requested' ? '#FFFFFF' : '#92400E', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+              {requestedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('confirmed')}
+            style={{
+              border: 'none',
+              background: statusFilter === 'confirmed' ? '#17212D' : 'transparent',
+              color: statusFilter === 'confirmed' ? '#FFFFFF' : '#475569',
+              fontWeight: statusFilter === 'confirmed' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Confirmés</span>
+            <span style={{ fontSize: '0.72rem', background: statusFilter === 'confirmed' ? '#0284C7' : '#E0F2FE', color: statusFilter === 'confirmed' ? '#FFFFFF' : '#0369A1', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+              {confirmedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('completed')}
+            style={{
+              border: 'none',
+              background: statusFilter === 'completed' ? '#17212D' : 'transparent',
+              color: statusFilter === 'completed' ? '#FFFFFF' : '#475569',
+              fontWeight: statusFilter === 'completed' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Réalisés</span>
+            <span style={{ fontSize: '0.72rem', background: statusFilter === 'completed' ? '#059669' : '#DCFCE7', color: statusFilter === 'completed' ? '#FFFFFF' : '#166534', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+              {completedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStatusFilter('cancelled')}
+            style={{
+              border: 'none',
+              background: statusFilter === 'cancelled' ? '#17212D' : 'transparent',
+              color: statusFilter === 'cancelled' ? '#FFFFFF' : '#475569',
+              fontWeight: statusFilter === 'cancelled' ? 800 : 600,
+              fontSize: '0.82rem',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <span>Annulés</span>
+            <span style={{ fontSize: '0.72rem', background: statusFilter === 'cancelled' ? '#64748B' : '#E2E8F0', color: statusFilter === 'cancelled' ? '#FFFFFF' : '#475569', padding: '1px 6px', borderRadius: '4px' }}>
+              {cancelledCount}
+            </span>
+          </button>
+        </div>
+
+        {/* Champ de recherche */}
+        <div style={{ position: 'relative', width: '320px' }}>
+          <Search
+            size={15}
+            color="#94A3B8"
+            style={{
+              position: 'absolute',
+              left: '11px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Rechercher dirigeant, entreprise, objet..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              paddingLeft: '34px',
+              paddingRight: '12px',
+              height: '36px',
+              borderRadius: '6px',
+              border: '1px solid #CBD5E1',
+              outline: 'none',
+              fontSize: '0.82rem',
+              background: '#FFFFFF',
+              color: '#17212D',
+              boxSizing: 'border-box',
+            }}
+          />
         </div>
       </div>
 
-      <div className="admin-card">
+      {/* ── Table des Rendez-vous ── */}
+      <div
+        style={{
+          background: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          borderRadius: '6px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+          overflow: 'hidden',
+        }}
+      >
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--slate-400)' }}>Chargement des rendez-vous...</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94A3B8', fontSize: '0.88rem' }}>
+            <RotateCcw size={22} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block', color: '#0F7F90' }} />
+            Chargement des rendez-vous...
+          </div>
         ) : errorMsg ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px 20px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 600 }}>
-            <span>{errorMsg}</span>
-            <button onClick={loadAppointments} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: '1px solid #FCA5A5', borderRadius: '8px', padding: '6px 12px', color: '#991B1B', cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem' }}>
-              <RotateCcw size={14} /> Réessayer
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              color: '#991B1B',
+              padding: '16px 20px',
+              margin: '16px',
+              borderRadius: '6px',
+              fontSize: '0.86rem',
+              fontWeight: 600,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={16} />
+              <span>{errorMsg}</span>
+            </div>
+            <button
+              onClick={loadAppointments}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#FFFFFF',
+                border: '1px solid #FCA5A5',
+                borderRadius: '6px',
+                padding: '6px 12px',
+                color: '#991B1B',
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+              }}
+            >
+              <RotateCcw size={13} /> Réessayer
             </button>
           </div>
         ) : (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
               <thead>
-                <tr>
-                  <th>Date &amp; Heure</th>
-                  <th>Entrepreneur</th>
-                  <th>Type &amp; Priorité</th>
-                  <th>Statut</th>
-                  <th>Planification / Lieu</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '12px 16px', fontWeight: 800 }}>Date &amp; Créneau</th>
+                  <th style={{ padding: '12px 16px', fontWeight: 800 }}>Entreprise &amp; Dirigeant</th>
+                  <th style={{ padding: '12px 16px', fontWeight: 800 }}>Objet &amp; Urgence</th>
+                  <th style={{ padding: '12px 16px', fontWeight: 800 }}>Statut &amp; Lieu</th>
+                  <th style={{ padding: '12px 16px', fontWeight: 800, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(appt => {
-                  // Rule 9: Normalisation des données au début du bloc map
-                  const userInfo = getUserInfo(appt);
-                  const rdvTypeLabel = getRdvTypeLabel(appt.rdv_type);
-                  const priorityLabel = getPriorityLabel(appt.priority);
-                  const dateToDisplay = appt.status === 'confirmed' ? appt.confirmed_starts_at : appt.requested_starts_at;
-                  const formattedDate = dateToDisplay
-                    ? new Date(dateToDisplay).toLocaleDateString('fr-FR', {
-                      day: 'numeric', month: 'short', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
-                    })
-                    : '[requested_starts_at non disponible]';
-                  const mainQuestion = appt.main_question ?? null;
-                  const meetingLinkVal = appt.meeting_link ?? null;
-                  const locationVal = appt.location ?? null;
-
+                {filtered.map((appt) => {
                   return (
-                    <tr key={appt.id}>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: 'var(--color-primary)' }}>
-                          <Calendar size={15} color="var(--color-accent, #34BED5)" />
-                          {formattedDate}
-                        </div>
+                    <tr
+                      key={appt.id}
+                      style={{
+                        borderBottom: '1px solid #E2E8F0',
+                        background: '#FFFFFF',
+                        transition: 'background 0.15s ease',
+                      }}
+                    >
+                      {/* 1. Date & Créneau */}
+                      <td style={{ padding: '14px 16px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                        {appt.status === 'confirmed' && appt.confirmedDateDisplay ? (
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 800, color: '#0F7F90', fontSize: '0.86rem' }}>
+                              <Calendar size={14} color="#0F7F90" />
+                              <span>{appt.confirmedDateDisplay}</span>
+                            </div>
+                            <span style={{ fontSize: '0.7rem', color: '#0284C7', fontWeight: 700, background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px', marginTop: '3px', display: 'inline-block' }}>
+                              Confirmé
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#17212D', fontSize: '0.84rem' }}>
+                              <Calendar size={14} color="#94A3B8" />
+                              <span>{appt.requestedDate || 'Date non précisée'}</span>
+                            </div>
+                            <span style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '3px', display: 'inline-block' }}>
+                              Créneau souhaité
+                            </span>
+                          </div>
+                        )}
                       </td>
-                      <td>
+
+                      {/* 2. Entreprise & Dirigeant */}
+                      <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
                         <div>
-                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{userInfo.name}</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '4px', fontSize: '0.78rem', color: 'var(--slate-500)' }}>
-                            {userInfo.profileType && (
-                              <div style={{ display: 'inline-block', width: 'fit-content', background: '#F1F5F9', color: '#334155', fontWeight: 600, fontSize: '0.7rem', padding: '1px 6px', borderRadius: '4px', marginBottom: '2px' }}>
-                                {userInfo.profileType}
-                              </div>
-                            )}
-                            {userInfo.companyName && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: 'var(--color-teal)' }}>
-                                <Briefcase size={12} /> {userInfo.companyName} {userInfo.role ? `(${userInfo.role})` : ''}
-                              </div>
-                            )}
-                            {userInfo.email && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Mail size={12} /> {userInfo.email}
-                              </div>
-                            )}
-                            {userInfo.phone && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <Phone size={12} /> {userInfo.phone}
-                              </div>
-                            )}
-                            {userInfo.whatsapp && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#16A34A', fontWeight: 600 }}>
-                                <Phone size={12} /> WhatsApp: {userInfo.whatsapp}
-                              </div>
-                            )}
-                            {userInfo.channel && (
-                              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>
-                                Canal pref: {userInfo.channel}
-                              </div>
-                            )}
-                            {(userInfo.gender || userInfo.ageRange) && (
-                              <div style={{ fontSize: '0.74rem', color: 'var(--slate-400)' }}>
-                                {[userInfo.gender, userInfo.ageRange].filter(Boolean).join(' • ')}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                          {rdvTypeLabel}
-                          <div style={{ marginTop: '4px' }}>
-                            {appt.priority === 'urgent' ? (
-                              <span className="admin-badge-severity critique" style={{ fontSize: '0.66rem', padding: '2px 6px' }}>{priorityLabel}</span>
-                            ) : (
-                              <span className="admin-badge-severity faible" style={{ fontSize: '0.66rem', padding: '2px 6px', background: '#f1f5f9', color: '#64748b' }}>{priorityLabel}</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>{getStatusBadge(appt.status)}</td>
-                      <td>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--slate-600)' }}>
-                          {meetingLinkVal && (
-                            <a href={meetingLinkVal} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-accent, #34BED5)', fontWeight: 600 }}>
-                              <ExternalLink size={13} /> Lien Réunion
-                            </a>
-                          )}
-                          {locationVal && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: meetingLinkVal ? '4px' : 0 }}>
-                              <MapPin size={13} color="var(--slate-400)" /> {locationVal}
+                          {appt.companyName && (
+                            <div style={{ fontWeight: 800, color: '#17212D', fontSize: '0.88rem' }}>
+                              {appt.companyName}
                             </div>
                           )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px', fontWeight: 700, color: '#334155', fontSize: '0.82rem' }}>
+                            <User size={13} color="#0F7F90" /> {appt.name}
+                          </div>
+                          {appt.profileType && (
+                            <span style={{ display: 'inline-block', fontSize: '0.68rem', fontWeight: 600, color: '#475569', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', marginTop: '3px' }}>
+                              {appt.profileType}
+                            </span>
+                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '4px', fontSize: '0.76rem', color: '#64748B' }}>
+                            {appt.email && (
+                              <a href={`mailto:${appt.email}`} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Mail size={12} color="#94A3B8" /> {appt.email}
+                              </a>
+                            )}
+                            {appt.phone && (
+                              <a href={`tel:${appt.phone}`} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Phone size={12} color="#94A3B8" /> {appt.phone}
+                              </a>
+                            )}
+                            {appt.whatsapp && (
+                              <span style={{ color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <Phone size={12} /> WA: {appt.whatsapp}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+
+                      {/* 3. Objet & Urgence */}
+                      <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                        <div>
+                          <div style={{ fontWeight: 800, color: '#17212D', fontSize: '0.84rem' }}>
+                            {appt.rdvTypeLabel}
+                          </div>
+                          <div style={{ marginTop: '4px' }}>
+                            <span
+                              style={{
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                padding: '2px 7px',
+                                borderRadius: '4px',
+                                background: appt.priority === 'urgent' ? '#FEF2F2' : appt.priority === 'high' ? '#FFFBEB' : '#F1F5F9',
+                                color: appt.priority === 'urgent' ? '#DC2626' : appt.priority === 'high' ? '#D97706' : '#475569',
+                                border: `1px solid ${appt.priority === 'urgent' ? '#FECACA' : appt.priority === 'high' ? '#FDE68A' : '#E2E8F0'}`,
+                              }}
+                            >
+                              Priorité : {appt.priorityLabel}
+                            </span>
+                          </div>
+                          {appt.main_question && (
+                            <p style={{ margin: '6px 0 0', fontSize: '0.76rem', color: '#64748B', fontStyle: 'italic', lineHeight: 1.4 }}>
+                              « {appt.main_question} »
+                            </p>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 4. Statut & Lieu */}
+                      <td style={{ padding: '14px 16px', verticalAlign: 'top' }}>
+                        <div>
+                          {appt.status === 'requested' && (
+                            <span style={{ background: '#FFFBEB', color: '#92400E', fontWeight: 800, fontSize: '0.74rem', padding: '3px 8px', borderRadius: '4px', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Clock size={12} /> Demandé
+                            </span>
+                          )}
+                          {appt.status === 'confirmed' && (
+                            <span style={{ background: '#E0F2FE', color: '#0369A1', fontWeight: 800, fontSize: '0.74rem', padding: '3px 8px', borderRadius: '4px', border: '1px solid #BAE6FD', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Check size={12} /> Confirmé
+                            </span>
+                          )}
+                          {appt.status === 'completed' && (
+                            <span style={{ background: '#DCFCE7', color: '#166534', fontWeight: 800, fontSize: '0.74rem', padding: '3px 8px', borderRadius: '4px', border: '1px solid #BBF7D0', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <Check size={12} /> Réalisé
+                            </span>
+                          )}
+                          {appt.status === 'cancelled' && (
+                            <span style={{ background: '#F1F5F9', color: '#64748B', fontWeight: 700, fontSize: '0.74rem', padding: '3px 8px', borderRadius: '4px', border: '1px solid #E2E8F0', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <XCircle size={12} /> Annulé
+                            </span>
+                          )}
+
+                          <div style={{ marginTop: '6px', fontSize: '0.76rem', color: '#475569' }}>
+                            {appt.meeting_link && (
+                              <div>
+                                <a
+                                  href={appt.meeting_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{ color: '#0F7F90', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                >
+                                  <Video size={13} /> Visioconférence <ExternalLink size={11} />
+                                </a>
+                              </div>
+                            )}
+                            {appt.location && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', color: '#64748B' }}>
+                                <MapPin size={12} color="#94A3B8" /> {appt.location}
+                              </div>
+                            )}
+                            {!appt.meeting_link && !appt.location && appt.status === 'requested' && (
+                              <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>Lieu à définir à la confirmation</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 5. Actions */}
+                      <td style={{ padding: '14px 16px', verticalAlign: 'top', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           {appt.status === 'requested' && (
                             <>
-                              <button className="btn btn-teal btn-xs" onClick={() => handleOpenConfirm(appt)} disabled={isSubmittingAction} style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Confirmer le créneau">
-                                <Check size={14} /> Confirmer
+                              <button
+                                type="button"
+                                onClick={() => handleOpenConfirm(appt)}
+                                disabled={isSubmittingAction}
+                                style={{
+                                  background: '#0F7F90',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  padding: '6px 12px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                                title="Définir la date et confirmer le rendez-vous"
+                              >
+                                <Check size={13} /> Confirmer
                               </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} disabled={isSubmittingAction} style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }} title="Annuler le rendez-vous">
-                                <XCircle size={14} /> Annuler
+                              <button
+                                type="button"
+                                onClick={() => handleCancel(appt.id)}
+                                disabled={isSubmittingAction}
+                                style={{
+                                  background: '#FFFFFF',
+                                  color: '#DC2626',
+                                  border: '1px solid #FECACA',
+                                  borderRadius: '6px',
+                                  padding: '6px 10px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                }}
+                                title="Annuler le rendez-vous"
+                              >
+                                Annuler
                               </button>
                             </>
                           )}
+
                           {appt.status === 'confirmed' && (
                             <>
-                              <button className="btn btn-teal btn-xs" onClick={() => handleComplete(appt.id)} disabled={isSubmittingAction} style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Marquer comme réalisé">
-                                <Check size={14} /> Terminer
+                              <button
+                                type="button"
+                                onClick={() => handleComplete(appt.id)}
+                                disabled={isSubmittingAction}
+                                style={{
+                                  background: '#166534',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  padding: '6px 12px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 800,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                                title="Marquer le rendez-vous comme réalisé"
+                              >
+                                <Check size={13} /> Clôturer
                               </button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => handleCancel(appt.id)} disabled={isSubmittingAction} style={{ color: '#dc2626', display: 'flex', alignItems: 'center', gap: '4px' }} title="Annuler le rendez-vous">
-                                <XCircle size={14} /> Annuler
+                              <button
+                                type="button"
+                                onClick={() => handleCancel(appt.id)}
+                                disabled={isSubmittingAction}
+                                style={{
+                                  background: '#FFFFFF',
+                                  color: '#DC2626',
+                                  border: '1px solid #FECACA',
+                                  borderRadius: '6px',
+                                  padding: '6px 10px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                }}
+                                title="Annuler le rendez-vous"
+                              >
+                                Annuler
                               </button>
                             </>
+                          )}
+
+                          {(appt.status === 'completed' || appt.status === 'cancelled') && (
+                            <span style={{ fontSize: '0.74rem', color: '#94A3B8', fontStyle: 'italic' }}>
+                              Dossier clos
+                            </span>
                           )}
                         </div>
                       </td>
                     </tr>
                   );
                 })}
+
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--slate-400)' }}>Aucun rendez-vous enregistré</td>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8' }}>
+                      Aucun rendez-vous ne correspond aux critères sélectionnés.
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -441,68 +1211,23 @@ export const RendezVousModule = ({ users }) => {
           </div>
         )}
       </div>
-    </div>
 
-    {/* Modal de confirmation — Rule 4: Feedback contextuel localisé */}
-    {showConfirmModal && selectedAppt && (
-      <div className="admin-modal-backdrop" onClick={() => setShowConfirmModal(false)}>
-        <div className="admin-modal" onClick={e => e.stopPropagation()}>
-          <form onSubmit={handleConfirmSubmit}>
-            <div className="admin-modal-header">
-              <h3>Confirmer la planification du RDV</h3>
-              <button className="admin-close-btn" type="button" onClick={() => setShowConfirmModal(false)}><XCircle size={18} /></button>
-            </div>
-            <div className="admin-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {actionErrorMsg && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <AlertCircle size={15} />
-                  <span>{actionErrorMsg}</span>
-                </div>
-              )}
-              <div className="admin-form-group">
-                <label className="admin-form-label">Date &amp; Heure de réunion finale</label>
-                <input
-                  type="datetime-local"
-                  value={confirmedDate}
-                  onChange={e => setConfirmedDate(e.target.value)}
-                  className="admin-form-input"
-                  required
-                  disabled={isSubmittingAction}
-                />
-              </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Lien de réunion (facultatif — ex: Zoom, Meet...)</label>
-                <input
-                  type="url"
-                  placeholder="https://meet.google.com/..."
-                  value={meetingLink}
-                  onChange={e => setMeetingLink(e.target.value)}
-                  className="admin-form-input"
-                  disabled={isSubmittingAction}
-                />
-              </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Lieu physique (facultatif — ex: Bureau CCI...)</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Bureau de la CCI, Cotonou"
-                  value={meetingLocation}
-                  onChange={e => setMeetingLocation(e.target.value)}
-                  className="admin-form-input"
-                  disabled={isSubmittingAction}
-                />
-              </div>
-            </div>
-            <div className="admin-modal-footer">
-              <button className="btn btn-ghost" type="button" onClick={() => setShowConfirmModal(false)} disabled={isSubmittingAction}>Annuler</button>
-              <button className="btn btn-teal" type="submit" disabled={isSubmittingAction}>
-                {isSubmittingAction ? 'Confirmation...' : 'Valider et Confirmer'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
-  </>
-);
+      {/* ── Modal de Confirmation (via createPortal) ── */}
+      {showConfirmModal && selectedAppt && (
+        <ConfirmAppointmentModal
+          appt={selectedAppt}
+          confirmedDate={confirmedDate}
+          setConfirmedDate={setConfirmedDate}
+          meetingLink={meetingLink}
+          setMeetingLink={setMeetingLink}
+          meetingLocation={meetingLocation}
+          setMeetingLocation={setMeetingLocation}
+          isSubmittingAction={isSubmittingAction}
+          actionErrorMsg={actionErrorMsg}
+          onSubmit={handleConfirmSubmit}
+          onClose={() => setShowConfirmModal(false)}
+        />
+      )}
+    </div>
+  );
 };
