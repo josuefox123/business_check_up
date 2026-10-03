@@ -9,6 +9,11 @@ import {
   ArrowUpRight,
   TrendingUp,
   ChevronRight,
+  HelpCircle,
+  X,
+  CheckCircle2,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 
 // Bandes officielles de maturité (Enum ScoreBand du backend)
@@ -76,10 +81,14 @@ export const Dashboard = ({
   onRefresh,
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showTraceModal, setShowTraceModal] = useState(false);
 
   // ─── Normalisation des données (Rule 9 & Rule 7) ───────────────────────────
   const safeStats = stats || {};
-  const diagsStarted = Number(safeStats?.diagnostics?.started ?? 0);
+  const diagsStarted = Number(safeStats?.diagnostics?.started ?? safeStats?.diagnostics?.total ?? 0);
+  const diagsCompleted = Number(safeStats?.diagnostics?.completed ?? 0);
+  const diagsInProgress = Number(safeStats?.diagnostics?.in_progress ?? 0);
+  const diagsNotStarted = Number(safeStats?.diagnostics?.not_started ?? 0);
   const pmeCount = Number(safeStats?.pme ?? 0);
   const followUpTotal = Number(safeStats?.follow_ups?.total_requests ?? 0);
 
@@ -91,17 +100,17 @@ export const Dashboard = ({
   // Normalisation des modules
   const normalizedModules = Array.isArray(moduleStats)
     ? moduleStats.map((m) => {
-        const count = Number(m.count ?? 0);
-        const completed = Number(m.completed ?? 0);
-        const rate = count > 0 ? Math.round((completed / count) * 100) : 0;
-        return {
-          code: m.moduleId || m.module_code || 'MOD',
-          name: m.name || MODULE_NAMES_FALLBACK[m.moduleId] || m.moduleId || 'Module',
-          count,
-          completed,
-          rate,
-        };
-      })
+      const count = Number(m.count ?? 0);
+      const completed = Number(m.completed ?? 0);
+      const rate = count > 0 ? Math.round((completed / count) * 100) : 0;
+      return {
+        code: m.moduleId || m.module_code || 'MOD',
+        name: m.name || MODULE_NAMES_FALLBACK[m.moduleId] || m.moduleId || 'Module',
+        count,
+        completed,
+        rate,
+      };
+    })
     : [];
 
   const maxModuleCount = Math.max(...normalizedModules.map((m) => m.count), 1);
@@ -109,9 +118,9 @@ export const Dashboard = ({
   // Normalisation des régions (Top 5)
   const normalizedRegions = Array.isArray(topSectors)
     ? topSectors.map((r) => ({
-        region: r.region || r.sector || '[Région non spécifiée]',
-        count: Number(r.count ?? 0),
-      }))
+      region: r.region || r.sector || '[Région non spécifiée]',
+      count: Number(r.count ?? 0),
+    }))
     : [];
 
   const topRegions = normalizedRegions.slice(0, 5);
@@ -120,14 +129,14 @@ export const Dashboard = ({
   // Normalisation des scores moyens par module
   const normalizedScoresByModule = Array.isArray(scoreDistrib)
     ? scoreDistrib.map((s) => {
-        const score = Math.round(Number(s.avg_credibilized_score || s.avg_score || 0));
-        return {
-          code: s.module_code,
-          name: MODULE_NAMES_FALLBACK[s.module_code] || s.module_code || 'Module',
-          score,
-          total: Number(s.total ?? 0),
-        };
-      })
+      const score = Math.round(Number(s.avg_credibilized_score || s.avg_score || 0));
+      return {
+        code: s.module_code,
+        name: MODULE_NAMES_FALLBACK[s.module_code] || s.module_code || 'Module',
+        score,
+        total: Number(s.total ?? 0),
+      };
+    })
     : [];
 
   const handleRefreshClick = async () => {
@@ -314,9 +323,34 @@ export const Dashboard = ({
             <Link to="/admin/diagnostics" className="dash-kpi-card">
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Diagnostics initiés
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Diagnostics initiés
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowTraceModal(true);
+                      }}
+                      style={{
+                        background: '#F1F5F9',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '3px',
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#0F7F90',
+                        transition: 'background 0.15s ease',
+                      }}
+                      title="Comprendre le détail de la traçabilité"
+                    >
+                      <HelpCircle size={13} />
+                    </button>
+                  </div>
                   <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#F0FCFF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F7F90' }}>
                     <BarChart2 size={16} />
                   </div>
@@ -325,9 +359,12 @@ export const Dashboard = ({
                   {diagsStarted}
                 </div>
               </div>
-              <div style={{ fontSize: '0.76rem', color: '#0F7F90', fontWeight: 700, marginTop: '12px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <span>Parcours thématiques engagés</span>
-                <ArrowUpRight size={13} />
+              <div style={{ fontSize: '0.74rem', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
+                <span style={{ color: '#059669', fontWeight: 800 }}>{diagsCompleted} finalisés</span>
+                <span style={{ color: '#CBD5E1' }}>•</span>
+                <span style={{ color: '#D97706', fontWeight: 700 }}>{diagsInProgress} en cours</span>
+                <span style={{ color: '#CBD5E1' }}>•</span>
+                <span style={{ color: '#64748B', fontWeight: 600 }}>{diagsNotStarted} non débutés</span>
               </div>
             </Link>
 
@@ -377,6 +414,7 @@ export const Dashboard = ({
       </div>
 
       {/* ── 2. Cœur Analytique : Maturité Globale & Activité Modules ── */}
+      {/* ── 2. Cœur Analytique : Maturité Globale & Implantation Territoriale (5 éléments vs 5 éléments) ── */}
       <div className="dash-grid-2">
         {/* Panneau A : Répartition algorithmique des scores de maturité */}
         <div className="dash-card" style={{ padding: '20px' }}>
@@ -462,7 +500,70 @@ export const Dashboard = ({
           </div>
         </div>
 
-        {/* Panneau B : Activité & Complétion par Module */}
+        {/* Panneau B : Implantation territoriale (Top 5) */}
+        <div className="dash-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: '#17212D' }}>
+                Implantation territoriale (Top 5)
+              </h2>
+              <p style={{ margin: '3px 0 0', fontSize: '0.78rem', color: '#64748B' }}>
+                Départements les plus représentés par les diagnostics initiés
+              </p>
+            </div>
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F0FCFF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F7F90' }}>
+              <MapPin size={15} />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {loading ? (
+              <>
+                {[1, 2, 3, 4, 5].map((idx) => (
+                  <div key={idx} style={{ padding: '10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <div className="dash-shimmer" style={{ width: '100px', height: '12px' }} />
+                      <div className="dash-shimmer" style={{ width: '60px', height: '12px' }} />
+                    </div>
+                    <div className="dash-shimmer" style={{ width: '100%', height: '5px' }} />
+                  </div>
+                ))}
+              </>
+            ) : topRegions.length > 0 ? (
+              topRegions.map((r, idx) => {
+                const relativeWidth = Math.round((r.count / maxRegionCount) * 100);
+
+                return (
+                  <div key={idx} style={{ padding: '8px 10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.8rem' }}>
+                      <span style={{ fontWeight: 800, color: '#17212D' }}>{r.region}</span>
+                      <span style={{ fontWeight: 800, color: '#17212D' }}>{r.count} diagnostics</span>
+                    </div>
+                    <div style={{ width: '100%', height: '5px', background: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${relativeWidth}%`,
+                          height: '100%',
+                          background: '#17212D',
+                          borderRadius: '3px',
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8', fontSize: '0.82rem' }}>
+                Aucune donnée de localisation enregistrée.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. Performance & Activité par Module (9 modules vs 9 modules) ── */}
+      <div className="dash-grid-2">
+        {/* Panneau A : Activité & Volume par Module */}
         <div className="dash-card" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
@@ -587,73 +688,10 @@ export const Dashboard = ({
             )}
           </div>
         </div>
-      </div>
 
-      {/* ── 3. Pilotage Stratégique : Territoire (Top 5) & Performance par module ── */}
-      <div className="dash-grid-2">
-        {/* Panneau A : Implantation territoriale (Top 5) */}
+        {/* Panneau B : Scores moyens obtenus par thématique */}
         <div className="dash-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: '#17212D' }}>
-                Implantation territoriale (Top 5)
-              </h2>
-              <p style={{ margin: '3px 0 0', fontSize: '0.78rem', color: '#64748B' }}>
-                Départements les plus représentés par les diagnostics initiés
-              </p>
-            </div>
-            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#F0FCFF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0F7F90' }}>
-              <MapPin size={15} />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {loading ? (
-              <>
-                {[1, 2, 3].map((idx) => (
-                  <div key={idx} style={{ padding: '10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #F1F5F9' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <div className="dash-shimmer" style={{ width: '100px', height: '12px' }} />
-                      <div className="dash-shimmer" style={{ width: '60px', height: '12px' }} />
-                    </div>
-                    <div className="dash-shimmer" style={{ width: '100%', height: '5px' }} />
-                  </div>
-                ))}
-              </>
-            ) : topRegions.length > 0 ? (
-              topRegions.map((r, idx) => {
-                const relativeWidth = Math.round((r.count / maxRegionCount) * 100);
-
-                return (
-                  <div key={idx} style={{ padding: '8px 10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #F1F5F9' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '0.8rem' }}>
-                      <span style={{ fontWeight: 800, color: '#17212D' }}>{r.region}</span>
-                      <span style={{ fontWeight: 800, color: '#17212D' }}>{r.count} diagnostics</span>
-                    </div>
-                    <div style={{ width: '100%', height: '5px', background: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          width: `${relativeWidth}%`,
-                          height: '100%',
-                          background: '#17212D',
-                          borderRadius: '3px',
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8', fontSize: '0.82rem' }}>
-                Aucune donnée de localisation enregistrée.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Panneau B : Scores moyens obtenus par thématique (Remplace la carte redondante des RDV) */}
-        <div className="dash-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: '#17212D' }}>
                 Performance moyenne par thématique
@@ -670,7 +708,7 @@ export const Dashboard = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {loading ? (
               <>
-                {[1, 2, 3].map((idx) => (
+                {[1, 2, 3, 4].map((idx) => (
                   <div key={idx} style={{ padding: '10px', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #F1F5F9' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <div className="dash-shimmer" style={{ width: '120px', height: '12px' }} />
@@ -718,6 +756,141 @@ export const Dashboard = ({
           </div>
         </div>
       </div>
+
+      {/* ── Modal de Traçabilité des Diagnostics ── */}
+      {showTraceModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+          }}
+          onClick={() => setShowTraceModal(false)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '8px',
+              borderTop: '4px solid #34BED5',
+              maxWidth: '540px',
+              width: '100%',
+              boxShadow: '0 20px 40px rgba(15, 23, 42, 0.22)',
+              padding: '24px 28px',
+              boxSizing: 'border-box',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#17212D' }}>
+                  Traçabilité des {diagsStarted} diagnostics
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+                  Décomposition exacte des parcours thématiques enregistrés sur la plateforme.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTraceModal(false)}
+                style={{
+                  background: '#F1F5F9',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  color: '#64748B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+              {/* Palier 1 : Finalisés */}
+              <div style={{ padding: '12px 14px', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CheckCircle2 size={15} color="#059669" />
+                    <span style={{ fontWeight: 800, color: '#065F46', fontSize: '0.85rem' }}>
+                      Bilans finalisés
+                    </span>
+                  </div>
+                  <span style={{ fontWeight: 900, color: '#059669', fontSize: '0.95rem' }}>
+                    {diagsCompleted}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#047857', lineHeight: 1.45 }}>
+                  L'entreprise a complété l'ensemble des questions obligatoires du module (et d'éventuelles questions d'enrichissement supplémentaires). Un bilan chiffré et une note algorithmique ont été attribués.
+                </p>
+              </div>
+
+              {/* Palier 2 : En cours */}
+              <div style={{ padding: '12px 14px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={15} color="#D97706" />
+                    <span style={{ fontWeight: 800, color: '#92400E', fontSize: '0.85rem' }}>
+                      Parcours en cours (≥ 1 réponse)
+                    </span>
+                  </div>
+                  <span style={{ fontWeight: 900, color: '#D97706', fontSize: '0.95rem' }}>
+                    {diagsInProgress}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#B45309', lineHeight: 1.45 }}>
+                  Le dirigeant s'est engagé dans le questionnaire et a validé au moins une réponse avant d'interrompre sa progression. Ces réponses partielles constituent déjà une matière exploitable par les conseillers CCIB.
+                </p>
+              </div>
+
+              {/* Palier 3 : Non débutés */}
+              <div style={{ padding: '12px 14px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <XCircle size={15} color="#64748B" />
+                    <span style={{ fontWeight: 800, color: '#334155', fontSize: '0.85rem' }}>
+                      Sessions ouvertes sans réponse (0 réponse)
+                    </span>
+                  </div>
+                  <span style={{ fontWeight: 900, color: '#475569', fontSize: '0.95rem' }}>
+                    {diagsNotStarted}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748B', lineHeight: 1.45 }}>
+                  L'utilisateur a cliqué sur « Commencer le diagnostic » à la fin de son orientation de triage, ce qui a initialisé une session technique, mais il a quitté avant de valider la première question.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowTraceModal(false)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: '#17212D',
+                color: '#FFFFFF',
+                borderRadius: '6px',
+                border: 'none',
+                fontWeight: 800,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              Compris, fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

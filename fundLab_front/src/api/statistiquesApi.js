@@ -26,16 +26,21 @@ export const statistiquesApi = {
         const data = res?.data || res;
         if (!data) return null;
 
-        const diagStarted = Number(data.diagnostics?.started || 0);
+        const diagStarted = Number(data.diagnostics?.started || data.diagnostics?.total || 0);
         const diagCompleted = Number(data.diagnostics?.completed || 0);
+        const diagInProgress = Number(data.diagnostics?.in_progress || 0);
+        const diagNotStarted = Number(data.diagnostics?.not_started || 0);
         const diagAbandoned = Number(data.diagnostics?.abandoned || 0);
         const completionRate = Number(data.diagnostics?.completion_rate || 0);
 
         return {
           ...data,
           diagnostics: {
+            total: diagStarted,
             started: diagStarted,
             completed: diagCompleted,
+            in_progress: diagInProgress,
+            not_started: diagNotStarted,
             abandoned: diagAbandoned,
             completion_rate: completionRate,
           },

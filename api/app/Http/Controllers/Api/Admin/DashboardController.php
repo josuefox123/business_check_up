@@ -45,6 +45,16 @@ class DashboardController extends BaseController
 
         $diagsCount = $diagnostics->count();
         $diagsCompleted = (clone $diagnostics)->where('completion_status', CompletionStatus::COMPLETED->value)->count();
+        $diagsInProgress = (clone $diagnostics)
+            ->where('completion_status', '!=', CompletionStatus::COMPLETED->value)
+            ->where('question_count_answered', '>', 0)
+            ->count();
+        $diagsNotStarted = (clone $diagnostics)
+            ->where('completion_status', '!=', CompletionStatus::COMPLETED->value)
+            ->where(function ($q) {
+                $q->whereNull('question_count_answered')->orWhere('question_count_answered', 0);
+            })
+            ->count();
         $diagsAbandoned = (clone $diagnostics)->where('completion_status', CompletionStatus::ABANDONED->value)->count();
 
         return $this->respondSuccess([
@@ -55,8 +65,11 @@ class DashboardController extends BaseController
                 'abandoned_sessions' => (clone $sessions)->where('session_status', SessionStatus::ABANDONED->value)->count(),
             ],
             'diagnostics' => [
+                'total' => $diagsCount,
                 'started' => $diagsCount,
                 'completed' => $diagsCompleted,
+                'in_progress' => $diagsInProgress,
+                'not_started' => $diagsNotStarted,
                 'abandoned' => $diagsAbandoned,
                 'completion_rate' => $diagsCount > 0 ? round(($diagsCompleted / $diagsCount) * 100, 2) : 0,
             ],
